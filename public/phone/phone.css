@@ -555,22 +555,42 @@ select {
 
 /* -------------------------------------------------------- ring, call -- */
 
-.ring {
+/* On a computer, cards at the top of the page. On a phone (below) they take
+   the whole screen, like a phone call does. */
+.ring,
+.call {
   display: grid;
-  gap: 0.75rem;
+  gap: 1.1rem;
   text-align: center;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
+.call {
+  box-shadow: none;
+}
+
+.call-top {
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+}
+
+.ring h2,
+.call h2 {
+  font-size: 1.4rem;
+  letter-spacing: -0.01em;
+}
+
 .ring.later {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   text-align: left;
   border-color: var(--line);
   box-shadow: var(--shadow);
-}
-
-.ring h2 {
-  font-size: 1.35rem;
 }
 
 .ring.later h2 {
@@ -585,27 +605,127 @@ select {
   color: var(--muted);
 }
 
-.call {
+.more-ringing {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--amber);
+}
+
+.call-avatar {
   display: grid;
-  justify-items: center;
-  gap: 0.5rem;
-  text-align: center;
-  border-color: var(--accent);
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  margin: 0.4rem 0 0.2rem;
+  border-radius: 50%;
+  background: var(--card-2);
+  color: var(--fg);
+  font-size: 1.8rem;
+  font-weight: 650;
 }
 
-.call h2 {
-  font-size: 1.35rem;
+.call-avatar svg,
+.callbtn-ic svg,
+.tab-ic svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.call .row {
-  width: 100%;
-  margin-top: 0.5rem;
+.call-avatar svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+.call-avatar.ringing {
+  background: color-mix(in srgb, var(--accent) 16%, var(--card-2));
+  color: var(--accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .call-avatar.ringing {
+    animation: ring-pulse 1.6s ease-out infinite;
+  }
+
+  @keyframes ring-pulse {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent);
+    }
+
+    100% {
+      box-shadow: 0 0 0 22px transparent;
+    }
+  }
 }
 
 .call-time {
   font-size: 1.1rem;
   font-variant-numeric: tabular-nums;
   color: var(--muted);
+}
+
+.call-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+/* A call button: pill with icon and word on a computer, circle over word on a phone. */
+.callbtn {
+  display: inline-flex;
+  flex: 1;
+  max-width: 14rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--fg);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.callbtn-ic {
+  display: grid;
+  place-items: center;
+}
+
+.callbtn-ic svg {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.callbtn.answer {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.callbtn.end {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: #fff;
+}
+
+.callbtn .slash {
+  display: none;
+}
+
+.callbtn[aria-pressed='true'] {
+  border-color: var(--fg);
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.callbtn[aria-pressed='true'] .slash {
+  display: inline;
 }
 
 /* --------------------------------------------------------------- tabs -- */
@@ -654,20 +774,17 @@ select {
   box-shadow: var(--shadow);
 }
 
-/* Four tabs don't fit a phone: they wrap rather than scroll out of sight. */
-@media (max-width: 560px) {
-  .log-tabs {
-    width: 100%;
-    flex-wrap: wrap;
-    overflow-x: visible;
-    border-radius: 20px;
-  }
+/* On a computer the words do the work; the icons and short words are the phone's. */
+.tab-ic {
+  display: none;
+}
 
-  .log-tab {
-    flex: 1 1 auto;
-    justify-content: center;
-    padding-inline: 0.6rem;
-  }
+.tab-s {
+  display: none;
+}
+
+.tab-ic .count {
+  order: 2;
 }
 
 .count {
@@ -772,37 +889,85 @@ select {
   padding-inline-start: 0.7rem;
 }
 
-/* A set width: squeezed, the browser drops the play button first. */
-.hist-row audio {
-  width: 17rem;
-  max-width: 100%;
-  height: 2.25rem;
-}
-
 .hist-row .who {
   font-weight: 600;
 }
 
 .hist-row a {
   color: inherit;
+  font-weight: 500;
 }
 
 .hist-row .when {
-  margin-inline-start: auto;
   color: var(--muted);
   font-size: 0.8125rem;
   white-space: nowrap;
 }
 
-@media (max-width: 560px) {
-  .hist-row .when {
-    margin-inline-start: 0;
-  }
+/* A message or a call: who and when, the line and its state, the recording,
+   then how to reach them and the one thing to do. */
+.item {
+  display: grid;
+  gap: 0.45rem;
+}
 
-  .hist-row audio {
-    max-width: 100%;
-    flex: 1 1 100%;
-  }
+.item-top,
+.item-actions {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.item-actions {
+  align-items: center;
+}
+
+.item-top .who {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  font-size: 0.8125rem;
+}
+
+/* A set width: squeezed, the browser drops the play button first. */
+.item audio {
+  width: 100%;
+  max-width: 24rem;
+  height: 2.5rem;
+}
+
+/* Who's on: a face, a name, where they stand. */
+.person {
+  flex-wrap: nowrap;
+}
+
+.person .who {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.person-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--card-2);
+  font-size: 0.8rem;
+  font-weight: 650;
 }
 
 .tag {
@@ -918,4 +1083,347 @@ select {
 
 .day input[type='time']:disabled {
   opacity: 0.45;
+}
+
+/* ================================================================ phone ==
+   Below 600px the page is a phone app: a bottom tab bar, a compact duty card,
+   sheets that rise from the bottom, and a ringing or live call that takes
+   the whole screen with big round buttons. Inputs are 16px so iOS doesn't
+   zoom the page when one is tapped. */
+
+@media (max-width: 600px) {
+  body {
+    font-size: 15px;
+  }
+
+  input,
+  select {
+    font-size: 16px;
+  }
+
+  /* No blur here: a filter would make the header the frame the fixed menu
+     sheet sits in, instead of the screen. */
+  .bar {
+    padding-inline: 0.85rem;
+    background: var(--bg);
+    backdrop-filter: none;
+  }
+
+  .page {
+    gap: 0.85rem;
+    padding: 0.85rem 0.85rem calc(5.5rem + env(safe-area-inset-bottom));
+  }
+
+  #view-phone {
+    gap: 0.85rem;
+  }
+
+  .card {
+    padding: 0.9rem;
+  }
+
+  /* -- duty: the same pill, less room ---------------------------------- */
+  .duty {
+    gap: 0.65rem;
+    padding: 1.1rem 1rem;
+  }
+
+  .duty-status {
+    padding: 0.55rem 1.1rem 0.55rem 0.95rem;
+    font-size: 1.05rem;
+  }
+
+  .duty-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .duty-sub {
+    font-size: 0.875rem;
+  }
+
+  .btn.big {
+    width: 100%;
+    min-height: 3rem;
+  }
+
+  /* -- the tab bar along the bottom ------------------------------------ */
+  .log-tabs {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    width: auto;
+    max-width: none;
+    padding: 0.35rem 0.25rem calc(0.35rem + env(safe-area-inset-bottom));
+    overflow: visible;
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: color-mix(in srgb, var(--card) 92%, transparent);
+    backdrop-filter: blur(10px);
+  }
+
+  .log-tab {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.15rem;
+    min-height: 3.25rem;
+    padding: 0.3rem 0.2rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
+  .log-tab[aria-selected='true'] {
+    background: transparent;
+    box-shadow: none;
+    color: var(--fg);
+  }
+
+  .log-tab[aria-selected='true'] .tab-ic {
+    background: var(--card-2);
+  }
+
+  .tab-ic {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3.2rem;
+    height: 1.9rem;
+    border-radius: 999px;
+  }
+
+  .tab-ic svg {
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+
+  .tab-ic .count {
+    position: absolute;
+    top: -0.2rem;
+    right: 0.2rem;
+    min-width: 1.15rem;
+    padding: 0.05rem 0.3rem;
+    background: var(--amber);
+    color: #fff;
+    font-size: 0.65rem;
+    line-height: 1.1rem;
+    text-align: center;
+  }
+
+  .tab-l {
+    display: none;
+  }
+
+  .tab-s {
+    display: block;
+  }
+
+  /* The explanation lives in How this works; here it only pushed the list down. */
+  .hist > p.muted {
+    display: none;
+  }
+
+  .q-bar {
+    gap: 0.5rem 0.75rem;
+  }
+
+  .inline-field select {
+    max-width: 11rem;
+  }
+
+  .list-card {
+    padding: 0.2rem 0.75rem;
+  }
+
+  .hist-row {
+    padding: 0.85rem 0.15rem;
+  }
+
+  .hist-row.is-new {
+    padding-inline-start: 0.65rem;
+  }
+
+  .item audio {
+    max-width: none;
+  }
+
+  .foot {
+    margin-top: 0.25rem;
+  }
+
+  /* -- ringing and talking: the whole screen --------------------------- */
+  body[data-screen] {
+    overflow: hidden;
+  }
+
+  body[data-screen=''] {
+    overflow: auto;
+  }
+
+  .ring:not(.later),
+  .call {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    grid-template-rows: 1fr auto;
+    align-items: center;
+    padding: calc(2rem + env(safe-area-inset-top)) 1.5rem calc(2.5rem + env(safe-area-inset-bottom));
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
+      var(--bg);
+  }
+
+  .ring.later {
+    display: none;
+  }
+
+  .ring h2,
+  .call h2 {
+    font-size: 1.9rem;
+  }
+
+  .call-avatar {
+    width: 7rem;
+    height: 7rem;
+    margin: 1.5rem 0 0.75rem;
+    font-size: 2.75rem;
+  }
+
+  .call-avatar svg {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .call-time {
+    font-size: 1.25rem;
+  }
+
+  .call-actions {
+    gap: 3.5rem;
+  }
+
+  /* A circle over its word, the way a phone's own call screen looks. */
+  .callbtn {
+    flex: none;
+    flex-direction: column;
+    gap: 0.55rem;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--fg);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .callbtn .callbtn-ic {
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 50%;
+    background: var(--card-2);
+  }
+
+  .callbtn .callbtn-ic svg {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+
+  .callbtn.answer,
+  .callbtn.end,
+  .callbtn[aria-pressed='true'] {
+    border: 0;
+    background: none;
+    color: var(--fg);
+  }
+
+  .callbtn.answer .callbtn-ic {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .callbtn.end .callbtn-ic {
+    background: var(--danger);
+    color: #fff;
+  }
+
+  .callbtn[aria-pressed='true'] .callbtn-ic {
+    background: var(--fg);
+    color: var(--bg);
+  }
+
+  /* -- sheets rise from the bottom ------------------------------------- */
+  .overlay {
+    place-items: end stretch;
+    padding: 0;
+  }
+
+  .sheet {
+    width: 100%;
+    max-height: 88dvh;
+    padding: 1rem 1rem calc(1.25rem + env(safe-area-inset-bottom));
+    border-bottom: 0;
+    border-radius: 18px 18px 0 0;
+  }
+
+  .sheet::before {
+    content: '';
+    justify-self: center;
+    width: 2.5rem;
+    height: 0.3rem;
+    margin-bottom: -0.25rem;
+    border-radius: 999px;
+    background: var(--line);
+  }
+
+  .sheet .btn.primary {
+    width: 100%;
+    min-height: 2.9rem;
+  }
+
+  .day {
+    grid-template-columns: 5.25rem 1fr auto 1fr;
+    gap: 0.4rem;
+  }
+
+  .day input[type='time'] {
+    min-height: 2.6rem;
+    padding: 0.3rem 0.4rem;
+  }
+
+  /* The menu, the same: a list along the bottom, big enough to hit. */
+  .menu-list {
+    position: fixed;
+    top: auto;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    z-index: 70;
+    min-width: 0;
+    padding: 0.5rem;
+    border-radius: 16px;
+    /* The page behind dims, as under any sheet. */
+    box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.5);
+  }
+
+  /* Open, the header (and its menu) has to sit over the tab bar. */
+  .bar:has(.menu-list:not([hidden])) {
+    z-index: 80;
+  }
+
+  .menu-list button {
+    min-height: 2.9rem;
+    font-size: 1rem;
+  }
+
+  .narrow {
+    margin-top: 4vh;
+  }
 }

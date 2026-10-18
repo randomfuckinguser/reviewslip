@@ -278,7 +278,11 @@
     '.rsv audio{width:100%;height:36px}' +
     '.rsv-err{color:#dc2626;font-size:13px;margin:0}' +
     '.rsv-time{font-variant-numeric:tabular-nums}' +
-    '@media (max-width:480px){.rsv{left:8px;right:8px;bottom:8px;width:auto;max-width:none}}';
+    /* On a phone: a sheet along the bottom, the page dimmed behind it, buttons big enough for a thumb. */
+    '@media (max-width:600px){.rsv{left:0;right:0;bottom:0;width:auto;max-width:none;border-radius:18px 18px 0 0;border-bottom:0;' +
+    'padding:20px 18px calc(20px + env(safe-area-inset-bottom));gap:16px;font-size:15px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}' +
+    '.rsv-dot{width:52px;height:52px}.rsv-dot svg{width:24px;height:24px}.rsv-title{font-size:17px}.rsv-sub{font-size:14px}' +
+    '.rsv-btn{min-height:50px;border-radius:14px;font-size:16px}.rsv-in{min-height:46px;font-size:16px}.rsv audio{height:44px}}';
 
   var ICON = {
     phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',

@@ -88,13 +88,22 @@
         <section id="rings" class="stack" aria-live="assertive"></section>
 
         <section class="card call" id="call" hidden aria-live="polite">
-          <span class="duty-status small"><span class="duty-dot" aria-hidden="true"></span><span data-t="inCall">In a call</span></span>
-          <h2 id="call-who"></h2>
-          <p class="muted" id="call-line"></p>
-          <p class="call-time" id="call-time">0:00</p>
-          <div class="row">
-            <button type="button" class="btn round" id="mute" aria-pressed="false" data-t="mute">Mute</button>
-            <button type="button" class="btn round danger" id="hang-up" data-t="hangUp">Hang up</button>
+          <div class="call-top">
+            <span class="duty-status small"><span class="duty-dot" aria-hidden="true"></span><span data-t="inCall">In a call</span></span>
+            <span class="call-avatar" id="call-avatar" aria-hidden="true"></span>
+            <h2 id="call-who"></h2>
+            <p class="muted" id="call-line"></p>
+            <p class="call-time" id="call-time">0:00</p>
+          </div>
+          <div class="call-actions">
+            <button type="button" class="callbtn" id="mute" aria-pressed="false">
+              <span class="callbtn-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/><path class="slash" d="M4 4l16 16"/></svg></span>
+              <span class="callbtn-l" id="mute-l" data-t="mute">Mute</span>
+            </button>
+            <button type="button" class="callbtn end" id="hang-up">
+              <span class="callbtn-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.2 13.6c4.9-4.3 12.7-4.3 17.6 0l-1.9 2.6-3.4-1.3-.4-2.5a11 11 0 0 0-6.2 0l-.4 2.5-3.4 1.3z"/></svg></span>
+              <span class="callbtn-l" data-t="hangUp">Hang up</span>
+            </button>
           </div>
         </section>
 
@@ -119,14 +128,25 @@
           </p>
         </section>
 
-        <div class="log-tabs" role="tablist" aria-label="Messages and calls">
+        <!-- Pills across the page on a computer; a bottom tab bar on a phone. -->
+        <nav class="log-tabs" role="tablist" aria-label="Messages and calls">
           <button type="button" class="log-tab" role="tab" data-tab="new" aria-selected="true">
-            <span data-t="tabNew">New messages</span> <span class="count" id="vm-count" hidden></span>
+            <span class="tab-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.5" cy="12" r="3.5"/><circle cx="17.5" cy="12" r="3.5"/><path d="M6.5 15.5h11"/></svg><span class="count" id="vm-count" hidden></span></span>
+            <span class="tab-l" data-t="tabNew">New messages</span><span class="tab-s" data-t="tabNewShort">New</span>
           </button>
-          <button type="button" class="log-tab" role="tab" data-tab="all" aria-selected="false" data-t="tabAll">Messages</button>
-          <button type="button" class="log-tab" role="tab" data-tab="calls" aria-selected="false" data-t="tabCalls">Recent calls</button>
-          <button type="button" class="log-tab" role="tab" data-tab="team" aria-selected="false" data-t="tabTeam">Who's on</button>
-        </div>
+          <button type="button" class="log-tab" role="tab" data-tab="all" aria-selected="false">
+            <span class="tab-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg></span>
+            <span class="tab-l" data-t="tabAll">Messages</span><span class="tab-s" data-t="tabAllShort">Messages</span>
+          </button>
+          <button type="button" class="log-tab" role="tab" data-tab="calls" aria-selected="false">
+            <span class="tab-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span>
+            <span class="tab-l" data-t="tabCalls">Recent calls</span><span class="tab-s" data-t="tabCallsShort">Calls</span>
+          </button>
+          <button type="button" class="log-tab" role="tab" data-tab="team" aria-selected="false">
+            <span class="tab-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9.5" r="2.5"/><path d="M15.8 14.2c2.4.2 4.1 1.8 4.7 4.8"/></svg></span>
+            <span class="tab-l" data-t="tabTeam">Who's on</span><span class="tab-s" data-t="tabTeamShort">Who's on</span>
+          </button>
+        </nav>
 
         <section class="hist" id="panel-vm" role="tabpanel">
           <p class="muted small" data-t="vmSub">Recorded when nobody on the line could take the call. Playing one marks it heard with your name, so two of you don't ring the same person back.</p>

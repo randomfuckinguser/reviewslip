@@ -43,6 +43,7 @@
       pushOn: 'Ringing when closed: on', pushOff: 'Ringing when closed: off', pushBlocked: 'Notifications are blocked in this browser’s settings.',
       pushIos: 'On iPhone, add this page to the Home Screen first (Share, then Add to Home Screen).',
       howItWorks: 'How this works', myHours: 'My hours', tabNew: 'New messages', tabAll: 'Messages', tabCalls: 'Recent calls',
+      tabNewShort: 'New', tabAllShort: 'Messages', tabCallsShort: 'Calls', tabTeamShort: 'Who\u2019s on', moreRinging: '{n} more ringing',
       tabTeam: 'Who’s on', vmSub: 'Recorded when nobody on the line could take the call. Playing one marks it heard with your name, so two of you don’t ring the same person back.',
       teamSub: 'Everyone on the lines you answer, line by line, and whether a call would reach them right now. Check it before you step away.',
       groupBy: 'Group by', byTime: 'Time', byLine: 'Line', line: 'Line', allLines: 'All lines',
@@ -87,6 +88,7 @@
       pushOn: 'ดังเมื่อปิดหน้า: เปิด', pushOff: 'ดังเมื่อปิดหน้า: ปิด', pushBlocked: 'การแจ้งเตือนถูกบล็อกในการตั้งค่าเบราว์เซอร์',
       pushIos: 'บน iPhone ให้เพิ่มหน้านี้ไปที่หน้าจอโฮมก่อน (แชร์ แล้วเพิ่มไปยังหน้าจอโฮม)',
       howItWorks: 'วิธีใช้งาน', myHours: 'เวลาทำงาน', tabNew: 'ข้อความใหม่', tabAll: 'ข้อความ', tabCalls: 'สายล่าสุด',
+      tabNewShort: 'ใหม่', tabAllShort: 'ข้อความ', tabCallsShort: 'สาย', tabTeamShort: 'ใครอยู่', moreRinging: 'อีก {n} สายกำลังดัง',
       tabTeam: 'ใครอยู่', vmSub: 'บันทึกไว้เมื่อไม่มีใครรับสายได้ เมื่อเปิดฟังจะขึ้นชื่อคุณ เพื่อไม่ให้โทรกลับคนเดียวกันซ้ำ',
       teamSub: 'ทุกคนในสายที่คุณรับ แยกตามสาย และสายจะถึงเขาได้ตอนนี้หรือไม่ ตรวจดูก่อนออกจากกะ',
       groupBy: 'จัดกลุ่มตาม', byTime: 'เวลา', byLine: 'สาย', line: 'สาย', allLines: 'ทุกสาย',
@@ -140,6 +142,36 @@
   }
 
   /* ----------------------------------------------------------- helpers */
+
+  var SVG = 'http://www.w3.org/2000/svg';
+
+  /** A line icon from a list of SVG path data. */
+  function icon(paths) {
+    var svg = document.createElementNS(SVG, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    paths.forEach(function (d) {
+      var path = document.createElementNS(SVG, 'path');
+      path.setAttribute('d', d);
+      svg.appendChild(path);
+    });
+    return svg;
+  }
+
+  var PHONE_ICON = ['M5 3.5h3.5l1.8 4.4-2.2 1.6a11 11 0 0 0 6.4 6.4l1.6-2.2 4.4 1.8V19a1.6 1.6 0 0 1-1.7 1.6A16.5 16.5 0 0 1 3.4 5.2 1.6 1.6 0 0 1 5 3.5z'];
+  var HANGUP_ICON = ['M3.2 13.6c4.9-4.3 12.7-4.3 17.6 0l-1.9 2.6-3.4-1.3-.4-2.5a11 11 0 0 0-6.2 0l-.4 2.5-3.4 1.3z'];
+
+  /** A round call button: the icon in a circle, the word under it (side by side on a computer). */
+  function callButton(kind, label, paths, onclick) {
+    return el('button', { type: 'button', class: 'callbtn ' + kind, onclick: onclick }, [
+      el('span', { class: 'callbtn-ic' }, [icon(paths)]),
+      el('span', { class: 'callbtn-l', text: label }),
+    ]);
+  }
+
+  function initial(name) {
+    return (String(name || '').trim().charAt(0) || '?').toUpperCase();
+  }
 
   function $(id) { return document.getElementById(id); }
 
@@ -621,17 +653,37 @@
     // One call at a time: while you talk, the server rings someone else.
     if (active) list = [];
     list.forEach(function (call, i) {
-      var first = i === 0;
-      box.appendChild(el('section', { class: 'card ring' + (first ? '' : ' later') }, [
-        el('p', { class: 'eyebrow', text: t('incoming') + ' · ' + call.title + ' · ' + desk(call) }),
-        el('h2', { text: call.caller || t('aGuest') }),
-        call.page ? el('p', { class: 'muted small', text: t('fromPage', { page: call.page }) }) : null,
+      if (i === 0) {
+        box.appendChild(el('section', { class: 'card ring' }, [
+          el('div', { class: 'call-top' }, [
+            el('p', { class: 'eyebrow', text: t('incoming') }),
+            el('span', { class: 'call-avatar ringing', 'aria-hidden': 'true' }, [call.caller ? initial(call.caller) : icon(PHONE_ICON)]),
+            el('h2', { text: call.caller || t('aGuest') }),
+            el('p', { class: 'muted', text: call.title + ' · ' + desk(call) }),
+            call.page ? el('p', { class: 'muted small', text: t('fromPage', { page: call.page }) }) : null,
+            list.length > 1 ? el('p', { class: 'more-ringing', text: t('moreRinging', { n: list.length - 1 }) }) : null,
+          ]),
+          el('div', { class: 'call-actions' }, [
+            callButton('end', t('decline'), HANGUP_ICON, function () { decline(call.id); }),
+            callButton('answer', t('answer'), PHONE_ICON, function () { answer(call); }),
+          ]),
+        ]));
+        return;
+      }
+      box.appendChild(el('section', { class: 'card ring later' }, [
+        el('div', {}, [
+          el('p', { class: 'eyebrow', text: t('incoming') + ' · ' + call.title + ' · ' + desk(call) }),
+          el('h2', { text: call.caller || t('aGuest') }),
+        ]),
         el('div', { class: 'row' }, [
-          el('button', { type: 'button', class: 'btn danger' + (first ? ' round' : ''), text: t('decline'), onclick: function () { decline(call.id); } }),
-          el('button', { type: 'button', class: 'btn answer' + (first ? ' round' : ''), text: t('answer'), onclick: function () { answer(call); } }),
+          el('button', { type: 'button', class: 'btn danger small', text: t('decline'), onclick: function () { decline(call.id); } }),
+          el('button', { type: 'button', class: 'btn answer small', text: t('answer'), onclick: function () { answer(call); } }),
         ]),
       ]));
     });
+    // On a phone the ring and the call cover the page; the page behind
+    // stays still rather than scrolling under a thumb.
+    document.body.dataset.screen = active ? 'call' : list.length ? 'ring' : '';
     ringtone(list.length > 0);
     var brand = PHONE === 'reviewslip' ? t('brandReviewslip') : t('brandVenues');
     document.title = list.length ? '📞 ' + t('incoming') + ' — ' + brand : brand;
@@ -713,11 +765,14 @@
     var a = active;
     $('call').hidden = !a;
     $('duty').hidden = Boolean(a);
+    document.body.dataset.screen = a ? 'call' : Object.keys(rings).length ? 'ring' : '';
     if (!a) return;
+    $('call-avatar').textContent = a.call.caller ? initial(a.call.caller) : '';
+    if (!a.call.caller) $('call-avatar').appendChild(icon(PHONE_ICON));
     $('call-who').textContent = a.call.caller || t('aGuest');
     $('call-line').textContent = a.call.title + ' · ' + desk(a.call);
     $('call-time').textContent = status || (a.since ? clock(Math.round((Date.now() - a.since) / 1000)) : '');
-    $('mute').textContent = a.muted ? t('unmute') : t('mute');
+    $('mute-l').textContent = a.muted ? t('unmute') : t('mute');
     $('mute').setAttribute('aria-pressed', String(a.muted));
   }
 
@@ -940,13 +995,17 @@
   function vmRow(v) {
     var audio = el('audio', { controls: '', preload: 'none', src: withPhone('/api/voice/voicemails/' + v.id + '/audio') });
     audio.addEventListener('play', function () { if (!v.heard) setHeard(v, true); }, { once: true });
-    return el('div', { class: 'hist-row' + (v.heard ? '' : ' is-new') }, [
-      heardTag(v),
-      el('span', {}, [el('span', { class: 'who', text: v.caller || t('aGuest') }), ' · ', lineLabel(v)]),
+    return el('div', { class: 'hist-row item' + (v.heard ? '' : ' is-new') }, [
+      el('div', { class: 'item-top' }, [
+        el('span', { class: 'who', text: v.caller || t('aGuest') }),
+        el('span', { class: 'when', text: when(v.at) }),
+      ]),
+      el('div', { class: 'item-meta' }, [el('span', { class: 'muted', text: lineLabel(v) + ' · ' + clock(v.seconds) }), heardTag(v)]),
       audio,
-      v.contact ? contactLink(v.contact) : el('span', { class: 'muted small', text: t('noContact') }),
-      el('button', { type: 'button', class: 'btn small', text: v.heard ? t('markUnheard') : t('markHeard'), onclick: function () { setHeard(v, !v.heard); } }),
-      el('span', { class: 'when', text: when(v.at) }),
+      el('div', { class: 'item-actions' }, [
+        v.contact ? contactLink(v.contact) : el('span', { class: 'muted small', text: t('noContact') }),
+        el('button', { type: 'button', class: 'btn small', text: v.heard ? t('markUnheard') : t('markHeard'), onclick: function () { setHeard(v, !v.heard); } }),
+      ]),
     ]);
   }
 
@@ -979,12 +1038,16 @@
     var detail = kind === 'answered'
       ? t('answeredBy', { name: c.answeredBy }) + (c.seconds != null ? ' · ' + clock(c.seconds) : '')
       : '';
-    return el('div', { class: 'hist-row' }, [
-      el('span', { class: 'tag ' + (kind === 'voicemail' ? 'voicemail' : kind === 'answered' ? 'answered' : ''), text: t(OUTCOME[kind]) }),
-      el('span', {}, [el('span', { class: 'who', text: c.caller || t('aGuest') }), ' · ', lineLabel(c)]),
-      detail ? el('span', { class: 'muted small', text: detail }) : null,
-      c.page ? el('span', { class: 'muted small', text: c.page }) : null,
-      el('span', { class: 'when', text: when(c.startedAt) }),
+    return el('div', { class: 'hist-row item' }, [
+      el('div', { class: 'item-top' }, [
+        el('span', { class: 'who', text: c.caller || t('aGuest') }),
+        el('span', { class: 'when', text: when(c.startedAt) }),
+      ]),
+      el('div', { class: 'item-meta' }, [
+        el('span', { class: 'muted', text: lineLabel(c) }),
+        el('span', { class: 'tag ' + (kind === 'voicemail' ? 'voicemail' : kind === 'answered' ? 'answered' : ''), text: t(OUTCOME[kind]) }),
+        detail ? el('span', { class: 'muted small', text: detail }) : null,
+      ]),
     ]);
   }
 
@@ -1031,9 +1094,10 @@
           box.appendChild(el('p', { class: 'warn', text: t('nobodyFree') }));
         }
         line.people.forEach(function (p) {
-          box.appendChild(el('div', { class: 'hist-row' }, [
+          box.appendChild(el('div', { class: 'hist-row person' }, [
+            el('span', { class: 'person-avatar', 'aria-hidden': 'true', text: initial(p.name) }),
             el('span', { class: 'who', text: p.name + (p.you ? ' (' + t('you') + ')' : '') }),
-            el('span', { class: 'when' }, [el('span', { class: 'tag ' + p.state, text: t(STATE_WORD[p.state] || 'stOff') })]),
+            el('span', { class: 'tag ' + p.state, text: t(STATE_WORD[p.state] || 'stOff') }),
           ]));
         });
       });
