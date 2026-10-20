@@ -191,6 +191,8 @@ function toRecord(row) {
     // website's own Account type, which declares it. Anything gating on staff
     // access needs this to actually arrive.
     isAdmin: row.is_admin === true,
+    // Staff a venue invited to answer its calls: the phone, and nothing else.
+    phoneOnly: row.phone_only === true,
     createdAt: row.created_at,
   };
 }

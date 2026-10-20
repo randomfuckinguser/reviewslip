@@ -16,19 +16,28 @@ const rules = require('./voicerules');
  *
  * There are two phones, and an agent row is one person on one of them:
  *
- *   venues      a venue's phone: the owner's login (every venue on the
- *               account) and the staff they invite (the venues ticked for them)
+ *   venues      a venue's phone: the owner (every venue on the account) and
+ *               the staff they invite (the venues ticked for them)
  *   reviewslip  Reviewslip's phone: admins, answering Sales and Support
+ *
+ * Everyone signs in the one way, with their Reviewslip account: the phone is
+ * part of the dashboard. Invited staff get an account of their own when they
+ * accept, which opens the phone and nothing else (accounts.phone_only).
  */
 
 const SCOPES = ['venues', 'reviewslip'];
+
+/**
+ * The dashboard's session cookie, set by the website (lib/customer.ts) and
+ * read here too: on reviewslip.com the phone is served beside the dashboard,
+ * so the browser sends it, and the phone needs no sign-in of its own.
+ */
+const SESSION_COOKIE = 'rs_session';
 
 function scopeOf(value) {
   return value === 'reviewslip' ? 'reviewslip' : 'venues';
 }
 
-const SESSION_DAYS = 30;
-const HANDOFF_SECONDS = 120;
 
 function fail(status, message) {
   return Object.assign(new Error(message), { status, expose: true });
@@ -54,7 +63,7 @@ function agentOut(row) {
     scope: row.scope,
     accountId: row.account_id,
     ownerAccountId: row.owner_account_id,
-    invited: !row.account_id && !row.password_hash,
+    invited: !row.account_id,
   };
 }
 
@@ -123,16 +132,15 @@ async function linesFor(agentId) {
       { subscriberId: null, team: 'support', name: 'Reviewslip Support', slug: null },
     ].map(mark);
   }
-  const venues = agent.account_id
-    ? await all(
-        `SELECT id, slug, name FROM subscribers WHERE account_id = $1 AND status = 'active' ORDER BY name`,
-        [agent.account_id]
-      )
-    : await all(
-        `SELECT s.id, s.slug, s.name FROM voice_agent_venues v JOIN subscribers s ON s.id = v.subscriber_id
-          WHERE v.agent_id = $1 AND s.status = 'active' ORDER BY s.name`,
-        [agentId]
-      );
+  // The venues the account owns, and the ones it was invited to answer.
+  const venues = await all(
+    `SELECT id, slug, name FROM subscribers WHERE account_id = $1 AND status = 'active'
+     UNION
+     SELECT s.id, s.slug, s.name FROM voice_agent_venues v JOIN subscribers s ON s.id = v.subscriber_id
+      WHERE v.agent_id = $2 AND s.status = 'active'
+     ORDER BY name`,
+    [agent.account_id, agentId]
+  );
   return venues.map((v) => mark({ subscriberId: v.id, team: null, name: v.name, slug: v.slug }));
 }
 
@@ -211,8 +219,8 @@ async function agentsOn(line) {
   );
   return rows
     .filter((r) => !off.has(r.id))
-    // Invited staff who never set a password cannot sign in to answer.
-    .filter((r) => r.account_id || r.password_hash)
+    // Invited staff who have not accepted yet have no account to answer with.
+    .filter((r) => r.account_id)
     .map((r) => ({
       id: r.id,
       name: r.name,
@@ -227,84 +235,23 @@ async function agentsOn(line) {
 }
 
 /**
- * Reviewslip's own team: every admin who has opened Reviewslip's phone, and
- * which of Sales and Support each is taking.
+ * The person behind a dashboard session, on one phone. An account answers on
+ * the venue phone from the first time it opens it; Reviewslip's is for admins.
+ * Null when signed out, or not allowed on that phone.
  */
-async function adminTeam() {
-  const rows = await all(
-    `SELECT a.* FROM voice_agents a JOIN accounts acc ON acc.id = a.account_id AND acc.is_admin
-      WHERE a.scope = 'reviewslip'
-      ORDER BY lower(a.name)`
-  );
-  const off = await all(
-    `SELECT agent_id, line FROM voice_lines_off WHERE line IN ('sales', 'support') AND agent_id = ANY($1)`,
-    [rows.map((r) => r.id)]
-  );
-  return rows.map((r) => ({
-    ...agentOut(r),
-    sales: !off.some((o) => o.agent_id === r.id && o.line === 'sales'),
-    support: !off.some((o) => o.agent_id === r.id && o.line === 'support'),
-  }));
-}
-
-/* --------------------------------------------------------------- sessions */
-
-async function startSession(agentId, kind = 'session') {
-  const token = newToken();
-  const seconds = kind === 'handoff' ? HANDOFF_SECONDS : SESSION_DAYS * 86400;
-  await query(
-    `INSERT INTO voice_sessions (token_hash, agent_id, kind, expires_at)
-     VALUES ($1, $2, $3, now() + make_interval(secs => $4))`,
-    [hashToken(token), agentId, kind, seconds]
-  );
-  return token;
-}
-
-/** The agent behind a phone session cookie, on that phone, or null. */
-async function fromSession(token, scope = 'venues') {
-  if (!token) return null;
-  const row = await one(
-    `SELECT a.* FROM voice_sessions s JOIN voice_agents a ON a.id = s.agent_id
-      WHERE s.token_hash = $1 AND s.kind = 'session' AND s.expires_at > now() AND a.scope = $2`,
-    [hashToken(token), scopeOf(scope)]
-  );
-  return row ? agentOut(row) : null;
-}
-
-async function endSession(token) {
-  if (token) await query('DELETE FROM voice_sessions WHERE token_hash = $1', [hashToken(token)]);
-}
-
-/** A dashboard handoff, used once, for a session on the phone it was made for. */
-async function exchangeHandoff(token, scope = 'venues') {
-  const row = await one(
-    `DELETE FROM voice_sessions s USING voice_agents a
-      WHERE s.token_hash = $1 AND s.kind = 'handoff' AND s.expires_at > now()
-        AND a.id = s.agent_id AND a.scope = $2
-     RETURNING s.agent_id`,
-    [hashToken(token), scopeOf(scope)]
-  );
-  if (!row) throw fail(401, 'That link has expired. Open the phone again from the dashboard.');
-  return startSession(row.agent_id);
-}
-
-/** Invited staff sign in with the password they set. */
-async function login(email, password) {
-  const row = await one(
-    `SELECT * FROM voice_agents WHERE account_id IS NULL AND scope = 'venues' AND lower(email) = lower($1)`,
-    [String(email || '').trim()]
-  );
-  const ok = row && row.password_hash && (await accounts.verifyPassword(password, row.password_hash));
-  if (!ok) throw fail(401, 'That email and password do not match.');
-  return startSession(row.id);
+async function agentForSession(token, scope = 'venues') {
+  const account = await accounts.fromSession(token);
+  if (!account) return null;
+  if (scopeOf(scope) === 'reviewslip' && !account.is_admin) return null;
+  return forAccount(account, scope);
 }
 
 /* ---------------------------------------------------------------- invites */
 
 /**
  * Adds someone to answer one of the owner's venues, or adds the venue to
- * someone the owner already invited. Returns a fresh invite token when they
- * have yet to set a password, so the caller can email it.
+ * someone the owner already invited. Returns a fresh invite token while they
+ * have yet to accept, so the caller can email it.
  *
  * @returns {Promise<{agent: object, token: string|null}>}
  */
@@ -315,11 +262,11 @@ async function invite(ownerAccountId, subscriberId, input) {
 
   const owner = await one('SELECT email FROM accounts WHERE id = $1', [ownerAccountId]);
   if (owner && owner.email.toLowerCase() === email) {
-    throw fail(400, 'You answer your own venues already: open the phone from this page.');
+    throw fail(400, 'You answer your own venues already: open the Phone from the sidebar.');
   }
 
   let row = await one(
-    'SELECT * FROM voice_agents WHERE account_id IS NULL AND lower(email) = $1',
+    `SELECT * FROM voice_agents WHERE owner_account_id IS NOT NULL AND scope = 'venues' AND lower(email) = $1`,
     [email]
   );
   if (row && row.owner_account_id !== ownerAccountId) {
@@ -335,7 +282,7 @@ async function invite(ownerAccountId, subscriberId, input) {
     'INSERT INTO voice_agent_venues (agent_id, subscriber_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
     [row.id, subscriberId]
   );
-  const token = row.password_hash ? null : await newInvite(row.id);
+  const token = row.account_id ? null : await newInvite(row.id);
   return { agent: agentOut(row), token };
 }
 
@@ -348,18 +295,18 @@ async function newInvite(agentId) {
   return token;
 }
 
-/** A new invite link for staff who have not set a password yet. */
+/** A new invite link for staff who have not accepted yet. */
 async function reinvite(ownerAccountId, agentId) {
   const row = await one(
     'SELECT * FROM voice_agents WHERE id = $1 AND owner_account_id = $2',
     [agentId, ownerAccountId]
   );
   if (!row) throw fail(404, 'No one by that id.');
-  if (row.password_hash) throw fail(409, 'They have signed in already.');
+  if (row.account_id) throw fail(409, 'They have signed in already.');
   return { agent: agentOut(row), token: await newInvite(row.id) };
 }
 
-/** Who an invite is for, for the phone page's set-a-password form. */
+/** Who an invite is for, and whether that address already has an account. */
 async function inviteFor(token) {
   const row = await one(
     `SELECT a.name, a.email, string_agg(s.name, ', ' ORDER BY s.name) AS venues
@@ -371,22 +318,47 @@ async function inviteFor(token) {
     [hashToken(token)]
   );
   if (!row) throw fail(404, 'That invite has expired or was used. Ask for a new one.');
-  return { name: row.name, email: row.email, venues: row.venues || '' };
+  const existing = await one('SELECT id FROM accounts WHERE lower(email) = lower($1)', [row.email]);
+  return { name: row.name, email: row.email, venues: row.venues || '', hasAccount: Boolean(existing) };
 }
 
+/**
+ * Accepting an invite. The token was emailed to the address, so holding it is
+ * holding the address:
+ *
+ *   a new address    becomes a Reviewslip account that opens only the phone,
+ *                    with the password chosen here, and is signed in
+ *   an account       the invite joins it, and they sign in as they always do
+ *
+ * @returns {Promise<{session: {token: string, expiresAt: string}|null}>}
+ */
 async function acceptInvite(token, password) {
-  const check = accounts.checkPassword(password);
-  if (!check.ok) throw fail(400, check.error);
   const row = await one(
-    'SELECT id FROM voice_agents WHERE invite_hash = $1 AND invite_expires > now()',
+    'SELECT * FROM voice_agents WHERE invite_hash = $1 AND invite_expires > now()',
     [hashToken(token)]
   );
   if (!row) throw fail(404, 'That invite has expired or was used. Ask for a new one.');
+
+  const existing = await one('SELECT id FROM accounts WHERE lower(email) = lower($1)', [row.email]);
+  if (existing) {
+    const taken = await one(`SELECT id FROM voice_agents WHERE account_id = $1 AND scope = 'venues'`, [existing.id]);
+    if (taken) {
+      throw fail(409, 'This email already answers calls on Reviewslip. Ask for the invite to go to a different address.');
+    }
+    await query(
+      'UPDATE voice_agents SET account_id = $2, invite_hash = NULL, invite_expires = NULL WHERE id = $1',
+      [row.id, existing.id]
+    );
+    return { session: null };
+  }
+
+  const account = await accounts.create({ email: row.email, password });
+  await query('UPDATE accounts SET phone_only = true WHERE id = $1', [account.id]);
   await query(
-    'UPDATE voice_agents SET password_hash = $2, invite_hash = NULL, invite_expires = NULL WHERE id = $1',
-    [row.id, await accounts.hashPassword(password)]
+    'UPDATE voice_agents SET account_id = $2, password_hash = NULL, invite_hash = NULL, invite_expires = NULL WHERE id = $1',
+    [row.id, account.id]
   );
-  return startSession(row.id);
+  return { session: await accounts.startSession(account.id) };
 }
 
 /** The people an owner invited to answer this venue. */
@@ -399,16 +371,22 @@ async function staffFor(ownerAccountId, subscriberId) {
   return rows.map(agentOut);
 }
 
-/** Takes someone off a venue; with no venue left, their phone login goes too. */
+/**
+ * Takes someone off a venue. With no venue left they stop answering, and an
+ * account that only ever existed for this phone goes too; anyone's own
+ * account stays theirs.
+ */
 async function removeStaff(ownerAccountId, subscriberId, agentId) {
   const row = await one(
-    'SELECT id FROM voice_agents WHERE id = $1 AND owner_account_id = $2',
+    'SELECT id, account_id FROM voice_agents WHERE id = $1 AND owner_account_id = $2',
     [agentId, ownerAccountId]
   );
   if (!row) throw fail(404, 'No one by that id.');
   await query('DELETE FROM voice_agent_venues WHERE agent_id = $1 AND subscriber_id = $2', [agentId, subscriberId]);
   const left = await one('SELECT count(*)::int AS n FROM voice_agent_venues WHERE agent_id = $1', [agentId]);
-  if (!left.n) await query('DELETE FROM voice_agents WHERE id = $1', [agentId]);
+  if (left.n) return;
+  await query('DELETE FROM voice_agents WHERE id = $1', [agentId]);
+  if (row.account_id) await query('DELETE FROM accounts WHERE id = $1 AND phone_only', [row.account_id]);
 }
 
 /* ------------------------------------------------------------------- push */
@@ -605,7 +583,7 @@ async function emailsFor(line) {
     `SELECT acc.email FROM subscribers s JOIN accounts acc ON acc.id = s.account_id WHERE s.id = $1
      UNION
      SELECT a.email FROM voice_agent_venues v JOIN voice_agents a ON a.id = v.agent_id
-      WHERE v.subscriber_id = $1 AND a.password_hash IS NOT NULL`,
+      WHERE v.subscriber_id = $1 AND a.account_id IS NOT NULL`,
     [line.subscriberId]
   );
   return rows.map((r) => r.email);
@@ -627,6 +605,8 @@ async function prune() {
 
 module.exports = {
   SCOPES,
+  SESSION_COOKIE,
+  agentForSession,
   scopeOf,
   byId,
   byAccount,
@@ -637,12 +617,6 @@ module.exports = {
   hoursFor,
   setHours,
   agentsOn,
-  adminTeam,
-  startSession,
-  fromSession,
-  endSession,
-  exchangeHandoff,
-  login,
   invite,
   reinvite,
   inviteFor,

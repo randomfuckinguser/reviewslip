@@ -9,8 +9,12 @@
  *   /phone/reviewslip/  Reviewslip's Sales and Support — admins, from the
  *                       dashboard's Admin, Sales & Support
  *
- * Each has its own sign-in cookie, duty, hours and push, so one browser can
- * keep both open on one login. Every request says which (?phone=).
+ * Signed in with the Reviewslip account, like the dashboard it sits beside:
+ * on reviewslip.com it is served at /phone/, so the browser sends the
+ * dashboard's own session and there is nothing else to sign in to. Staff a
+ * venue invites accept here and get an account that opens only this phone.
+ * Each phone keeps its own duty, hours and push; every request says which
+ * (?phone=).
  *
  * Duty is kept by the server, so a reload, a closed tab or a dropped network
  * never takes anyone off duty — only the button does, or signing out.
@@ -27,11 +31,13 @@
     en: {
       brandVenues: 'Reviewslip Phone', brandReviewslip: 'Reviewslip · Sales & Support', menu: 'Menu',
       signOut: 'Sign out', signInTitle: 'Sign in to answer calls',
-      signInNote: 'Staff a venue invited sign in here. Venue owners open the phone from their dashboard.',
-      rsTitle: 'Sales & Support phone', rsNote: 'Open this phone from the dashboard: Admin, Sales & Support. It signs you in.',
-      openDashboard: 'Open the dashboard', email: 'Email', password: 'Password', signIn: 'Sign in',
+      signInNote: 'The phone uses your Reviewslip sign-in. Sign in, and you come straight back here.',
+      rsTitle: 'Sales & Support phone', rsNote: 'For Reviewslip admins. Sign in with your Reviewslip account and you come straight back here.',
+      openDashboard: 'Sign in to Reviewslip', email: 'Email', password: 'Password', signIn: 'Sign in',
       newPassword: 'Choose a password', start: 'Start answering calls', inviteTitle: 'Hello {name}',
-      inviteNote: 'Set a password to answer calls for {venues}.', expired: 'Your sign-in has ended. Sign in again.',
+      inviteNote: 'Choose a password to answer calls for {venues}. It is your Reviewslip sign-in from now on.',
+      inviteHasAccount: 'You already have a Reviewslip account with this email. Accept, then sign in as you always do.',
+      inviteAccept: 'Accept and sign in', expired: 'Your sign-in has ended. Sign in again.',
       tapForSound: 'Tap to turn the ringtone on', mute: 'Mute', unmute: 'Unmute', hangUp: 'Hang up', inCall: 'In a call',
       goOn: 'Go on duty', goOff: 'Go off duty', offDuty: 'Off duty', onDuty: 'On duty', connecting: 'Connecting…',
       reconnecting: 'Reconnecting…', outside: 'Off duty — outside your hours',
@@ -72,11 +78,13 @@
     th: {
       brandVenues: 'Reviewslip Phone', brandReviewslip: 'Reviewslip · ฝ่ายขายและบริการลูกค้า', menu: 'เมนู',
       signOut: 'ออกจากระบบ', signInTitle: 'เข้าสู่ระบบเพื่อรับสาย',
-      signInNote: 'พนักงานที่ได้รับเชิญเข้าสู่ระบบที่นี่ เจ้าของที่พักเปิดโทรศัพท์จากแดชบอร์ด',
-      rsTitle: 'โทรศัพท์ฝ่ายขายและบริการลูกค้า', rsNote: 'เปิดโทรศัพท์นี้จากแดชบอร์ด: Admin › Sales & Support ระบบจะเข้าสู่ระบบให้',
-      openDashboard: 'เปิดแดชบอร์ด', email: 'อีเมล', password: 'รหัสผ่าน', signIn: 'เข้าสู่ระบบ',
+      signInNote: 'โทรศัพท์ใช้บัญชี Reviewslip ของคุณ เข้าสู่ระบบแล้วจะกลับมาที่นี่ทันที',
+      rsTitle: 'โทรศัพท์ฝ่ายขายและบริการลูกค้า', rsNote: 'สำหรับผู้ดูแล Reviewslip เข้าสู่ระบบด้วยบัญชี Reviewslip แล้วจะกลับมาที่นี่ทันที',
+      openDashboard: 'เข้าสู่ระบบ Reviewslip', email: 'อีเมล', password: 'รหัสผ่าน', signIn: 'เข้าสู่ระบบ',
       newPassword: 'ตั้งรหัสผ่าน', start: 'เริ่มรับสาย', inviteTitle: 'สวัสดี {name}',
-      inviteNote: 'ตั้งรหัสผ่านเพื่อรับสายของ {venues}', expired: 'หมดเวลาเข้าสู่ระบบ โปรดเข้าสู่ระบบอีกครั้ง',
+      inviteNote: 'ตั้งรหัสผ่านเพื่อรับสายของ {venues} ใช้เป็นรหัสเข้าสู่ระบบ Reviewslip ของคุณต่อจากนี้',
+      inviteHasAccount: 'อีเมลนี้มีบัญชี Reviewslip อยู่แล้ว กดยอมรับ แล้วเข้าสู่ระบบตามปกติ',
+      inviteAccept: 'ยอมรับและเข้าสู่ระบบ', expired: 'หมดเวลาเข้าสู่ระบบ โปรดเข้าสู่ระบบอีกครั้ง',
       tapForSound: 'แตะเพื่อเปิดเสียงเรียกเข้า', mute: 'ปิดไมค์', unmute: 'เปิดไมค์', hangUp: 'วางสาย', inCall: 'กำลังสนทนา',
       goOn: 'เริ่มเข้ากะ', goOff: 'ออกจากกะ', offDuty: 'ไม่อยู่ในกะ', onDuty: 'อยู่ในกะ', connecting: 'กำลังเชื่อมต่อ…',
       reconnecting: 'กำลังเชื่อมต่อใหม่…', outside: 'ไม่อยู่ในกะ — นอกเวลาทำงาน',
@@ -204,7 +212,7 @@
       cache: 'no-store',
     }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (d) {
-        if (r.status === 401 && ['/login', '/handoff', '/invite'].indexOf(path.split('?')[0]) === -1) {
+        if (r.status === 401 && path.split('?')[0] !== '/invite') {
           showLogin(t('expired'));
           throw new Error(t('expired'));
         }
@@ -257,6 +265,7 @@
 
   var me = null;
   var site = '';
+  var wsBase = '';
   var ws = null;
   var wsTries = 0;
   var wsTimer = null;
@@ -330,25 +339,13 @@
     var rs = PHONE === 'reviewslip';
     $('login-title').textContent = rs ? t('rsTitle') : t('signInTitle');
     $('login-note').textContent = rs ? t('rsNote') : t('signInNote');
-    $('login-form').hidden = rs;
     var link = $('login-dashboard');
-    link.hidden = !site;
     link.textContent = t('openDashboard');
-    if (site) link.href = site + (rs ? '/dashboard/calls' : '/dashboard');
-    var err = $(rs ? 'login-only-error' : 'login-error');
+    link.href = (site || '') + '/login?next=' + encodeURIComponent(BASE);
+    var err = $('login-error');
     err.textContent = message || '';
     err.hidden = !message;
   }
-
-  $('login-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var form = e.target;
-    var err = $('login-error');
-    err.hidden = true;
-    api('/login', { method: 'POST', body: { email: form.email.value, password: form.password.value } })
-      .then(load)
-      .catch(function (x) { err.textContent = x.message; err.hidden = false; });
-  });
 
   var inviteToken = '';
   $('invite-form').addEventListener('submit', function (e) {
@@ -356,7 +353,7 @@
     var err = $('invite-error');
     err.hidden = true;
     api('/invite', { method: 'POST', body: { token: inviteToken, password: e.target.password.value } })
-      .then(load)
+      .then(function (d) { return d.signedIn ? load() : showLogin(); })
       .catch(function (x) { err.textContent = x.message; err.hidden = false; });
   });
 
@@ -395,7 +392,9 @@
     if (active && !window.confirm(t('confirmSignOut'))) return;
     endCall(true);
     closeMenu();
-    api('/logout', { method: 'POST' }).catch(function () {}).then(function () { showLogin(); });
+    fetch('/api/auth', { method: 'DELETE', credentials: 'same-origin' })
+      .catch(function () {})
+      .then(function () { showLogin(); });
   }
   $('m-signout').addEventListener('click', signOut);
   $('foot-signout').addEventListener('click', signOut);
@@ -551,7 +550,7 @@
   function startSocket() {
     if (ws && ws.readyState <= 1) return;
     clearTimeout(wsTimer);
-    ws = new WebSocket(location.origin.replace(/^http/, 'ws') + '/api/voice/ws?as=agent&phone=' + PHONE);
+    ws = new WebSocket((wsBase || location.origin.replace(/^http/, 'ws')) + '/api/voice/ws?as=agent&phone=' + PHONE);
     paintDuty();
     ws.onopen = function () {
       wsTries = 0;
@@ -1175,21 +1174,25 @@
 
   fetch('/api/voice/config', { cache: 'no-store' })
     .then(function (r) { return r.json(); })
-    .then(function (d) { site = String(d.siteUrl || ''); })
+    .then(function (d) {
+      site = String(d.siteUrl || '');
+      wsBase = String(d.ws || '');
+    })
     .catch(function () {})
     .then(function () {
-      if (hash.get('handoff')) {
-        api('/handoff', { method: 'POST', body: { token: hash.get('handoff') } })
-          .then(load)
-          .catch(function (x) { showLogin(x.message); });
-      } else if (hash.get('invite') && PHONE === 'venues') {
+      if (hash.get('invite') && PHONE === 'venues') {
         inviteToken = hash.get('invite');
         api('/invite?token=' + encodeURIComponent(inviteToken))
           .then(function (inv) {
             show('view-invite');
             $('invite-title').textContent = t('inviteTitle', { name: inv.name });
-            $('invite-note').textContent = t('inviteNote', { venues: inv.venues || '' });
+            $('invite-note').textContent = inv.hasAccount ? t('inviteHasAccount') : t('inviteNote', { venues: inv.venues || '' });
             $('invite-email').value = inv.email;
+            // An existing account keeps its password; there is nothing to choose.
+            var pw = $('invite-form').password;
+            pw.closest('label').hidden = inv.hasAccount;
+            pw.required = !inv.hasAccount;
+            $('invite-submit').textContent = inv.hasAccount ? t('inviteAccept') : t('start');
           })
           .catch(function (x) { showLogin(x.message); });
       } else {

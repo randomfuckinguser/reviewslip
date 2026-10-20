@@ -59,14 +59,8 @@
       <section class="card narrow" id="view-login" hidden>
         <h1 id="login-title"></h1>
         <p class="muted" id="login-note"></p>
-        <form id="login-form" class="form">
-          <label class="field"><span data-t="email">Email</span><input name="email" type="email" autocomplete="username" required /></label>
-          <label class="field"><span data-t="password">Password</span><input name="password" type="password" autocomplete="current-password" required /></label>
-          <p class="error" id="login-error" role="alert" hidden></p>
-          <button class="btn primary" type="submit" data-t="signIn">Sign in</button>
-        </form>
-        <p class="error" id="login-only-error" role="alert" hidden></p>
-        <a class="btn" id="login-dashboard" hidden></a>
+        <p class="error" id="login-error" role="alert" hidden></p>
+        <a class="btn primary big" id="login-dashboard"></a>
       </section>
 
       <!-- Invite: set a password -->
@@ -77,7 +71,7 @@
           <label class="field"><span data-t="email">Email</span><input id="invite-email" type="email" autocomplete="username" readonly /></label>
           <label class="field"><span data-t="newPassword">Choose a password</span><input name="password" type="password" autocomplete="new-password" minlength="8" required /></label>
           <p class="error" id="invite-error" role="alert" hidden></p>
-          <button class="btn primary" type="submit" data-t="start">Start answering calls</button>
+          <button class="btn primary" type="submit" id="invite-submit" data-t="start">Start answering calls</button>
         </form>
       </section>
 

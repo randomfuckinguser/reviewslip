@@ -8,6 +8,7 @@ const rules = require('./voicerules');
 const emails = require('./emails');
 const mailer = require('./mailer');
 const { throttled } = require('./throttle');
+const { BASE_DOMAIN } = require('./tenant');
 
 /**
  * The softphone's HTTP side, at /api/voice. The ringing itself is a WebSocket
@@ -19,41 +20,42 @@ const { throttled } = require('./throttle');
  *     origin and uncredentialed: they say only whether a line can be called,
  *     and take a message for a call that just went unanswered.
  *
- *   The phone pages on this host   everything else — the phone's cookie,
- *     and only from the page's own origin. Two phones: /phone/ for venues
- *     and /phone/reviewslip/ for Sales and Support. Each request says which
- *     with ?phone=, and each phone has its own cookie (voicehub.COOKIES), so
- *     one browser can keep both open on one login.
+ *   The phone pages   everything else — the dashboard's own session cookie,
+ *     from Reviewslip's pages only. On reviewslip.com nginx serves /phone/ and
+ *     /api/voice/ from this app beside the dashboard, so the browser sends the
+ *     cookie it signed in with and there is no second sign-in. Two phones:
+ *     /phone/ for venues and /phone/reviewslip/ for Sales and Support; each
+ *     request says which with ?phone=.
  *
  * Mounted before the tenant resolver: the phone answers for every venue.
  */
 
 const router = express.Router();
 
-const COOKIE_DAYS = 30;
 const secureCookies = hub.VOICE_URL.startsWith('https:');
 
 function phoneOf(req) {
   return voice.scopeOf(req.query.phone);
 }
 
-function setCookie(req, res, token) {
-  res.cookie(hub.COOKIES[phoneOf(req)], token, {
-    httpOnly: true,
-    secure: secureCookies,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: COOKIE_DAYS * 86400 * 1000,
-  });
-}
-
-function cookieOf(req) {
-  const name = hub.COOKIES[phoneOf(req)];
+function cookieOf(req, name = voice.SESSION_COOKIE) {
   for (const part of String(req.headers.cookie || '').split(';')) {
     const [k, ...v] = part.trim().split('=');
     if (k === name) return decodeURIComponent(v.join('='));
   }
   return '';
+}
+
+/**
+ * Signs a newly made account in, exactly as the website's own sign-in does
+ * (lib/customer.ts setSessionCookie): the session, and the readable "someone
+ * is signed in" flag the site's nav reads.
+ */
+function signIn(res, session) {
+  const maxAge = Math.max(0, new Date(session.expiresAt).getTime() - Date.now());
+  const base = { secure: secureCookies, sameSite: 'lax', path: '/', maxAge };
+  res.cookie(voice.SESSION_COOKIE, session.token, { ...base, httpOnly: true });
+  res.cookie('rs_signed_in', '1', { ...base, httpOnly: false });
 }
 
 function sendError(res, err) {
@@ -122,34 +124,37 @@ const SITE = String(
   process.env.SITE_URL || (hub.VOICE_URL.startsWith('http://localhost') ? 'http://localhost:3001' : 'https://reviewslip.com')
 ).replace(/\/$/, '');
 
+/**
+ * Where the phone page finds things. ws is the call socket: blank means the
+ * page's own address (reviewslip.com, through nginx); locally the website and
+ * this app are two ports, and the socket goes straight here — the browser
+ * sends the same cookie, which knows no ports.
+ */
 router.get('/config', (req, res) => {
   res.set('Cache-Control', 'no-store');
-  res.json({ siteUrl: SITE });
+  const local = hub.VOICE_URL.startsWith('http://localhost');
+  res.json({ siteUrl: SITE, ws: process.env.VOICE_PHONE_WS || (local ? hub.VOICE_URL.replace(/^http/, 'ws') : '') });
 });
 
 /**
- * The phone page's own origin only. The cookie is SameSite=Lax, which already
- * keeps other sites' POSTs from carrying it; this holds for a browser that
- * gets SameSite wrong.
+ * Reviewslip's own pages only. The session cookie is SameSite=Lax, which
+ * already keeps other sites' POSTs from carrying it; this holds for a browser
+ * that gets SameSite wrong.
  */
-function sameOrigin(req, res, next) {
+function ourPages(req, res, next) {
   if (req.method === 'GET' || req.method === 'HEAD') return next();
   const origin = req.get('origin');
-  if (origin) {
-    try {
-      if (new URL(origin).host !== req.get('host')) return res.status(403).json({ error: 'Not from here.' });
-    } catch {
-      return res.status(403).json({ error: 'Not from here.' });
-    }
+  if (origin && !rules.originAllowed(origin, { baseDomain: BASE_DOMAIN })) {
+    return res.status(403).json({ error: 'Not from here.' });
   }
   next();
 }
 
-router.use(sameOrigin);
+router.use(ourPages);
 
 async function requireAgent(req, res, next) {
   try {
-    const agent = await voice.fromSession(cookieOf(req), phoneOf(req));
+    const agent = await voice.agentForSession(cookieOf(req), phoneOf(req));
     if (!agent) return res.status(401).json({ error: 'Sign in first.' });
     req.agent = agent;
     next();
@@ -157,34 +162,6 @@ async function requireAgent(req, res, next) {
     next(err);
   }
 }
-
-router.post('/login', async (req, res) => {
-  if (throttled(`voice-login:${req.ip}`, { max: 8 })) {
-    return res.status(429).json({ error: 'Too many tries. Wait a minute.' });
-  }
-  if (phoneOf(req) !== 'venues') {
-    return res.status(400).json({ error: 'Open this phone from the dashboard: Admin, Sales & Support.' });
-  }
-  try {
-    setCookie(req, res, await voice.login(req.body?.email, req.body?.password));
-    res.json({ ok: true });
-  } catch (err) {
-    sendError(res, err);
-  }
-});
-
-/** From the dashboard's Open the phone: a one-time token for a session. */
-router.post('/handoff', async (req, res) => {
-  if (throttled(`voice-login:${req.ip}`, { max: 8 })) {
-    return res.status(429).json({ error: 'Too many tries. Wait a minute.' });
-  }
-  try {
-    setCookie(req, res, await voice.exchangeHandoff(String(req.body?.token || ''), phoneOf(req)));
-    res.json({ ok: true });
-  } catch (err) {
-    sendError(res, err);
-  }
-});
 
 router.get('/invite', async (req, res) => {
   try {
@@ -199,18 +176,14 @@ router.post('/invite', async (req, res) => {
     return res.status(429).json({ error: 'Too many tries. Wait a minute.' });
   }
   try {
-    setCookie(req, res, await voice.acceptInvite(String(req.body?.token || ''), req.body?.password));
+    const { session } = await voice.acceptInvite(String(req.body?.token || ''), req.body?.password);
+    // A new account is signed in here; an existing one signs in as it always does.
+    if (session) signIn(res, session);
     hub.changed();
-    res.json({ ok: true });
+    res.json({ ok: true, signedIn: Boolean(session) });
   } catch (err) {
     sendError(res, err);
   }
-});
-
-router.post('/logout', async (req, res) => {
-  await voice.endSession(cookieOf(req)).catch(() => {});
-  res.clearCookie(hub.COOKIES[phoneOf(req)], { path: '/' });
-  res.json({ ok: true });
 });
 
 router.get('/me', requireAgent, async (req, res) => {

@@ -418,11 +418,13 @@ app.get('/api/welcome', requireTenant, (req, res) => {
     venue: req.subscriber.name,
     hasLogo: Boolean(resolved.theme?.logo),
     showName: theme.showsName(resolved.theme),
-    // No call tile: calls go through the Vibe Crafted portal softphone, which
-    // takes one website per site — reviewslip.com — and this page is on the
-    // venue's own address. The venue's own phone tile is the way to call.
-    // (Reviewslip's own phone is kept but unused; voiceLine turns its tile on.)
-    voiceLine: '',
+    // The venue's line on the softphone. The call tile shows only once the
+    // line answers its status check, so a venue nobody answers for keeps its
+    // phone number tile alone.
+    voiceLine: req.subscriber.slug,
+    // Where the call tile rings through: the API's host, which is the one
+    // nginx passes WebSockets for — not every venue's.
+    voiceApi: voicehub.VOICE_URL,
   });
 });
 

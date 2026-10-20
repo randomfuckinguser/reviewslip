@@ -1,37 +1,14 @@
-# Calls: through the Vibe Crafted portal softphone
+# Calls: Reviewslip's own softphone
 
-**Since 2026-10-20 every call button on reviewslip.com rings the Vibe Crafted portal softphone**, where
-our team already works — one phone, one sign-in, nothing new to log in to. All of them ring one portal
-site, key `reviewslip` (`PORTAL_VOICE_SITE` in the website's `lib/site.ts`), and our team answers for the
-venues too.
+Built 2026-10-15; under the dashboard's own sign-in since 2026-10-20. Guests press **Call** and talk
+to a venue's desk in the browser; customers press **Call Sales** or **Call Support** and talk to
+Reviewslip. When nobody is free the caller leaves a voice message. No phone numbers, no SIP, no
+per-minute cost: audio goes browser to browser over WebRTC, and the review app only rings.
 
-| Page | Portal list | Button | The person answering sees |
-|---|---|---|---|
-| Marketplace venue page, "Book directly" box | Sales | Call Reservations | Guest · *venue* |
-| Marketplace booking page (Manage Booking) | Support | Call Reservations | *guest* · *reference* · *venue* |
-| Website Contact page | Sales | Call Sales | — |
-| Dashboard Support page | Support | Call Support | the account's email |
-
-The website's `components/VoiceCall.tsx` loads the portal's `voice-widget.js` once and renders
-`data-voice-call` buttons; the venue's phone link stays beside each as the fallback, and shows instead
-whenever the portal says nobody answers (or the browser cannot call).
-
-**The Guest App has no call tile.** It runs on each venue's own address (`<venue>.reviewslip.com`), and a
-portal site takes calls from one website only — reviewslip.com. Guests there use the venue's phone tile.
-
-**Setting it up — in the portal, nowhere else.** Portal admin → **Calls** → **Websites**: key
-`reviewslip`, origin `https://reviewslip.com` exactly. Then **Agents**: tick who answers Sales and Support
-on it, with hours (a list with no hours never opens). Until the site exists, every call button stays
-hidden and the phone links show.
-
----
-
-## Reviewslip's own softphone (kept, unused)
-
-Everything below describes the softphone built 2026-10-15 to 10-18: the venue phone page, Calls in the
-dashboard, staff invites, the call hub. It still runs in the review app, but nothing on the website links
-to it or rings it. Its call button script binds `data-rs-call`, so it would never fight the portal's
-widget if it came back.
+**One sign-in.** The phone is part of the dashboard: **Phone** in the sidebar, at `reviewslip.com/phone/`.
+It uses the same Reviewslip account and session as the dashboard, so there is nothing else to log in to.
+Staff a venue invites become Reviewslip accounts that open only the phone. Nothing here depends on the
+Vibe Crafted portal.
 
 ## Where the buttons are
 
@@ -40,39 +17,39 @@ widget if it came back.
 | Marketplace venue page, "Book directly" box | the venue | Call Reservations |
 | Marketplace booking page (Manage Booking) | the venue | Call Reservations — the guest's name and reference go to whoever answers |
 | Guest App tiles (`/welcome`) | the venue | Call Front Desk, or the venue's own phone tile — with the guest's name |
-| Website Contact page | the portal, site `reviewslip`, Sales | Call Sales |
-| Dashboard Support page | the portal, site `reviewslip`, Support | Call Support — with the account's email |
+| Website Contact page | Reviewslip, Sales | Call Sales |
+| Dashboard Support page | Reviewslip, Support | Call Support — with the account's email |
 
 A button shows only while its line can answer or take a message (**open** / **voicemail**). With
 nobody answering at all (**off**) it stays hidden and the phone link beside it is what the guest gets.
 
-## Two widgets, one attribute each
+## Two phones, one sign-in
 
-Reviewslip's widget binds `data-rs-call`; the portal's binds `data-voice-call`. Both listen for clicks
-on the whole document, and the website navigates without reloading, so a shared attribute would let a
-visitor who had seen the Contact page start two calls from one venue button. A `data-voice-call` button
-that names a venue (`data-voice-line`) is still taken by ours, for pages written before.
+| | Venue phone | Reviewslip's phone |
+|---|---|---|
+| Address | `reviewslip.com/phone/` | `reviewslip.com/phone/reviewslip/` |
+| In the sidebar | *Phone*, under the venue | *Sales & Support Phone*, under Admin |
+| Rings for | the account's venues, and any venue it was invited to answer | Call Sales and Call Support |
+| Who | the venue's owner, staff it invites | admin accounts only |
 
-**The portal must know the site.** In the portal's admin → Calls → Websites: key `reviewslip`, origin
-`https://reviewslip.com` (exactly; a site has one origin), then tick our team onto its Sales and Support
-lists with hours. Until then Call Sales and Call Support stay hidden. Set `NEXT_PUBLIC_PORTAL_VOICE_SITE`
-at build time if the key is different.
-
-**The venue phone** is `/phone/`, opened from Dashboard → a venue → *Calls* → **Open the Phone**. It rings
-for the account's venues, or for invited staff, the venues ticked for them.
-
-*Dormant:* the review app still holds the Sales and Support phone built on 2026-10-18
-(`/phone/reviewslip/`, `voice_agents.scope = 'reviewslip'`, migration 36). Nothing on the website opens
-it or rings it any more.
+An owner who is also an admin has one of each. They never mix: separate duty, hours and push, so the
+front desk can be on duty while the office phone is off. Under the hood an answerer row (`voice_agents`)
+is one person on one phone (`scope` is `venues` or `reviewslip`, migration 36).
 
 ## Who answers
 
-- **A venue's own login.** Dashboard → *Calls* → **Open the Phone**. The first time makes them an
-  answerer for every venue on the account.
-- **Staff the owner invites.** Dashboard → *Calls* → *Who Answers* → name and email. They get an
-  email to set a password (or the owner gets the link, without email set up) and sign in on the phone
-  page only. They answer that venue, nothing else, and never see the dashboard. One phone login per
-  email address.
+- **The venue's owner** opens *Phone* from the sidebar. The first time makes them an answerer for
+  every venue on the account.
+- **Staff the owner invites.** Dashboard → *Calls* → *Who Answers* → name and email. They get an email
+  (or the owner gets the link, without email set up). Opening it at `/phone/#invite=…`:
+  - a new address chooses a password and becomes a Reviewslip account that opens **only the phone**
+    (`accounts.phone_only`); they are signed in there and then, and sign in later on reviewslip.com
+    like anyone else — the dashboard sends them straight to the phone;
+  - an address that already has a Reviewslip account accepts, then signs in as usual.
+
+  Removing someone from their last venue removes their phone-only account too; anyone's own account
+  stays theirs.
+- **Reviewslip's team.** Every admin account answers Sales and Support on *Sales & Support Phone*.
 
 On a phone each person:
 
@@ -84,11 +61,10 @@ On a phone each person:
   Outside them the card reads *Off duty — outside your hours* and callers are offered a message; it comes
   back on by itself when they start. No hours means whenever on duty.
 
-The page, after the Vibe Crafted portal's phone: the duty state as one big pill, **How this works**
-written into the page, and four tabs — **New messages**, **Messages** (both with *Group by* Time or Line,
-and one line at a time), **Recent calls**, and **Who's on**: everyone on your lines and whether a call
-would reach them now (available, on a call, outside hours, phone closed, off duty), refreshed every 30
-seconds while open.
+The page: the duty state as one big pill, **How this works** written into the page, and four tabs —
+**New messages**, **Messages** (both with *Group by* Time or Line, and one line at a time), **Recent
+calls**, and **Who's on**: everyone on your lines and whether a call would reach them now. On a phone, a
+bottom tab bar, and a ringing or live call takes the whole screen.
 
 ## What happens on a call
 
@@ -101,27 +77,30 @@ seconds while open.
    was free to begin with: the caller is offered a voice message — up to 2 minutes, with a name and a
    number or email for a call back.
 5. A voicemail emails everyone on that venue's line (Reviewslip's go to `MAIL_SUPPORT`) and appears
-   under *Voicemail* on the phone. The first person to play it marks it **Heard by** them, so two
+   under *Messages* on the phone. The first person to play it marks it **Heard by** them, so two
    people don't ring the same guest back; **Mark unheard** hands it back.
 
 ## The pieces
 
 | | |
 |---|---|
-| `voicerules.js` | Pure, tested: lines, hours, line status, allowed origins, voicemail and invite checks |
-| `voice.js` | Storage: answerers, sessions, hours, push subscriptions, calls, voicemails |
+| `voicerules.js` | Pure, tested: lines, hours, line status, who's on, allowed origins, voicemail and invite checks |
+| `voice.js` | Storage: answerers, the agent behind a dashboard session, invites, hours, push, calls, voicemails |
 | `voicehub.js` | The WebSocket: ringing, first answer wins, signalling relay, push, timeouts |
-| `voicerouter.js` | `/api/voice`: button status and voicemail (open to any origin, no credentials); the phone page's API (the `rs_phone` cookie, same origin only) |
-| `public/voice-call.js` | The call button widget, 11 languages |
-| `public/phone/` | The phone page (both phones), its service worker (push) and manifest; `reviewslip/` holds the Sales and Support phone's own manifest and worker |
-| `customer.js` | Open the Phone (one-time handoff), Who Answers, Admin's Reviewslip lines |
-| Website | `components/VoiceCall.tsx`, `app/api/phone/route.ts` (`?phone=reviewslip` for Reviewslip's), `dashboard/[slug]/calls`, `dashboard/calls` |
-| `db.js` migrations 35, 36 | `voice_agents`, `voice_agent_venues`, `voice_lines_off`, `voice_hours`, `voice_push`, `voice_sessions`, `voice_calls`, `voice_voicemails` |
+| `voicerouter.js` | `/api/voice`: button status and voicemail (open to any origin, no credentials); the phone page's API (the dashboard's `rs_session` cookie, Reviewslip's pages only); accepting an invite |
+| `public/voice-call.js` | The call button widget (`data-rs-call`), 11 languages |
+| `public/phone/` | The phone page (both phones), its service worker and manifest; `reviewslip/` holds the Sales and Support phone's own manifest and worker |
+| `customer.js` | Who Answers (invite, resend, remove) |
+| Website | `components/VoiceCall.tsx`; `dashboard/[slug]/calls` (Who Answers); the sidebar's *Phone* links; `next.config.ts` rewrites and `proxy.ts` leave `/phone` and `/api/voice` to the review app; sign-in honours `?next=`; the dashboard sends phone-only accounts to `/phone/` |
+| `db.js` migrations 35–37 | the `voice_*` tables; `scope` (36); `accounts.phone_only` (37) |
 
-The phone pages live on the review app's host (`VOICE_URL`, by default `https://api.reviewslip.com`),
-so they share an origin with their socket and service workers. The dashboard reaches them through
-`/api/phone`, which trades the website session for a one-time token in the URL's fragment, made for one
-phone and refused by the other.
+**How the sign-in is shared.** The website keeps the session in an httpOnly `rs_session` cookie on
+reviewslip.com. nginx serves `/phone/` and `/api/voice/` on reviewslip.com from the review app, so the
+browser sends that cookie with every phone request and the review app looks the session up itself.
+Accepting an invite signs a new account in by setting the same cookies the website's sign-in sets.
+Locally the website (3001) forwards `/phone` and `/api/voice` to the review app (3000), and the call
+socket goes to 3000 directly (`/api/voice/config` says where); cookies ignore ports, so the session
+still arrives.
 
 **One process.** Ringing state is in memory. The review app runs as one process; two would each
 ring only their own pages. A restart drops calls in progress (both pages say so) and phone pages
@@ -134,22 +113,38 @@ reconnect on their own.
 - Calls are accepted only from Reviewslip's own pages: `reviewslip.com`, its venue subdomains, and
   any origin in `VOICE_ORIGINS`. Booking pages embedded on other websites are served from
   reviewslip.com, so their calls are too.
-- Each phone's socket and API take that phone's cookie (`rs_phone` or `rs_phone_rs`; httpOnly,
-  SameSite=Lax, 30 days) only from the phone page's own origin. Invited staff's passwords open the venue
-  phone only.
-- Handoff and invite tokens travel in the fragment, are hashed at rest, and work once (handoff: two
-  minutes; invite: 14 days).
-- Throttles: 6 calls a minute per address, 4 voicemails a minute, 8 sign-in attempts a minute.
+- The phone's API and socket take the dashboard's session only from Reviewslip's pages; the cookie is
+  httpOnly and SameSite=Lax. Reviewslip's phone refuses accounts that are not admins.
+- Phone-only accounts reach no dashboard screen: the dashboard sends them to the phone, and they own
+  no venue, so the customer API has nothing of theirs to show.
+- Invite tokens travel in the URL's fragment, are hashed at rest, and work once, for 14 days.
+- Sign-in's `?next=` only ever goes to a path on reviewslip.com.
+- Throttles: 6 calls a minute per address, 4 voicemails a minute, 8 invite attempts a minute.
 - The page a call came from is kept as a path only: a booking page's `?k=` key never reaches the
   person answering or the database.
 - Voicemails older than 180 days are deleted with their calls.
 
 ## Setting it up on the server
 
-1. **Deploy** the review app (it installs `ws` and `web-push`) and restart. Migration 35 runs on boot.
-2. **nginx must pass WebSockets** for the API host. In the `server` block for `api.reviewslip.com`:
+1. **Deploy** the review app, then the website. Migrations run on the review app's boot.
+2. **nginx, the reviewslip.com server block** (the one that sends everything else to :3001): add,
+   above its `location / {`,
 
    ```
+   location /phone/ {
+       proxy_pass http://127.0.0.1:3000;
+       include snippets/reviewslip-proxy.conf;
+   }
+
+   location = /phone {
+       return 301 /phone/;
+   }
+
+   location /api/voice/ {
+       proxy_pass http://127.0.0.1:3000;
+       include snippets/reviewslip-proxy.conf;
+   }
+
    location /api/voice/ws {
        proxy_pass http://127.0.0.1:3000;
        proxy_http_version 1.1;
@@ -162,21 +157,22 @@ reconnect on their own.
    }
    ```
 
-   Then `sudo nginx -t && sudo systemctl reload nginx`. The page pings every 25 seconds, so the
-   timeout only has to be longer than that.
+   Then `sudo nginx -t && sudo systemctl reload nginx`. The `*.reviewslip.com` block keeps its own
+   `/api/voice/ws` location: call buttons ring through `api.reviewslip.com`.
 3. **Push keys**, once: `cd /opt/reviewslip && (echo; node scripts/vapid-keys.js) >> .env`, then
-   restart. Without them everything works except ringing a phone whose page is closed (the phone
-   page hides that option).
+   restart. Without them everything works except ringing a phone whose page is closed.
 4. Optional: **TURN** for callers on strict mobile networks that cannot connect directly. Run coturn
-   with `use-auth-secret` and set `TURN_URLS` and `TURN_SECRET`. Without it most calls connect; the
-   ones that cannot show "The call could not connect" with the phone number.
+   with `use-auth-secret` and set `TURN_URLS` and `TURN_SECRET`.
 
 ## Checking it
 
 ```
+curl -s -o /dev/null -w '%{http_code}\n' https://reviewslip.com/phone/
+# 200: nginx sends the phone to the review app
 curl -s 'https://api.reviewslip.com/api/voice/status?line=reviewslip&team=sales'
 # {"status":"off"} until an admin opens the phone; "open" while one is on duty
 ```
 
-Open the phone from the dashboard, go on duty, and press Call on your venue's page from another
-device. On an iPhone, ringing with the page closed needs the phone page added to the Home Screen.
+Sign in on reviewslip.com, choose **Phone** in the sidebar, go on duty, and press Call on your venue's
+page from another device. On an iPhone, ringing with the page closed needs the phone added to the Home
+Screen.

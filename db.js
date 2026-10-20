@@ -1372,6 +1372,17 @@ const MIGRATIONS = [
     );
     await c.query(`DELETE FROM voice_lines_off WHERE line IN ('sales', 'support')`);
   },
+
+  /*
+   * The phone under the dashboard's own sign-in. Staff a venue invites become
+   * real accounts that can open nothing but the phone (phone_only), and their
+   * agent row carries both their account and the owner who invited them — so
+   * the old "one or the other" check goes.
+   */
+  async (c) => {
+    await c.query('ALTER TABLE accounts ADD COLUMN phone_only boolean NOT NULL DEFAULT false');
+    await c.query('ALTER TABLE voice_agents DROP CONSTRAINT voice_agents_check');
+  },
 ];
 
 // Any constant will do; it only has to be the same in every process.

@@ -30,11 +30,7 @@ const { throttled } = require('./throttle');
 
 const SOCKET_PATH = '/api/voice/ws';
 
-/**
- * The cookie each phone signs in with. Two, so one browser can keep the venue
- * phone and Reviewslip's phone open side by side on the same login.
- */
-const COOKIES = { venues: 'rs_phone', reviewslip: 'rs_phone_rs' };
+
 const PING_MS = 25_000;
 const STATUS_CACHE_MS = 10_000;
 const MAX_CALLERS = 300;
@@ -465,8 +461,8 @@ function refuse(socket, status, text) {
  * Takes the WebSocket upgrades on the review app's HTTP server.
  *
  * Callers come from Reviewslip's pages (voicerules.originAllowed). Agents
- * sign in with the phone page's cookie, and only from the phone page's own
- * origin — a cookie alone would let any site open a socket as them.
+ * are signed in with the dashboard's own session cookie, and only from
+ * Reviewslip's pages — a cookie alone would let any site open a socket as them.
  */
 function attach(server) {
   const wss = new WebSocketServer({ noServer: true, maxPayload: 64 * 1024 });
@@ -484,18 +480,11 @@ function attach(server) {
 
     try {
       if (as === 'agent') {
-        const host = String(
-          (process.env.TRUST_PROXY && req.headers['x-forwarded-host']) || req.headers.host || ''
-        ).split(',')[0].trim();
-        let sameOrigin = false;
-        try {
-          sameOrigin = new URL(origin).host === host;
-        } catch {
-          sameOrigin = false;
+        if (!rules.originAllowed(origin, { baseDomain: BASE_DOMAIN, extra: EXTRA_ORIGINS })) {
+          return refuse(socket, 403, 'Forbidden');
         }
-        if (!sameOrigin) return refuse(socket, 403, 'Forbidden');
         const phone = voice.scopeOf(url.searchParams.get('phone'));
-        const agent = await voice.fromSession(cookieOf(req, COOKIES[phone]), phone);
+        const agent = await voice.agentForSession(cookieOf(req, voice.SESSION_COOKIE), phone);
         if (!agent) return refuse(socket, 401, 'Unauthorized');
         wss.handleUpgrade(req, socket, head, (ws) => {
           ws.isAlive = true;
@@ -586,7 +575,6 @@ module.exports = {
   changed,
   presence,
   whosOn,
-  COOKIES,
   iceServers,
   resolveLine,
 };
