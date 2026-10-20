@@ -233,9 +233,9 @@ Email, each shown only when set.
   `https://line.me/R/ti/p/@<id>`.
 - **Call in the browser.** Every venue has a line on Reviewslip's softphone. Load
   `https://api.reviewslip.com/voice-call.js` once (`<script defer src="…">`) and render
-  `<button data-voice-call data-voice-line="<venue slug>" data-voice-team="sales" data-voice-phone="<phone>" hidden><span data-voice-label>Call Reservations</span></button>`
+  `<button data-rs-call data-voice-line="<venue slug>" data-voice-team="sales" data-voice-phone="<phone>" hidden><span data-voice-label>Call Reservations</span></button>`
   followed by the `tel:` link; hide the link with CSS once the button is visible
-  (`[data-voice-call]:not([hidden]) + a { display: none }`). The script shows the button only while
+  (`[data-rs-call]:not([hidden]) + a { display: none }`). The script shows the button only while
   someone at the venue can answer or take a message, relabels it "Leave a message" when only a message
   can be left, and opens its own call panel; buttons added later are picked up on their own. Optional:
   `data-voice-caller` (the guest's name, shown to whoever answers) and `data-voice-leave` (your own

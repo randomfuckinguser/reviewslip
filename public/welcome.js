@@ -186,7 +186,7 @@ function voiceTile(text, phone) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'tile tile-voice';
-  button.dataset.voiceCall = '';
+  button.dataset.rsCall = '';
   button.dataset.voiceLine = voiceLine;
   // The front desk, not reservations: the guest is already staying.
   button.dataset.voiceTeam = 'support';
@@ -205,7 +205,7 @@ function voiceTile(text, phone) {
 /**
  * Reviewslip's call buttons (public/voice-call.js), from the API's host.
  *
- * It binds every [data-voice-call] element through one click listener on the
+ * It binds every [data-rs-call] element through one click listener on the
  * document and notices tiles drawn later on its own; asking it to refresh
  * checks the line again now rather than at its next poll.
  */

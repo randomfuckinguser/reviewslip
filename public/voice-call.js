@@ -9,7 +9,7 @@
  *
  * and any number of buttons, each saying which line it rings:
  *
- *   <button type="button" data-voice-call data-voice-line="baanponglodge"
+ *   <button type="button" data-rs-call data-voice-line="baanponglodge"
  *           data-voice-team="sales" hidden>
  *     <span data-voice-label>Call Reservations</span>
  *   </button>
@@ -20,6 +20,11 @@
  *   data-voice-caller  the caller's name, when the page knows it
  *   data-voice-phone   a number to show if the browser cannot call
  *   data-voice-leave   the button's words when only a message can be left
+ *
+ * data-rs-call, not the Vibe Crafted portal's data-voice-call: Reviewslip's
+ * own Sales and Support buttons ring the portal through its widget, and the
+ * two widgets must never both answer one click. A data-voice-call button that
+ * names a line (data-voice-line) is still taken, for pages written before.
  *
  * A button stays hidden until its line answers: "open" shows it as it is,
  * "voicemail" relabels it to leave a message, "off" keeps it hidden — so a
@@ -44,6 +49,7 @@
   var API = ((script && script.dataset.voiceApi) || (script ? new URL(script.src).origin : location.origin)).replace(/\/$/, '');
   var ACCENT = script && script.dataset.voiceAccent;
   var POLL_MS = 45000;
+  var TRIGGER = '[data-rs-call], [data-voice-call][data-voice-line]';
   var MAX_SECONDS = 120;
 
   /* ------------------------------------------------------------- words */
@@ -214,7 +220,7 @@
   }
 
   function buttons() {
-    return Array.prototype.slice.call(document.querySelectorAll('[data-voice-call]'));
+    return Array.prototype.slice.call(document.querySelectorAll(TRIGGER));
   }
 
   function paint() {
@@ -726,7 +732,7 @@
   /* ------------------------------------------------------------ wiring */
 
   document.addEventListener('click', function (e) {
-    var btn = e.target.closest && e.target.closest('[data-voice-call]');
+    var btn = e.target.closest && e.target.closest(TRIGGER);
     if (!btn || btn.hidden || !supported) return;
     e.preventDefault();
     start(btn);

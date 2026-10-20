@@ -1,9 +1,13 @@
 # Calls: Reviewslip's own softphone
 
-Built 2026-10-15, replacing the Vibe Crafted portal's widget (2026-10-08). Guests press **Call** and
-talk to a venue's desk in the browser; customers press **Call Sales** or **Call Support** and talk to
-Reviewslip. When nobody is free the caller leaves a voice message. No phone numbers, no SIP, no
-per-minute cost: audio goes browser to browser over WebRTC, and the review app only rings.
+Built 2026-10-15. Guests press **Call** and talk to a venue's desk in the browser; when nobody is free
+they leave a voice message. No phone numbers, no SIP, no per-minute cost: audio goes browser to browser
+over WebRTC, and the review app only rings.
+
+**Reviewslip's own Sales and Support are not on this phone** (2026-10-20). Call Sales and Call Support
+ring the Vibe Crafted portal softphone, where our team already works, so nobody signs in to a second
+phone. Those two buttons load the portal's widget (`voice-widget.js`, site key `reviewslip`); everything
+else here is the venues' phone.
 
 ## Where the buttons are
 
@@ -12,28 +16,30 @@ per-minute cost: audio goes browser to browser over WebRTC, and the review app o
 | Marketplace venue page, "Book directly" box | the venue | Call Reservations |
 | Marketplace booking page (Manage Booking) | the venue | Call Reservations — the guest's name and reference go to whoever answers |
 | Guest App tiles (`/welcome`) | the venue | Call Front Desk, or the venue's own phone tile — with the guest's name |
-| Website Contact page | Reviewslip, Sales | Call Sales |
-| Dashboard Support page | Reviewslip, Support | Call Support — with the account's email |
+| Website Contact page | the portal, site `reviewslip`, Sales | Call Sales |
+| Dashboard Support page | the portal, site `reviewslip`, Support | Call Support — with the account's email |
 
 A button shows only while its line can answer or take a message (**open** / **voicemail**). With
 nobody answering at all (**off**) it stays hidden and the phone link beside it is what the guest gets.
 
-## Two phones
+## Two widgets, one attribute each
 
-Every venue has its phone; Reviewslip has its own for Sales and Support. They are separate apps:
+Reviewslip's widget binds `data-rs-call`; the portal's binds `data-voice-call`. Both listen for clicks
+on the whole document, and the website navigates without reloading, so a shared attribute would let a
+visitor who had seen the Contact page start two calls from one venue button. A `data-voice-call` button
+that names a venue (`data-voice-line`) is still taken by ours, for pages written before.
 
-| | Venue phone | Reviewslip's phone |
-|---|---|---|
-| Address | `/phone/` | `/phone/reviewslip/` |
-| Opened from | Dashboard → a venue → *Calls* → **Open the Phone** | Dashboard → Admin → *Sales & Support* → **Open the Phone** |
-| Rings for | the account's venues (or, for invited staff, the venues ticked for them) | Call Sales and Call Support |
-| Who | the venue's own login, staff it invites | admin accounts only |
+**The portal must know the site.** In the portal's admin → Calls → Websites: key `reviewslip`, origin
+`https://reviewslip.com` (exactly; a site has one origin), then tick our team onto its Sales and Support
+lists with hours. Until then Call Sales and Call Support stay hidden. Set `NEXT_PUBLIC_PORTAL_VOICE_SITE`
+at build time if the key is different.
 
-A login that is both a venue owner and an admin has one of each, and they never mix: separate duty,
-hours, push subscription and sign-in cookie (`rs_phone`, `rs_phone_rs`), so the front desk can be on
-duty while the office phone is off, in the same browser. Each installs as its own app. Under the hood an
-answerer row (`voice_agents`) is one person on one phone — `scope` is `venues` or `reviewslip`
-(migration 36).
+**The venue phone** is `/phone/`, opened from Dashboard → a venue → *Calls* → **Open the Phone**. It rings
+for the account's venues, or for invited staff, the venues ticked for them.
+
+*Dormant:* the review app still holds the Sales and Support phone built on 2026-10-18
+(`/phone/reviewslip/`, `voice_agents.scope = 'reviewslip'`, migration 36). Nothing on the website opens
+it or rings it any more.
 
 ## Who answers
 
@@ -43,8 +49,6 @@ answerer row (`voice_agents`) is one person on one phone — `scope` is `venues`
   email to set a password (or the owner gets the link, without email set up) and sign in on the phone
   page only. They answer that venue, nothing else, and never see the dashboard. One phone login per
   email address.
-- **Reviewslip's team.** Every admin account can answer Sales and Support on Reviewslip's phone.
-  Admin → *Sales & Support* shows both lines and who takes which.
 
 On a phone each person:
 
