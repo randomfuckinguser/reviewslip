@@ -1,13 +1,37 @@
-# Calls: Reviewslip's own softphone
+# Calls: through the Vibe Crafted portal softphone
 
-Built 2026-10-15. Guests press **Call** and talk to a venue's desk in the browser; when nobody is free
-they leave a voice message. No phone numbers, no SIP, no per-minute cost: audio goes browser to browser
-over WebRTC, and the review app only rings.
+**Since 2026-10-20 every call button on reviewslip.com rings the Vibe Crafted portal softphone**, where
+our team already works — one phone, one sign-in, nothing new to log in to. All of them ring one portal
+site, key `reviewslip` (`PORTAL_VOICE_SITE` in the website's `lib/site.ts`), and our team answers for the
+venues too.
 
-**Reviewslip's own Sales and Support are not on this phone** (2026-10-20). Call Sales and Call Support
-ring the Vibe Crafted portal softphone, where our team already works, so nobody signs in to a second
-phone. Those two buttons load the portal's widget (`voice-widget.js`, site key `reviewslip`); everything
-else here is the venues' phone.
+| Page | Portal list | Button | The person answering sees |
+|---|---|---|---|
+| Marketplace venue page, "Book directly" box | Sales | Call Reservations | Guest · *venue* |
+| Marketplace booking page (Manage Booking) | Support | Call Reservations | *guest* · *reference* · *venue* |
+| Website Contact page | Sales | Call Sales | — |
+| Dashboard Support page | Support | Call Support | the account's email |
+
+The website's `components/VoiceCall.tsx` loads the portal's `voice-widget.js` once and renders
+`data-voice-call` buttons; the venue's phone link stays beside each as the fallback, and shows instead
+whenever the portal says nobody answers (or the browser cannot call).
+
+**The Guest App has no call tile.** It runs on each venue's own address (`<venue>.reviewslip.com`), and a
+portal site takes calls from one website only — reviewslip.com. Guests there use the venue's phone tile.
+
+**Setting it up — in the portal, nowhere else.** Portal admin → **Calls** → **Websites**: key
+`reviewslip`, origin `https://reviewslip.com` exactly. Then **Agents**: tick who answers Sales and Support
+on it, with hours (a list with no hours never opens). Until the site exists, every call button stays
+hidden and the phone links show.
+
+---
+
+## Reviewslip's own softphone (kept, unused)
+
+Everything below describes the softphone built 2026-10-15 to 10-18: the venue phone page, Calls in the
+dashboard, staff invites, the call hub. It still runs in the review app, but nothing on the website links
+to it or rings it. Its call button script binds `data-rs-call`, so it would never fight the portal's
+widget if it came back.
 
 ## Where the buttons are
 
