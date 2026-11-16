@@ -1,0 +1,222 @@
+/* The home page's showcase: the console's tabs over a screen in a frame. */
+
+.showcase {
+  display: grid;
+  gap: 1.75rem;
+}
+
+/* Tabs as the console draws them: a row of names on a hairline, the open one
+   underlined in the accent. They scroll sideways on a phone, never wrap. */
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 0 0 auto;
+  margin-bottom: -1px;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  font-size: 0.938rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+
+.tab:hover {
+  color: var(--foreground);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+  border-radius: 6px 6px 0 0;
+}
+
+.panel {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.copy {
+  max-width: 28rem;
+}
+
+.title {
+  font-size: clamp(1.4rem, 3vw, 1.75rem);
+  color: var(--foreground);
+}
+
+.body {
+  margin-top: 0.75rem;
+  color: var(--muted-foreground);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.points {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.points li {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--foreground);
+}
+
+.points svg {
+  flex: 0 0 auto;
+  margin-top: 0.2rem;
+  color: var(--primary);
+}
+
+/* The console's "Learn more": the accent, underlined. */
+.demo {
+  display: inline-block;
+  margin-top: 1.5rem;
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.demo:hover {
+  color: var(--primary-hover);
+}
+
+/* A browser window round the screen: three dots and the address. */
+.browser {
+  margin: 0;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgb(9 9 11 / 0.06), 0 12px 32px -8px rgb(9 9 11 / 0.18);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--muted);
+}
+
+.dots {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.dots i {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--input);
+}
+
+.address {
+  flex: 1;
+  max-width: 24rem;
+  margin-inline: auto;
+  padding: 0.15rem 0.75rem;
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A phone round the Phone, which is how staff carry it. */
+.phone {
+  justify-self: center;
+  width: min(13rem, 62vw);
+  margin: 0;
+  border: 0.55rem solid #18181b;
+  border-radius: 2.25rem;
+  overflow: hidden;
+  background: #18181b;
+  box-shadow: 0 12px 32px -8px rgb(9 9 11 / 0.3);
+}
+
+.browser img,
+.phone img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* One screen per theme: the site's theme is a class on <html>. */
+.dark {
+  display: none !important;
+}
+
+:global(.dark) .light {
+  display: none !important;
+}
+
+:global(.dark) .dark {
+  display: block !important;
+}
+
+:global(.dark) .phone {
+  border-color: #3f3f46;
+  background: #3f3f46;
+}
+
+:global(.dark) .browser {
+  box-shadow: 0 12px 32px -8px rgb(0 0 0 / 0.6);
+}
+
+.note {
+  margin-top: -0.75rem;
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+  text-align: right;
+}
+
+@media (min-width: 900px) {
+  .panel {
+    grid-template-columns: minmax(15rem, 1fr) minmax(0, 2.4fr);
+    gap: 2.5rem;
+    /* The phone and the browser are drawn about the same height, so a tab
+       change does not move the page below. */
+    min-height: 30rem;
+  }
+}

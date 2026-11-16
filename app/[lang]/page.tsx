@@ -5,6 +5,7 @@ import DemoSlip from "@/components/marketing/DemoSlip";
 import PricingCards from "@/components/marketing/PricingCards";
 import Faq from "@/components/marketing/Faq";
 import PlatformStrip from "@/components/marketing/PlatformStrip";
+import Showcase from "@/components/marketing/Showcase";
 import JsonLd from "@/components/JsonLd";
 import { isLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -19,6 +20,7 @@ import {
 import StaySearch from "@/components/stays/StaySearch";
 import stays from "@/components/stays/stays.module.css";
 import { staysText } from "@/lib/stays-text";
+import { showcaseText } from "@/lib/showcase-text";
 import styles from "./home.module.css";
 
 export async function generateMetadata({
@@ -36,6 +38,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
   const t = getDictionary(lang);
   const h = t.home;
   const s = staysText(lang);
+  const sc = showcaseText(lang);
 
   return (
     <>
@@ -130,8 +133,20 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
         </div>
       </section>
 
+      {/* The app itself: real screens, a tab each. */}
+      <section className="section is-band" id="tour" aria-labelledby="showcase-title">
+        <div className="wrap">
+          <div className={styles.sectionHead}>
+            <span className="eyebrow">{sc.eyebrow}</span>
+            <h2 className={styles.h2} id="showcase-title">{sc.title}</h2>
+            <p className={`lede ${styles.sectionLede}`}>{sc.lede}</p>
+          </div>
+          <Showcase t={sc} demoHref={localizedPath(lang, "/demo")} />
+        </div>
+      </section>
+
       {/* Features */}
-      <section className="section is-band" id="features">
+      <section className="section" id="features">
         <div className="wrap">
           <div className={styles.sectionHead}>
             <span className="eyebrow">{h.featuresEyebrow}</span>
