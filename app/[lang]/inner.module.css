@@ -1,0 +1,102 @@
+.header {
+  background: var(--shade);
+  padding-block: clamp(3rem, 8vw, 5rem) clamp(1.5rem, 4vw, 2.5rem);
+  border-bottom: 1px solid var(--jade-line);
+}
+
+.headerInner {
+  max-width: 46rem;
+}
+
+.h1 {
+  font-size: clamp(2.25rem, 6vw, 3.5rem);
+  margin: 0.75rem 0 1.25rem;
+}
+
+.prose {
+  max-width: 44rem;
+  color: var(--cream-soft);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.prose h2 {
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  color: var(--cream);
+  margin: 2.5rem 0 0.9rem;
+}
+
+.prose h3 {
+  font-family: var(--ui);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--cream);
+  margin: 1.75rem 0 0.5rem;
+}
+
+.prose p {
+  margin-bottom: 1.1rem;
+}
+
+.prose ul {
+  margin: 0 0 1.25rem;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.prose ul li {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.prose ul li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--jade);
+  font-weight: 700;
+}
+
+.prose a {
+  color: var(--jade);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose strong {
+  color: var(--cream);
+  font-weight: 600;
+}
+
+.small {
+  color: var(--cream-faint);
+  font-size: 0.85rem;
+}
+
+.demoWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 30rem;
+  margin-inline: auto;
+}
+
+.demoNote {
+  color: var(--cream-faint);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.callout {
+  background: var(--shade-soft);
+  border: 1px solid var(--jade-line);
+  border-left: 3px solid var(--marigold);
+  border-radius: var(--radius-card);
+  padding: 1.25rem 1.4rem;
+  margin: 1.75rem 0;
+  color: var(--cream-soft);
+}

@@ -1,0 +1,2046 @@
+/* ==========================================================================
+   The authenticated app: the customer dashboard and the staff host.
+
+   A work app, used for hours to get a job done, so it follows the app
+   standards' style guide (05-frontend.md) rather than the marketing site's
+   brand: a neutral scale, one accent, system fonts, compact density, and both
+   themes from the start.
+
+   Everything here is scoped to `.app`, the root the shell renders. Nothing in
+   this file reaches the marketing pages or the guest page, which keep the
+   venue's own look on purpose.
+   ========================================================================== */
+
+/* -------------------------------------------------------------------------- */
+/* Tokens                                                                     */
+/* -------------------------------------------------------------------------- */
+
+.app {
+  --background: #ffffff;
+  --foreground: #18181b;
+  --card: #ffffff;
+  --muted: #f4f4f5;
+  /* zinc-600, not the usual zinc-500: muted text also sits on --muted panels,
+     where 500 measures 4.4:1 and small text needs 4.5. */
+  --muted-foreground: #52525b;
+  --border: #e4e4e7;
+  /* Rows inside a card or table: the same hairline. */
+  --divider: #e4e4e7;
+  --input: #d4d4d8;
+  /* shadcn's naming: --accent is the neutral hover ground, not the accent
+     colour. The one accent is --primary. */
+  --accent: #f4f4f5;
+
+  /* Thai royal blue, the standards' one accent. 7.8:1 on white. */
+  --primary: #1f4fa3;
+  --primary-foreground: #ffffff;
+  --ring: var(--primary);
+
+  /* The filled button is the accent: one per screen. */
+  --action: var(--primary);
+  --action-hover: #1a4389;
+  --action-foreground: var(--primary-foreground);
+
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+  /* The 800s, not the usual 700s. A status chip sets this colour as text on a
+     16% tint of itself, and on that ground the 700s measure about 4.0:1. These
+     hold 5.0 there and 7.1 on the page. */
+  --success: #166534;
+  --warning: #92400e;
+  --warning-foreground: #ffffff;
+
+  /* The standard's three sizes, two weights and one corner. A figure is 24px. */
+  --fs12: 0.75rem;
+  --fs14: 0.875rem;
+  --fs16: 1rem;
+  --fs24: 1.5rem;
+  --fw5: 500;
+  --fw6: 600;
+  --r8: 8px;
+
+  --sidebar: #fafafa;
+  --radius: var(--r8);
+  --radius-container: var(--r8);
+  --shadow-container: none;
+  --pad: 1rem;
+  --sidebar-width: 13.5rem;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", "Noto Sans", "Noto Sans Thai", sans-serif;
+}
+
+.dark .app {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #18181b;
+  --muted: #1f1f23;
+  --muted-foreground: #a1a1aa;
+  --border: #27272a;
+  --divider: #27272a;
+  --input: #3f3f46;
+  --accent: #27272a;
+
+  /* Same hue, lighter, to hold contrast on a dark ground: 6.5:1. White text on
+     it fails, so the foreground turns dark. Still one accent. */
+  --primary: #7fa2e6;
+  --primary-foreground: #0b1b3a;
+  --action-hover: #9bb7ec;
+
+  --destructive: #f87171;
+  --destructive-foreground: #1c1917;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --warning-foreground: #1c1917;
+
+  --sidebar: #111113;
+}
+
+/* The bridge.
+
+   Every dashboard component is written against the marketing site's names:
+   cream text on a teal "shade", ink text on cream "paper", jade and marigold.
+   Rather than rewrite fourteen thousand lines to rename variables, the names
+   are re-pointed here at the tokens above, and the components follow.
+
+   What each old name *meant* decides where it goes, and two of them are not
+   the obvious mapping:
+
+   --marigold was the call-to-action colour on the marketing site, but in the
+   dashboard almost every use of it is "this needs attention" — an error, a
+   ticket waiting, a guest with details missing. So it becomes --warning, and
+   the one place it really was the button (.btn-go) is given --primary by name.
+
+   --wash and --alert are what translucent tints are mixed from. A hover or a
+   hairline tinted with the accent would be the accent used as decoration, so
+   washes are neutral here. */
+.app {
+  --shade: var(--background);
+  --shade-soft: var(--card);
+  /* Only ever used as the text colour on a --jade fill. */
+  --shade-deep: var(--primary-foreground);
+  --paper: var(--card);
+  --paper-shadow: var(--border);
+  --ink: var(--foreground);
+  --ink-soft: var(--muted-foreground);
+  --cream: var(--foreground);
+  --cream-soft: var(--muted-foreground);
+  --cream-faint: var(--muted-foreground);
+  --admin-muted: var(--muted-foreground);
+
+  --jade: var(--primary);
+  --jade-dim: var(--input);
+  --jade-line: var(--border);
+  --cal-line: var(--border);
+  --wash: var(--foreground);
+
+  --marigold: var(--warning);
+  --marigold-ink: var(--warning-foreground);
+  --alert: var(--warning);
+
+  --display: var(--sans);
+  --ui: var(--sans);
+  --radius-btn: var(--radius);
+  --radius-card: var(--radius-container);
+}
+
+/* `.venue-look`, in globals.css, puts the venue's own palette and typefaces
+   back for the things inside the app that are pictures of the product: the
+   table card, the registration card and the theme preview. */
+
+/* -------------------------------------------------------------------------- */
+/* The shell                                                                  */
+/* -------------------------------------------------------------------------- */
+
+/* The app wears no marketing chrome. :has() on the body, the same way the staff
+   host already did it: the root layout stays static and never has to ask which
+   page it is wrapping. */
+body:has(.app) > header,
+body:has(.app) > footer {
+  display: none;
+}
+
+body:has(.app) {
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.dark body:has(.app) {
+  background: #09090b;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  height: 100dvh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--sans);
+  /* 14px: dense, not marketing copy. */
+  font-size: var(--fs14);
+  line-height: 1.45;
+  color-scheme: light;
+}
+
+.dark .app {
+  color-scheme: dark;
+}
+
+.app[data-collapsed="true"] {
+  --sidebar-width: 3rem;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--sidebar);
+  border-right: 1px solid var(--border);
+}
+
+.sidebar-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem;
+}
+
+.nav-group {
+  display: grid;
+  gap: 1px;
+}
+
+.nav-group + .nav-group {
+  margin-top: 0.75rem;
+}
+
+.nav-separator {
+  height: 1px;
+  margin: 0.75rem 0;
+  background: var(--border);
+}
+
+.nav-label {
+  padding: 0 0.5rem 0.25rem;
+  font-size: var(--fs12);
+  font-weight: var(--fw5);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: 32px;
+  padding: 0 0.5rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--foreground) !important;
+  font: inherit;
+  text-align: left;
+  text-decoration: none !important;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.nav-item svg {
+  flex: 0 0 auto;
+}
+
+.nav-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-item:hover {
+  background: var(--accent);
+}
+
+/* The active pill is the accent's one standing use in the chrome. */
+.nav-item[aria-current="page"] {
+  background: var(--primary);
+  color: var(--primary-foreground) !important;
+}
+
+/* The rail. The icons are what is left, which is why every row has one. */
+.app[data-collapsed="true"] :is(.sidebar-scroll .nav-item, .account > summary) {
+  justify-content: center;
+  padding: 0;
+}
+
+.app[data-collapsed="true"] :is(.sidebar-scroll .nav-item span, .account > summary span, .nav-label) {
+  display: none;
+}
+
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.app[data-collapsed="true"] .sidebar-footer {
+  flex-direction: column;
+}
+
+.account {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.account > summary {
+  list-style: none;
+}
+
+.account > summary::-webkit-details-marker {
+  display: none;
+}
+
+.account-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-menu {
+  position: absolute;
+  bottom: calc(100% + 0.25rem);
+  left: 0;
+  z-index: 30;
+  min-width: 12rem;
+  padding: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.account-menu p {
+  padding: 0.35rem 0.5rem;
+  font-size: var(--fs12);
+  color: var(--muted-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Page header                                                                */
+/* -------------------------------------------------------------------------- */
+
+/* The same 56px on every screen, so moving between them never shifts the page.
+   Back, two title lines (the 16px title, one 12px line of what this screen is
+   showing), then the tools, Help always last. */
+.page-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 56px;
+  /* The panel scrolls in a column of fixed height, which would otherwise
+     squash the header to its minimum and spill a wrapped toolbar onto the page. */
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+}
+
+.page-title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.app .page-title h1 {
+  margin: 0;
+  font-size: var(--fs16) !important;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-sub {
+  font-size: var(--fs12);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.page-body {
+  padding: 1rem 1.5rem 2rem;
+}
+
+/* Forms and prose. A settings form stretched across a wide monitor is harder
+   to read, not denser; grids and calendars take the full width. */
+.page-body.is-narrow {
+  max-width: 56rem;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Cards                                                                      */
+/* -------------------------------------------------------------------------- */
+
+/* Every panel in the app is one card: a hairline, an 8px corner, no shadow,
+   16px inside. The older panel classes are folded in here rather than renamed
+   across the components. */
+.app
+  :is(
+    .container,
+    .bw,
+    .setup,
+    .admin-card,
+    .admin-tile,
+    .panel,
+    .desk-card,
+    .group-box
+  ) {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: none !important;
+  padding: var(--pad) !important;
+}
+
+.app .container {
+  min-width: 0;
+}
+
+.app :is(.admin-card, .desk-card, .bw, .setup) {
+  margin-bottom: 1rem;
+}
+
+.app .group-box + .group-box {
+  margin-top: 1rem;
+}
+
+.container-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.container-desc {
+  margin: 0.15rem 0 0;
+  font-size: var(--fs12);
+  color: var(--muted-foreground);
+}
+
+.container-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+/* A card's closing note: what the card is for, under a rule at its bottom
+   (the standard's "a card's hint is at its bottom"). */
+.container-foot {
+  margin: 0.75rem calc(-1 * var(--pad)) calc(-1 * var(--pad));
+  padding: 0.6rem var(--pad);
+  border-top: 1px solid var(--divider);
+  font-size: var(--fs12);
+  color: var(--muted-foreground);
+}
+
+/* A table that runs to the card's edges, under its title. */
+.container-bleed {
+  width: calc(100% + 2 * var(--pad));
+  margin-inline: calc(-1 * var(--pad));
+}
+
+.console-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 2.3fr) minmax(18rem, 1fr);
+  align-items: start;
+}
+
+.console-col {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.console-pair {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
+  align-items: start;
+}
+
+/* Counts, each a way in. */
+.resource-grid {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
+}
+
+.resource {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 36px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--divider);
+  border-radius: var(--radius);
+}
+
+.app .resource a {
+  color: var(--foreground);
+}
+
+.app .resource a:hover {
+  color: var(--primary);
+}
+
+.resource-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.resource.is-attention .resource-count {
+  color: var(--warning);
+  font-weight: var(--fw6);
+}
+
+/* Captions over values. A figure is the standard's one 24px size. */
+.kv {
+  display: grid;
+  gap: 0.75rem 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
+  margin: 0;
+}
+
+.kv div {
+  min-width: 0;
+}
+
+.kv dt {
+  font-size: var(--fs12);
+  font-weight: var(--fw5);
+  color: var(--muted-foreground);
+}
+
+.kv dd {
+  margin: 0.15rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.kv dd.kv-big {
+  font-size: var(--fs24);
+  font-weight: var(--fw6);
+  line-height: 1.2;
+}
+
+.container-rule {
+  height: 1px;
+  margin: 0.75rem 0;
+  border: 0;
+  background: var(--divider);
+}
+
+/* Status: a colour dot and its name. The element's colour is the dot's; the
+   words stay in the text colour. Icons are not drawn. */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: var(--fw5);
+  -webkit-text-fill-color: var(--foreground);
+  white-space: nowrap;
+}
+
+.status::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status svg {
+  display: none;
+}
+
+.status.is-ok {
+  color: var(--success);
+}
+
+.status.is-warn {
+  color: var(--warning);
+}
+
+.status.is-error {
+  color: var(--destructive);
+}
+
+.status.is-off {
+  color: var(--muted-foreground);
+}
+
+.status.is-info {
+  color: var(--primary);
+}
+
+.console-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.console-table :is(th, td) {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--divider);
+}
+
+.console-table th {
+  font-size: var(--fs12);
+  font-weight: var(--fw6);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+.console-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.console-table :is(th, td):first-child {
+  padding-left: var(--pad);
+}
+
+.console-table :is(th, td):last-child {
+  padding-right: var(--pad);
+}
+
+.console-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.meter {
+  height: 6px;
+  margin-top: 0.3rem;
+  border-radius: 999px;
+  background: var(--muted);
+  overflow: hidden;
+}
+
+.meter > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+.meter.is-high > span {
+  background: var(--warning);
+}
+
+.bar-chart {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.bar-scale {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 140px;
+  font-size: var(--fs12);
+  color: var(--muted-foreground);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  transform: translateY(-0.5em);
+}
+
+.bar-plot {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 140px;
+  border-bottom: 1px solid var(--input);
+  background-image: linear-gradient(var(--divider) 1px, transparent 1px);
+  background-size: 100% 25%;
+}
+
+.bar-plot > span {
+  flex: 1;
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--primary);
+}
+
+.bar-plot > span.is-zero {
+  background: var(--divider);
+}
+
+.bar-axis {
+  grid-column: 2;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.35rem;
+  font-size: var(--fs12);
+  color: var(--muted-foreground);
+}
+
+/* A bar across the top of the page: amber for something to fix, red for an
+   error (the standard's "every message is a bar at the top"). */
+.flash {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: var(--radius);
+  font-size: var(--fs14);
+}
+
+.flash.is-warn {
+  background: #fef3c7;
+  color: #78350f;
+  border: 1px solid #fcd34d;
+}
+
+.dark .flash.is-warn {
+  background: #2b2410;
+  color: #fbbf24;
+  border-color: #7a6100;
+}
+
+.app .flash a {
+  color: inherit;
+  font-weight: var(--fw6);
+}
+
+@media (max-width: 1100px) {
+  .console-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Type                                                                       */
+/* -------------------------------------------------------------------------- */
+
+/* One weight for body text, one heavier for headings and labels, and no display
+   face. !important because most of these are sized inline, per component, in
+   the marketing scale — and an inline style beats any selector. */
+.app :is(h1, h2, h3, h4):not(.venue-look *) {
+  font-family: var(--sans) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.35;
+}
+
+/* Headings inside a screen are the 14px size: the page title alone is 16px. */
+.app :is(h2, h3, h4):not(.venue-look *) {
+  font-size: var(--fs14) !important;
+}
+
+.app .lede {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.app .eyebrow {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted-foreground);
+}
+
+/* Captions are written in Title Case, never forced into capitals by CSS:
+   `uppercase` cannot keep "TM30" or "VAT" right and would re-case data. */
+.app
+  :is(
+    .admin-table th,
+    .bl-control > span,
+    .rm-weekdays span,
+    .rw-caption,
+    .rw-topics-label,
+    .mg-weekdays span,
+    .tl-group .tl-room
+  ) {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* A room type heading a band of the calendar is a caption, not a link. */
+.app .tl-group .tl-room {
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+
+/* A finished step is "done", which is what the success colour is for. */
+.app .setup-steps li.done .setup-tick {
+  color: var(--success);
+}
+
+.app a:not(.btn):not(.nav-item):not(.icon-btn) {
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+
+.app :is(p, td, li, dd) a:not(.btn):not(.icon-btn):not(.nav-item) {
+  color: var(--primary);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Controls                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/* One 8px radius for buttons, editors and frames. !important for the same
+   reason as the type rules: the pills and the 10px and 14px corners are inline.
+
+   The calendar's cells are buttons too — a night you can click to book — and
+   they are excluded by their prefixes (tl- the timeline, mg- the month grid,
+   rm- the rate month). A grid of rounded cells is a grid of gaps. */
+.app
+  button:not(
+    [class^="tl-"],
+    [class^="mg-"],
+    [class^="rm-"],
+    [class*=" tl-"],
+    [class*=" mg-"],
+    [class*=" rm-"]
+  ),
+.app :is(select, textarea),
+.app input:not([type="checkbox"], [type="radio"], [type="color"], [type="range"]) {
+  border-radius: var(--radius) !important;
+  font-family: var(--sans);
+}
+
+/* Every button: 32px high, 80px at least when it carries a word, no shadow and
+   no lift. */
+.app .btn {
+  height: 32px;
+  min-width: 80px;
+  padding: 0 0.75rem;
+  gap: 0.375rem;
+  border-width: 1px;
+  border-radius: var(--radius);
+  font-family: var(--sans);
+  font-size: var(--fs14);
+  font-weight: var(--fw5);
+  box-shadow: none;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.app .btn:active {
+  transform: none;
+}
+
+/* Primary: the screen's default action. One per screen. */
+.app .btn-go {
+  background: var(--action);
+  border-color: var(--action);
+  color: var(--action-foreground);
+}
+
+.app .btn-go:hover {
+  background: var(--action-hover);
+  border-color: var(--action-hover);
+  box-shadow: none;
+}
+
+/* Secondary: outlined. The "on paper" variant existed because a quiet button
+   vanished on a cream card; with one ground there is one outlined button. */
+.app :is(.btn-quiet, .btn-quiet-ink, .btn-ink) {
+  background: transparent;
+  border-color: var(--input);
+  color: var(--foreground);
+}
+
+.app :is(.btn-quiet, .btn-quiet-ink, .btn-ink):hover {
+  background: var(--accent);
+  border-color: var(--input);
+}
+
+/* Destructive: only ever the confirming button of its own confirmation. A red
+   button never sits on a page waiting to be pressed. */
+.app .btn-danger {
+  background: var(--destructive);
+  border-color: var(--destructive);
+  color: var(--destructive-foreground);
+}
+
+/* Can't act yet: disabled, not hidden. */
+.app :is(button, .btn):disabled,
+.app .btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Icon-only: low emphasis, square, and always with a name. */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  background: var(--accent);
+}
+
+/* A card's own tools (Refresh): outlined, like a button. */
+.icon-btn.is-outlined {
+  border: 1px solid var(--input);
+}
+
+/* Editors: 36px, 14px text. */
+.app select,
+.app
+  input:not(
+    [type="checkbox"],
+    [type="radio"],
+    [type="color"],
+    [type="range"],
+    [type="file"],
+    [type="hidden"]
+  ) {
+  height: 36px !important;
+  padding-block: 0 !important;
+  font-size: 0.875rem !important;
+}
+
+.app textarea {
+  font-size: 0.875rem !important;
+}
+
+.app :is(input, select, textarea)::placeholder {
+  color: var(--muted-foreground);
+  opacity: 1;
+}
+
+.app :is(input[type="checkbox"], input[type="radio"]) {
+  accent-color: var(--primary);
+}
+
+/* The accent as the focus ring, everywhere something can be focused. */
+.app :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.app .chip {
+  padding: 0 0.75rem;
+  height: 28px;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Density                                                                    */
+/* -------------------------------------------------------------------------- */
+
+/* Pages used to open with the marketing site's section padding and a centred
+   68rem column. Inside the shell the page header and .page-body do that job. */
+.app .section {
+  padding-block: 0;
+}
+
+.app .wrap {
+  max-width: none;
+  padding-inline: 0;
+}
+
+.app .admin-tiles {
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.app .admin-tile-value {
+  font-size: 1.5rem;
+}
+
+.app .admin-card {
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.app .admin-sub {
+  margin-bottom: 1rem;
+}
+
+/* A table on its own sits in a frame: a hairline and an 8px corner. A List
+   View's table drops even that (the kit, at the end of this file). */
+.app .admin-scroll {
+  margin: 0 0 1rem;
+  padding: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.app .admin-table td {
+  font-size: var(--fs14);
+}
+
+.app .admin-tile-label {
+  font-size: var(--fs12);
+  font-weight: var(--fw5);
+  color: var(--muted-foreground);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Print                                                                      */
+/* -------------------------------------------------------------------------- */
+
+/* Two screens here exist to be printed: the table card and the registration
+   card. On paper there is no shell — and the shell stops being a fixed-height
+   grid that scrolls inside itself, which would otherwise print one screenful
+   and cut the rest off. */
+@media print {
+  .sidebar,
+  .page-header {
+    display: none !important;
+  }
+
+  .app {
+    display: block;
+    height: auto;
+    background: #fff;
+  }
+
+  .app-main {
+    display: block;
+    overflow: visible;
+  }
+
+  body:has(.app) {
+    overflow: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app * {
+    transition: none !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Chosen filters                                                             */
+/* -------------------------------------------------------------------------- */
+
+/* A chosen filter is a state, not the screen's action. It inverts in neutral
+   rather than filling with the accent: four blue pills above a list would bury
+   the one blue button the screen has, and the accent would stop meaning
+   anything. */
+.app
+  :is(
+    .chip[aria-pressed="true"],
+    .chip.is-active,
+    .rt-chip[aria-current="true"],
+    .view-tab[aria-current="page"]
+  ) {
+  background: var(--foreground);
+  border-color: var(--foreground);
+  color: var(--background);
+}
+
+/* Editors share one look wherever they are: the page's own ground and the
+   stronger of the two hairlines, so a field reads as a field against a panel.
+   !important again, because each component styles its inputs inline. */
+.app select,
+.app textarea,
+.app
+  input:not(
+    [type="checkbox"],
+    [type="radio"],
+    [type="color"],
+    [type="range"],
+    [type="file"],
+    [type="hidden"]
+  ) {
+  background-color: var(--background) !important;
+  border: 1px solid var(--input) !important;
+  color: var(--foreground) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Dialogs                                                                    */
+/* -------------------------------------------------------------------------- */
+
+/* A plain dimmed backdrop. The marketing site's is a blurred dark teal, which
+   over a neutral app reads as a colour cast rather than as "behind". */
+.app .editor {
+  border-radius: 12px;
+  box-shadow: 0 16px 48px color-mix(in srgb, #000 24%, transparent);
+}
+
+.app .editor::backdrop {
+  background: color-mix(in srgb, #000 50%, transparent);
+  backdrop-filter: none;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Group boxes                                                                */
+/* -------------------------------------------------------------------------- */
+
+/* One box per topic on a screen that is not a List or an Edit View — the
+   standard's `rounded-lg border border-border bg-muted p-4`. */
+.app .group-box {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--muted);
+}
+
+.app .group-box + .group-box {
+  margin-top: 0.75rem;
+}
+
+.app .group-box > h2 {
+  margin: 0;
+}
+
+/* A destructive action that sits under a field rather than beside the primary
+   button: a red text link, so it is found by anybody looking for it and not
+   pressed by anybody who is not. */
+.app .btn-link-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--destructive);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.app .btn-link-danger:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Phones                                                                     */
+/* -------------------------------------------------------------------------- */
+
+/* The Menu button and its backdrop belong to phones only. */
+.drawer-btn,
+.drawer-backdrop {
+  display: none;
+}
+
+/* Below 768px there is no room for a Sidebar beside the page: it becomes a
+   drawer over it, opened by the Menu button that sits where the header's left
+   edge is. The rail (collapsed) is a desktop choice and means nothing here. */
+@media (max-width: 767px) {
+  .app,
+  .app[data-collapsed="true"] {
+    --sidebar-width: min(17rem, 82vw);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 60;
+    width: var(--sidebar-width);
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+
+  .app[data-drawer="open"] .sidebar {
+    transform: none;
+    box-shadow: 0 0 40px color-mix(in srgb, #000 30%, transparent);
+  }
+
+  /* In the drawer the full labels always show, whatever the desktop rail says. */
+  .app[data-collapsed="true"] :is(.sidebar-scroll .nav-item, .account > summary) {
+    justify-content: flex-start;
+    padding: 0 0.5rem;
+  }
+
+  .app[data-collapsed="true"] :is(.sidebar-scroll .nav-item span, .account > summary span, .nav-label) {
+    display: revert;
+  }
+
+  .app[data-collapsed="true"] .sidebar-footer {
+    flex-direction: row;
+  }
+
+  /* Collapsing a drawer is closing it: the Menu button does that. */
+  .sidebar-toggle {
+    pointer-events: none;
+  }
+
+  .sidebar-toggle svg {
+    display: none;
+  }
+
+  /* A thumb, not a mouse: 44px targets. */
+  .nav-item {
+    height: 44px;
+    font-size: var(--fs16);
+  }
+
+  .drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: color-mix(in srgb, #000 45%, transparent);
+  }
+
+  .app[data-drawer="open"] .drawer-backdrop {
+    display: block;
+  }
+
+  .drawer-btn {
+    display: inline-flex;
+    position: fixed;
+    top: 6px;
+    left: 6px;
+    z-index: 61;
+    width: 44px;
+    height: 44px;
+    background: var(--background);
+  }
+
+  .app[data-drawer="open"] .drawer-btn {
+    left: calc(var(--sidebar-width) + 6px);
+  }
+
+  /* Room for the Menu button at the header's left edge. */
+  .page-header {
+    padding: 0.5rem 0.75rem 0.5rem 3.5rem;
+    min-height: 56px;
+  }
+
+  .app .page-header .icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .page-actions {
+    width: 100%;
+  }
+
+  .page-actions:empty {
+    display: none;
+  }
+
+  .page-body {
+    padding: 0.85rem 0.85rem 2rem;
+  }
+
+  .app .group-box {
+    padding: 0.85rem;
+  }
+
+  .app .btn {
+    height: 44px;
+  }
+
+  /* 16px in editors, or iOS zooms the page in on every tap into one. */
+  .app select,
+  .app textarea,
+  .app
+    input:not(
+      [type="checkbox"],
+      [type="radio"],
+      [type="color"],
+      [type="range"],
+      [type="file"],
+      [type="hidden"]
+    ) {
+    height: 42px !important;
+    font-size: 16px !important;
+  }
+
+  .app textarea {
+    height: auto !important;
+  }
+
+  .app .admin-table :is(th, td) {
+    padding: 0.5rem 0.6rem;
+  }
+}
+
+/* The bookings list on a phone: each booking a card — who and the status,
+   the stay, then the room and the total — instead of five columns scrolled
+   sideways to find the last three. */
+@media (max-width: 600px) {
+  .app .bl-table thead {
+    display: none;
+  }
+
+  .app .bl-table,
+  .app .bl-table tbody {
+    display: block;
+  }
+
+  .app .bl-table tr.bl-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.3rem 0.75rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .app .bl-table tr.bl-row > td {
+    padding: 0 !important;
+    border: 0 !important;
+  }
+
+  /* Status is the first column on a laptop; on a phone the card still starts
+     with the guest's name, the status beside it. */
+  .app .bl-table tr.bl-row > td:nth-child(2) {
+    grid-area: 1 / 1;
+  }
+
+  .app .bl-table tr.bl-row > td:nth-child(1) {
+    grid-area: 1 / 2;
+    justify-self: end;
+  }
+
+  .app .bl-table tr.bl-row > td:nth-child(3) {
+    grid-area: 2 / 1 / 3 / 3;
+  }
+
+  .app .bl-table tr.bl-row > td:nth-child(4) {
+    grid-area: 3 / 1;
+  }
+
+  .app .bl-table tr.bl-row > td:nth-child(5) {
+    grid-area: 3 / 2;
+    align-self: end;
+    font-weight: 600;
+  }
+}
+
+/* All Rates on a phone: a card a rate, its buttons under it rather than off
+   the right-hand edge. */
+@media (max-width: 600px) {
+  .app .rates-table thead {
+    display: none;
+  }
+
+  .app .rates-table,
+  .app .rates-table tbody {
+    display: block;
+  }
+
+  .app .rates-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.25rem 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .app .rates-table td {
+    padding: 0 !important;
+    border: 0 !important;
+  }
+
+  .app .rates-table td:nth-child(1) {
+    grid-area: 1 / 1;
+    font-weight: 600;
+  }
+
+  .app .rates-table td:nth-child(3) {
+    grid-area: 1 / 2;
+    justify-self: end;
+  }
+
+  .app .rates-table td:nth-child(2) {
+    grid-area: 2 / 1 / 3 / 3;
+  }
+
+  .app .rates-table td:nth-child(4) {
+    grid-area: 3 / 1 / 4 / 3;
+    text-align: left !important;
+    padding-top: 0.35rem !important;
+  }
+}
+
+/* A box sizes its column to its content unless told not to: one wide table
+   inside used to widen the whole box past the screen. */
+.app .group-box {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* A room's rate terms on a phone: a card a rate — its name and price, then
+   breakfast, then the cancellation choice at full width. */
+@media (max-width: 600px) {
+  .app .terms-table thead {
+    display: none;
+  }
+
+  .app .terms-table,
+  .app .terms-table tbody {
+    display: block;
+  }
+
+  .app .terms-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.4rem 0.75rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .app .terms-table td {
+    min-width: 0;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+
+  .app .terms-table td:nth-child(1) {
+    font-weight: 600;
+  }
+
+  .app .terms-table td:nth-child(2) {
+    justify-self: end;
+  }
+
+  .app .terms-table td:nth-child(3),
+  .app .terms-table td:nth-child(4) {
+    grid-column: 1 / -1;
+  }
+
+  .app .terms-table select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+/* The printable previews are drawn at paper size; on a phone they are shown
+   smaller, and still print at full size. */
+@media screen and (max-width: 600px) {
+  .app .venue-look[class*="sheet"] {
+    zoom: 0.58;
+  }
+
+  .card-page {
+    padding-inline: 0;
+  }
+
+  .card-page > .card {
+    zoom: 0.8;
+  }
+}
+
+/* Editors on a phone take the whole screen: a floating box with a margin
+   round it leaves a strip of page nobody can use and a form to scroll in a
+   keyhole. */
+@media (max-width: 600px) {
+  .app .editor {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0 !important;
+  }
+
+  .app .editor-body {
+    padding: 1rem 0.9rem calc(1.25rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* The same for every fieldset in the app: its default minimum is its widest
+   content, which on a phone is wider than the phone. */
+.app fieldset {
+  min-width: 0;
+}
+
+/* Tables laid out as cards on a phone (above) drop the minimum width that
+   makes the others scroll sideways. */
+@media (max-width: 600px) {
+  .app :is(.bl-table, .rates-table, .terms-table) {
+    min-width: 0;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* The standards kit                                                          */
+/* -------------------------------------------------------------------------- */
+
+/* Labels sit above their boxes: their own line, whole (they wrap, never "…"),
+   6px from the box, 14px, and they take the accent while the box has the
+   focus. A tick box keeps its words beside it. */
+.app label:not(:has(input[type="checkbox"], input[type="radio"])),
+.app .bl-control > span,
+.app [class*="field"] > span:first-child {
+  font-size: var(--fs14) !important;
+  font-weight: var(--fw5) !important;
+  color: var(--foreground);
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.app :is(label, .bl-control, [class*="field"]):has(> :is(input, select, textarea)) {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.app :is(label, .bl-control, [class*="field"]):focus-within > :is(label, span):first-child,
+.app label:focus-within:not(:has(input[type="checkbox"], input[type="radio"])) {
+  color: var(--primary) !important;
+}
+
+/* A field fills its column and no more. */
+.app :is(label, [class*="field"]) > :is(input, select, textarea):not([type="checkbox"], [type="radio"]) {
+  width: 100%;
+  min-width: 0;
+}
+
+.app :is(.terms-table, .console-table, .admin-table) select {
+  max-width: 100%;
+}
+
+/* One tab design: words on a rule, the chosen one underlined in the accent.
+   The calendar's Rooms / Month / List were a segmented control. */
+.app .view-toggle {
+  display: flex;
+  gap: 1.25rem;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+}
+
+.app .view-toggle .view-tab,
+.app .view-tab[aria-current="page"] {
+  height: auto;
+  padding: 0.5rem 0.1rem;
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--muted-foreground) !important;
+  font-weight: var(--fw5);
+}
+
+.app .view-tab[aria-current="page"] {
+  border-bottom-color: var(--primary);
+  color: var(--foreground) !important;
+}
+
+/* Filter choices: outlined; a chosen one inverts. */
+.app :is(.chip, .rt-chip) {
+  background: transparent;
+  border-color: var(--input);
+  color: var(--foreground);
+}
+
+/* Tables. A line between columns from 768px up; a heading row in the small
+   caption size. */
+.app :is(.admin-table, .bl-table, .console-table) th {
+  font-size: var(--fs12);
+  font-weight: var(--fw6);
+  color: var(--muted-foreground);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.app :is(.admin-table, .bl-table) :is(th, td) {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--divider);
+}
+
+.app .admin-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.app .admin-table tbody tr:hover td {
+  background: var(--accent);
+}
+
+.app .admin-table .primary {
+  color: var(--foreground);
+  font-weight: var(--fw5);
+}
+
+@media (min-width: 768px) {
+  .app :is(.admin-table, .bl-table, .console-table) :is(th, td) + :is(th, td) {
+    border-left: 1px solid var(--divider);
+  }
+}
+
+/* A table inside a card runs to the card's edges. */
+.app :is(.container, .group-box, .admin-card, .bw, .panel) .admin-scroll {
+  margin: 0.5rem calc(-1 * var(--pad)) calc(-1 * var(--pad));
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--divider);
+  border-radius: 0 0 var(--radius) var(--radius);
+  background: transparent;
+}
+
+/* A List View's table has no frame: not in a card, it runs from the Sidebar's
+   edge to the window's, takes the height the window has left, and its rows
+   scroll under a sticky heading while the page stays still. */
+.app .page-body > :is(.admin-scroll, .list-view),
+.app .page-body > .bl-wrap {
+  margin-inline: -1.5rem;
+  border: 0;
+  border-block: 1px solid var(--border);
+  border-radius: 0;
+  max-height: max(240px, calc(100dvh - 12rem));
+  overflow: auto;
+  background: var(--card);
+}
+
+.app .page-body > :is(.admin-scroll, .list-view, .bl-wrap) thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--card);
+  box-shadow: inset 0 -1px 0 var(--divider);
+}
+
+.app .page-body > :is(.admin-scroll, .list-view, .bl-wrap) :is(th, td):first-child {
+  padding-left: 1.5rem;
+}
+
+.app .page-body > :is(.admin-scroll, .list-view, .bl-wrap) :is(th, td):last-child {
+  padding-right: 1.5rem;
+}
+
+.app .admin-empty {
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+/* A List View's heading line: its name and count, above the frameless table. */
+.list-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.app .list-head h2 {
+  margin: 0;
+}
+
+/* Filters over a list: a card. */
+.app .bl-bar {
+  padding: var(--pad);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* The calendar's stays in the accent: light for booked, deeper once in the
+   house, grey once gone, dashed amber while they have no room. */
+.app .tl-stay {
+  background: color-mix(in srgb, var(--primary) 14%, var(--card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 55%, transparent);
+  color: var(--foreground);
+}
+
+.app .tl-stay.in-house {
+  background: color-mix(in srgb, var(--primary) 30%, var(--card));
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.app .tl-stay.out {
+  background: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+  color: var(--muted-foreground);
+}
+
+.app .tl-stay.unplaced {
+  background: color-mix(in srgb, var(--warning) 10%, var(--card));
+  outline-color: var(--warning);
+}
+
+/* The rate month: plain nights on hairlines, a tint where a price was set by
+   hand. */
+.app .rm-day {
+  background: var(--card);
+  border-color: var(--divider);
+  color: var(--foreground);
+}
+
+.app .rm-day:hover {
+  background: var(--accent);
+}
+
+.app .rm-day.override {
+  background: color-mix(in srgb, var(--primary) 10%, var(--card));
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--card));
+}
+
+.app .rm-day.closed {
+  background: repeating-linear-gradient(135deg, var(--muted) 0 6px, var(--card) 6px 12px);
+}
+
+.app .rm-day.selected {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 45%, transparent);
+}
+
+.app .rm-blank {
+  background: transparent;
+  border-color: transparent;
+}
+
+/* Today: the four lists two by two on a wide screen. */
+.desk-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(26rem, 100%), 1fr));
+  align-items: start;
+}
+
+.desk-grid > :not(.desk-card) {
+  grid-column: 1 / -1;
+}
+
+.app .desk-grid .desk-card {
+  margin: 0;
+}
+
+.app .desk-card > h2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+/* A conversation: each message a card, staff's marked in the accent. */
+.app ol > li[data-staff] {
+  border-left-color: var(--primary) !important;
+}
+
+/* Rows in a card, flush to its edges. */
+.row-list {
+  margin: 0.5rem calc(-1 * var(--pad)) calc(-1 * var(--pad));
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--divider);
+}
+
+.row-list > li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.5rem var(--pad);
+  border-bottom: 1px solid var(--divider);
+}
+
+.row-list > li:last-child {
+  border-bottom: 0;
+}
+
+.app .container .referral-row {
+  border-bottom-color: var(--divider);
+}
+
+.app .container .referral-row:last-child {
+  border-bottom: 0;
+}
+
+/* A card's hint is at its bottom: the muted paragraph straight after a form
+   card's heading is drawn last, under a rule (CSS order; the markup is
+   unchanged). */
+.app .group-box > h2 + :is(p, .hint, .admin-sub),
+.app .admin-card:not(.rm-head) > h2 + :is(p, .admin-sub) {
+  order: 99;
+  margin: 0.25rem calc(-1 * var(--pad)) calc(-1 * var(--pad)) !important;
+  padding: 0.6rem var(--pad);
+  border-top: 1px solid var(--divider);
+  font-size: var(--fs12) !important;
+  color: var(--muted-foreground) !important;
+}
+
+.app .admin-card:not(.rm-head):has(> h2 + :is(p, .admin-sub)) {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Nothing hangs below a card's last line. */
+.app :is(.container, .group-box, .admin-card, .desk-card) > :last-child:not(.container-foot) {
+  margin-bottom: 0 !important;
+}
+
+/* Hints: what an action or field does is said on it, as a tip on hover and
+   keyboard focus, never as small print under it. */
+.app [data-tip] {
+  position: relative;
+}
+
+.app [data-tip]:is(:hover, :focus-visible)::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  z-index: 40;
+  width: max-content;
+  max-width: 18rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius);
+  background: var(--foreground);
+  color: var(--background);
+  font-size: var(--fs12);
+  font-weight: var(--fw5);
+  line-height: 1.4;
+  text-align: left;
+  white-space: normal;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.app .page-header [data-tip]:is(:hover, :focus-visible)::after {
+  top: calc(100% + 6px);
+  bottom: auto;
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+/* Errors are a red bar, white words: a booking that could not be moved, a
+   form the server refused. */
+.app .cal-problem,
+.app p.error[role="alert"],
+.app :is(.form-error, .err)[role="alert"] {
+  display: block;
+  padding: 0.6rem 1rem;
+  margin: 0 0 1rem;
+  border-radius: var(--radius);
+  background: #b42318;
+  color: #ffffff !important;
+  font-size: var(--fs14);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Two columns                                                                */
+/* -------------------------------------------------------------------------- */
+
+/* `.cols`: cards two to a row. The intro line, a bar, a row of tiles and
+   anything marked `.wide` take the whole row. */
+.page-body.cols,
+.cols-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
+  max-width: none;
+}
+
+.page-body.cols > :not(section, .container, .group-box, .admin-card, .desk-card, .panel, .bw),
+.page-body.cols > .wide,
+.cols-grid > .wide {
+  grid-column: 1 / -1;
+}
+
+.page-body.cols > *,
+.cols-grid > * {
+  margin: 0 !important;
+  min-width: 0;
+}
+
+.page-body.cols.is-main {
+  grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
+}
+
+/* `.flow`: cards of very different heights poured into two columns, so a
+   short one never leaves a hole beside a long one. */
+.page-body.flow {
+  columns: 2;
+  column-gap: 1rem;
+  max-width: none;
+}
+
+.page-body.flow > * {
+  break-inside: avoid;
+  margin: 0 0 1rem !important;
+}
+
+.page-body.flow > :is(.lede, .admin-sub, .flash, .wide) {
+  column-span: all;
+}
+
+.page-body.cols > .rates-all {
+  order: 1;
+}
+
+.cols-grid.is-reviews {
+  grid-template-columns: minmax(0, 3fr) minmax(18rem, 2fr);
+}
+
+@media (max-width: 1100px) {
+  .page-body.cols,
+  .page-body.cols.is-main,
+  .cols-grid,
+  .cols-grid.is-reviews {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .page-body.flow {
+    columns: 1;
+  }
+}
+
+@media (max-width: 767px) {
+  .app .page-body > :is(.admin-scroll, .list-view, .bl-wrap) {
+    margin-inline: -0.85rem;
+    max-height: none;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Tours                                                                      */
+/* -------------------------------------------------------------------------- */
+
+/* driver.js's card (components/help/useTour.ts) in the app's tokens. It lives
+   on <body>, outside .app, so its colours are written out here, with the dark
+   theme's beside them. */
+.driver-popover.rs-tour {
+  max-width: 20rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #18181b;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Thai", sans-serif;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
+}
+
+.dark .driver-popover.rs-tour {
+  border-color: #27272a;
+  background: #18181b;
+  color: #fafafa;
+}
+
+.driver-popover.rs-tour .driver-popover-title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.driver-popover.rs-tour .driver-popover-description {
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: inherit;
+}
+
+.driver-popover.rs-tour .driver-popover-progress-text {
+  font-size: 0.75rem;
+  color: #52525b;
+}
+
+.dark .driver-popover.rs-tour .driver-popover-progress-text {
+  color: #a1a1aa;
+}
+
+.driver-popover.rs-tour .driver-popover-footer {
+  margin-top: 0.85rem;
+}
+
+.driver-popover.rs-tour .driver-popover-footer button {
+  height: 32px;
+  padding: 0 0.75rem;
+  border: 1px solid #d4d4d8;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-shadow: none;
+}
+
+.driver-popover.rs-tour .driver-popover-footer .driver-popover-next-btn {
+  border-color: #1f4fa3;
+  background: #1f4fa3;
+  color: #ffffff;
+}
+
+.dark .driver-popover.rs-tour .driver-popover-footer .driver-popover-next-btn {
+  border-color: #7fa2e6;
+  background: #7fa2e6;
+  color: #0b1b3a;
+}
+
+.driver-popover.rs-tour .driver-popover-close-btn {
+  color: #52525b;
+}
+
+.driver-popover.rs-tour :is(button, a):focus-visible {
+  outline: 2px solid #1f4fa3;
+  outline-offset: 2px;
+}
+
+.driver-popover.rs-tour .driver-popover-arrow-side-bottom {
+  border-bottom-color: #ffffff;
+}
+
+.dark .driver-popover.rs-tour .driver-popover-arrow-side-bottom {
+  border-bottom-color: #18181b;
+}
+
+/* The Tutorials page: each tour's steps, numbered. */
+.tour-steps {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--muted-foreground);
+}
+
+.tour-steps li + li {
+  margin-top: 0.2rem;
+}

@@ -1,0 +1,67 @@
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.field {
+  display: inline-flex;
+}
+
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: var(--ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--cream-soft);
+  background: transparent;
+  border: 1px solid var(--jade-line);
+  border-radius: var(--radius-btn);
+  padding: 0.45rem 1.3rem 0.45rem 0.5rem;
+  cursor: pointer;
+  /* The dropdown list is drawn by the operating system and defaults to a white
+     popup, which the cream colour above renders almost invisibly on. */
+  color-scheme: dark;
+  transition: border-color 0.18s var(--ease), color 0.18s var(--ease);
+  /* chevron */
+  background-image: linear-gradient(45deg, transparent 50%, var(--jade) 50%),
+    linear-gradient(135deg, var(--jade) 50%, transparent 50%);
+  background-position: calc(100% - 12px) 52%, calc(100% - 7px) 52%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.select:hover {
+  border-color: var(--jade-dim);
+  color: var(--cream);
+}
+
+/* Options render in the OS menu; force readable colours on dark UAs. The
+   colour-scheme on .select above is what does this in current browsers — these
+   cover the ones that ignore it for the popup. */
+.select option {
+  background: var(--shade-soft);
+  color: var(--cream);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.compact {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.compact .select {
+  flex: 1;
+}

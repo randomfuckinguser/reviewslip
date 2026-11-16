@@ -1,0 +1,49 @@
+.list {
+  max-width: 44rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.item {
+  border: 1px solid var(--jade-line);
+  border-radius: var(--radius-card);
+  background: var(--shade-soft);
+  overflow: hidden;
+}
+
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  text-align: left;
+  padding: 1.1rem 1.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--cream);
+  font-family: var(--ui);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.sign {
+  font-size: 1.4rem;
+  color: var(--jade);
+  transition: transform 0.2s var(--ease);
+  line-height: 1;
+}
+
+.sign[data-open="true"] {
+  transform: rotate(45deg);
+}
+
+.answer {
+  padding: 0 1.25rem 1.2rem;
+  color: var(--cream-soft);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}

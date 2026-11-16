@@ -1,0 +1,460 @@
+/* ==========================================================================
+   The printable table card.
+
+   Sized in millimetres throughout rather than rem: this is a physical object
+   before it is a web page, and 148 x 210mm is A5 whatever the browser's root
+   font size happens to be.
+   ========================================================================== */
+
+/* Screen-only chrome — the back link, the button, the caption. A sibling of the
+   sheet rather than its parent, so printing can hide all of it in one rule
+   without taking the sheet with it. */
+.page {
+  padding-bottom: 1.5rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 2rem;
+}
+
+.note {
+  font-size: 0.85rem;
+  color: var(--cream-soft);
+  max-width: 34rem;
+}
+
+/* -------------------------------------------------------------- the sheet */
+
+.sheet {
+  width: 148mm;
+  height: 210mm;
+  margin: 0 auto 4rem;
+  padding: 14mm 12mm 12mm;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  /* White, not the cream used everywhere else on the site. A full-bleed cream
+     A5 costs a cartridge to print and leaves a white margin on any printer that
+     cannot go borderless — which is most of the printers a small venue owns. */
+  background: #fff;
+  color: var(--card-ink, #14211b);
+  box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.45);
+}
+
+/*
+ * The frame.
+ *
+ * A double rule with corner marks, rather than the single hairline this had.
+ * The card was correct and looked like a web page that had been printed; a
+ * table card sits in a holder next to the cutlery and is read at arm's length,
+ * and what makes one look printed rather than produced is the border treatment
+ * more than anything inside it.
+ *
+ * Every part of it is a hairline in one colour. Nothing here is a solid fill:
+ * an A5 with a heavy border costs ink, and on the inkjet a small venue owns a
+ * wide dark edge bands and streaks. Thin lines print cleanly on everything.
+ */
+.frame {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  border: 0.4mm solid var(--card-frame, #82b49b);
+  border-radius: 2mm;
+  padding: 9mm 7mm 7mm;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* The inner rule, a millimetre and a half in. Lighter than the outer one so
+   the pair reads as a border rather than as two borders. */
+.frame::before {
+  content: "";
+  position: absolute;
+  inset: 1.6mm;
+  border: 0.2mm solid var(--card-frame, #82b49b);
+  border-radius: 1.2mm;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/*
+ * Corner marks, sitting across both rules.
+ *
+ * Drawn as four small squares whose own borders show on two sides each, which
+ * is why this is one element and a background rather than eight. They are the
+ * detail that reads as "someone set this" from across a table.
+ */
+.corners {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.corners span {
+  position: absolute;
+  width: 4.5mm;
+  height: 4.5mm;
+  border: 0.45mm solid var(--card-rule, #e9a03b);
+}
+
+.corners span:nth-child(1) {
+  top: 2.6mm;
+  left: 2.6mm;
+  border-right: 0;
+  border-bottom: 0;
+}
+.corners span:nth-child(2) {
+  top: 2.6mm;
+  right: 2.6mm;
+  border-left: 0;
+  border-bottom: 0;
+}
+.corners span:nth-child(3) {
+  bottom: 2.6mm;
+  left: 2.6mm;
+  border-right: 0;
+  border-top: 0;
+}
+.corners span:nth-child(4) {
+  bottom: 2.6mm;
+  right: 2.6mm;
+  border-left: 0;
+  border-top: 0;
+}
+
+/* ------------------------------------------------------------- the masthead */
+
+/*
+ * The block of colour at the top, carrying the mark and the name.
+ *
+ * The card already used the venue's palette — as the frame, the corner marks
+ * and the divider — and every one of those is a hairline, so at arm's length
+ * it read as a white card with some fine lines on it. One filled block behind
+ * the name is what makes somebody recognise whose card it is before they have
+ * read a word of it, which is the whole job of a mark on a table.
+ *
+ * Its size is the compromise. A full-bleed A5 in a dark colour costs a
+ * cartridge and leaves a white margin on any printer that cannot go
+ * borderless, which is most of the printers a small venue owns — so the block
+ * is about an eighth of the page and sits inside the frame, where it prints
+ * correctly on everything and the ink is spent on the part somebody looks at.
+ * The rest of the card stays white, and so does everything around the code.
+ */
+.masthead {
+  /* Wider than the frame's padding allows, so it reads as a band rather than
+     as a floating box — but stopping short of the inner rule, and starting
+     below the corner marks, so it never crowds either. */
+  margin: 0 -3mm 5mm;
+  align-self: stretch;
+  /* Tighter than it was. With the mark on its own white plate inside a block
+     of colour there were three nested rectangles of padding, and the mark
+     ended up small in the middle of a lot of nothing. */
+  padding: 4.5mm 6mm 4mm;
+  border-radius: 1.5mm;
+  /*
+   * A hairline round the block, in the frame's own colour.
+   *
+   * For the venue whose ground colour is a cream or an off-white: filled with
+   * it, the block is the same as the stock and there is no block — the card
+   * falls back to the white card this was meant to stop being. The outline
+   * gives it an edge at any ground, costs a hairline of ink, and on a dark
+   * ground reads as a second line answering the frame rather than as a border.
+   */
+  border: 0.3mm solid var(--card-frame, #82b49b);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background: var(--card-panel, #14211b);
+  color: var(--card-on-panel, #fff);
+}
+
+/*
+ * The ornament, when it is on the block rather than on the paper.
+ *
+ * `--card-rule` is derived against white, which is where the rest of the
+ * card's colours live. On the block it would be a dark line on a dark ground,
+ * so the review app derives a second value against the ground itself.
+ */
+.masthead .rule::before,
+.masthead .rule::after {
+  background: var(--card-panel-rule, rgba(255, 255, 255, 0.7));
+}
+
+.masthead .lozenge {
+  border-color: var(--card-panel-rule, rgba(255, 255, 255, 0.7));
+}
+
+.masthead .rule {
+  margin-top: 3mm;
+  margin-bottom: 0;
+}
+
+/*
+ * A window in the block for the logo.
+ *
+ * Logos arrive drawn for whatever the venue's own site uses, and a great many
+ * of them are dark marks on a transparent background — which on a dark block
+ * is an invisible logo and a card that looks broken. Setting it on white means
+ * the mark reads whatever it was drawn for. On a logo that already has a white
+ * background the window is invisible, so it costs nothing in the common case.
+ */
+.logoWindow {
+  background: #fff;
+  border-radius: 1mm;
+  /* Hugging the mark. This is a plate to make it legible, not a frame. */
+  padding: 2mm 2.5mm;
+  margin-bottom: 3mm;
+  /* Block, not flex. As a flex container it stretched the mark on the cross
+     axis and left it nothing on the main one, and a logo measured 0 x 0 — the
+     window shrinks to the mark, so the mark has to be what is measured. */
+  display: block;
+}
+
+/*
+ * Height-set, not height-capped, and millimetres like the rest of this card —
+ * it is measured for paper, not for a screen.
+ *
+ * The height is stated rather than capped because of SVG. A logo saved as an
+ * SVG usually carries a `viewBox` and no width or height, which gives it a
+ * ratio but no intrinsic size — and a replaced element with no intrinsic size,
+ * in a box that shrinks to its contents, resolves to nothing at all. The mark
+ * was 0 x 0 and the card printed without it. One definite axis is all it takes
+ * for the ratio to produce the other.
+ *
+ * Capped on width for the wordmarks, which are most logos: held to a height
+ * alone, a 6:1 wordmark would run off the card. `object-fit` is what keeps the
+ * mark's own shape when both constraints bite at once.
+ */
+.logo {
+  display: block;
+  height: 16mm;
+  width: auto;
+  max-width: 62mm;
+  object-fit: contain;
+}
+
+.name {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 9mm;
+  line-height: 1.15;
+  margin: 0;
+  /* Long names shrink the gap rather than the QR: the code is the one element
+     on this card that has a minimum usable size. */
+  overflow-wrap: anywhere;
+  /* Inherited from the block it sits on, not from the sheet. */
+  color: inherit;
+}
+
+/*
+ * The divider under the name: rule, lozenge, rule.
+ *
+ * It was an 18mm bar. A centred ornament does the same job — separating the
+ * name from the instruction — and gives the card a centre line to hang on,
+ * which is what stops a stack of centred text reading as a list.
+ */
+.rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2mm;
+  margin: 4.5mm 0;
+}
+
+.rule::before,
+.rule::after {
+  content: "";
+  width: 14mm;
+  height: 0.35mm;
+  background: var(--card-rule, #e9a03b);
+  opacity: 0.85;
+}
+
+/* A square on its corner. Small enough that a printer's dot gain cannot turn
+   it into a blob, and hollow so it stays a mark rather than a bullet. */
+.lozenge {
+  width: 2.2mm;
+  height: 2.2mm;
+  border: 0.45mm solid var(--card-rule, #e9a03b);
+  transform: rotate(45deg);
+}
+
+.headline {
+  font-size: 5.4mm;
+  line-height: 1.3;
+  font-weight: 500;
+  margin: 0;
+  max-width: 90mm;
+  /* A touch of tracking. At this size it reads as deliberate rather than as
+     body text that happens to be large. */
+  letter-spacing: 0.01em;
+}
+
+/*
+ * The same instruction in the guest's own language.
+ *
+ * Smaller than the English and not faint. It is quieter because one of the two
+ * has to lead and the card is printed by an English-speaking dashboard — but a
+ * line set in the muted grey would read as a footnote, and for half the people
+ * who pick this card up it is the only line that means anything.
+ */
+.second {
+  font-size: 4.4mm;
+  line-height: 1.5;
+  font-weight: 500;
+  margin: 1.5mm 0 0;
+  max-width: 90mm;
+  color: var(--card-ink, #1b2a23);
+}
+
+/* Latin text sits above its own baseline; Thai, Chinese and Japanese need the
+   room back or the lines crowd. */
+.second:lang(th),
+.second:lang(zh),
+.second:lang(ja),
+.second:lang(ko) {
+  line-height: 1.7;
+}
+
+.secondHint {
+  font-size: 3.4mm;
+  color: var(--card-muted, #5d6b62);
+  margin: 0.5mm 0 0;
+}
+
+/* ----------------------------------------------------------------- the QR */
+
+/*
+ * Viewfinder ticks at the four corners of the code.
+ *
+ * Decoration that does a job: it says "point here", which on a table card is
+ * the one instruction that matters. They sit outside the code's own quiet zone
+ * — see the viewBox — so they cannot interfere with a scan.
+ */
+.qr {
+  position: relative;
+  /* Shrink to the code. Full width would put the ticks below at the edges of
+     the card rather than around the thing they are pointing at. */
+  width: fit-content;
+  margin: auto 0;
+  padding: 3.5mm;
+  background: #fff;
+}
+
+/* Four, not two. Two corners reads as something that failed to draw. */
+.ticks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ticks span {
+  position: absolute;
+  width: 5mm;
+  height: 5mm;
+  border: 0.5mm solid var(--card-frame, #82b49b);
+  opacity: 0.8;
+}
+
+.ticks span:nth-child(1) {
+  top: 0;
+  left: 0;
+  border-right: 0;
+  border-bottom: 0;
+}
+.ticks span:nth-child(2) {
+  top: 0;
+  right: 0;
+  border-left: 0;
+  border-bottom: 0;
+}
+.ticks span:nth-child(3) {
+  bottom: 0;
+  left: 0;
+  border-right: 0;
+  border-top: 0;
+}
+.ticks span:nth-child(4) {
+  bottom: 0;
+  right: 0;
+  border-left: 0;
+  border-top: 0;
+}
+
+/* Pure black on white, at 62mm. Tinting a QR to match a palette is the most
+   common way to make one that a phone will not read in a dim room. */
+.qr svg {
+  display: block;
+  width: 62mm;
+  height: 62mm;
+}
+
+.url {
+  font-size: 3.6mm;
+  letter-spacing: 0.02em;
+  color: var(--card-muted, #5d6b62);
+  margin: 0 0 1mm;
+  overflow-wrap: anywhere;
+}
+
+.hint {
+  font-size: 3.4mm;
+  color: var(--card-muted, #5d6b62);
+  margin: 0;
+}
+
+.brand {
+  margin-top: 6mm;
+  font-size: 3mm;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--card-brand, #93a099);
+}
+
+/* --------------------------------------------------------------- printing */
+
+@page {
+  size: A5 portrait;
+  margin: 0;
+}
+
+@media print {
+  /* Every direct child of body is site chrome except <main> — the header, the
+     footer and the terms overlay. Hiding them by structure rather than by class
+     keeps this working if any of the three is restyled. */
+  :global(body) > :not(main) {
+    display: none !important;
+  }
+
+  :global(body),
+  :global(main) {
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .page {
+    display: none;
+  }
+
+  .sheet {
+    margin: 0;
+    box-shadow: none;
+    /* The frame, the corner marks, the divider and the ticks round the code
+       are the design, not decoration a browser should feel free to drop when
+       it decides to save somebody ink. */
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

@@ -1,0 +1,384 @@
+/* The Server page: tabs, a status banner, tiles with a day's trend, and
+   breakdown tables with inline bars. App tokens throughout, one accent. */
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  padding: 0.5rem 0.85rem;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.tab:hover {
+  color: var(--foreground);
+}
+
+.tab[aria-current="page"] {
+  border-bottom-color: var(--primary);
+  color: var(--foreground);
+}
+
+.tabCount {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  margin-left: 0.35rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------ banner -- */
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.banner[data-tone="good"] {
+  border-left-color: var(--success);
+}
+
+.banner[data-tone="warning"] {
+  border-left-color: var(--warning);
+}
+
+.banner[data-tone="critical"] {
+  border-left-color: var(--destructive);
+}
+
+.bannerIcon {
+  flex: none;
+}
+
+.banner[data-tone="good"] .bannerIcon {
+  color: var(--success);
+}
+
+.banner[data-tone="warning"] .bannerIcon {
+  color: var(--warning);
+}
+
+.banner[data-tone="critical"] .bannerIcon {
+  color: var(--destructive);
+}
+
+.bannerTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.bannerSub {
+  margin: 0.1rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+/* ------------------------------------------------------------- tiles -- */
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.tile {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.85rem 0.9rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: inherit;
+  text-decoration: none;
+}
+
+a.tile:hover {
+  border-color: var(--input);
+}
+
+.tileLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.tileValue {
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.tileNote {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.tile[data-tone="critical"] .tileValue {
+  color: var(--destructive);
+}
+
+.tile[data-tone="warning"] .tileValue {
+  color: var(--warning);
+}
+
+/* ------------------------------------------------------- sparklines -- */
+
+.spark {
+  display: block;
+  width: 100%;
+  height: 34px;
+  margin-top: 0.35rem;
+  overflow: visible;
+}
+
+.sparkTall {
+  height: 72px;
+}
+
+.spark .line {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.spark .area {
+  fill: color-mix(in srgb, var(--primary) 10%, transparent);
+  stroke: none;
+}
+
+.spark .hit {
+  fill: transparent;
+}
+
+.spark .hit:hover {
+  fill: color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+.sparkAxis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: var(--muted-foreground);
+}
+
+/* ------------------------------------------------------------ panels -- */
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.panel {
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  min-width: 0;
+}
+
+.panel + .panel,
+.grid2 + .panel,
+.panel + .grid2,
+.grid2 + .grid2 {
+  margin-top: 0.75rem;
+}
+
+.panelHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.panelNote {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+.empty {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+/* A usage meter: one track, one fill, the number beside it. */
+.meter {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.meterTop {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+
+.meterTrack {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--muted);
+}
+
+.meterFill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+.meter[data-tone="warning"] .meterFill {
+  background: var(--warning);
+}
+
+.meter[data-tone="critical"] .meterFill {
+  background: var(--destructive);
+}
+
+/* Tables with an inline bar in one column. */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.table th {
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--muted-foreground);
+}
+
+.table td {
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.table tr:last-child td {
+  border-bottom: 0;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.barCell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 8rem;
+}
+
+.bar {
+  flex: 1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--muted);
+}
+
+.bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+.sub {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* State: an icon and a word, never colour alone. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.pill[data-tone="good"] {
+  color: var(--success);
+}
+
+.pill[data-tone="warning"] {
+  color: var(--warning);
+}
+
+.pill[data-tone="critical"] {
+  color: var(--destructive);
+}
+
+.pill[data-tone="neutral"] {
+  color: var(--muted-foreground);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.chip {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--muted);
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+@media (max-width: 900px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Side by side, the pair starts level: the stacking gap above is for panels
+   one under another. */
+.grid2 > .panel {
+  margin-top: 0;
+}

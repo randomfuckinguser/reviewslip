@@ -1,0 +1,184 @@
+.form {
+  background: var(--shade-soft);
+  border: 1px solid var(--jade-line);
+  border-radius: var(--radius-card);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.heading {
+  font-family: var(--display);
+  font-weight: 300;
+  font-size: 1.6rem;
+  color: var(--cream);
+  margin-bottom: 0.25rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--cream-soft);
+}
+
+.req {
+  color: var(--marigold);
+}
+
+.input {
+  width: 100%;
+  font-family: var(--ui);
+  font-size: 0.95rem;
+  color: var(--cream);
+  background: var(--shade);
+  border: 1px solid var(--jade-line);
+  border-radius: var(--radius-btn);
+  padding: 0.7rem 0.85rem;
+  transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+
+.input::placeholder {
+  color: var(--cream-faint);
+}
+
+.input:hover {
+  border-color: var(--jade-dim);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--jade);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--wash) 15%, transparent);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 7rem;
+  line-height: 1.6;
+}
+
+.invalid {
+  border-color: var(--destructive);
+}
+
+.invalid:focus {
+  border-color: var(--destructive);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive) 18%, transparent);
+}
+
+.errorText {
+  font-size: 0.8rem;
+  color: var(--destructive);
+}
+
+.errorBanner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-btn);
+  background: var(--destructive-surface);
+  border: 1px solid color-mix(in srgb, var(--destructive) 40%, transparent);
+  color: var(--destructive);
+  font-size: 0.9rem;
+}
+
+.errorBanner strong {
+  color: var(--destructive);
+}
+
+.submit {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+}
+
+.orEmail {
+  font-size: 0.85rem;
+  color: var(--cream-faint);
+}
+
+.orEmail a {
+  color: var(--jade);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Success state */
+.success {
+  background: var(--shade-soft);
+  border: 1px solid var(--jade-line);
+  border-radius: var(--radius-card);
+  padding: 2.5rem 1.75rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  animation: rise 0.4s var(--ease) both;
+}
+
+.successIcon {
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--jade);
+  color: var(--shade-deep);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.successTitle {
+  font-family: var(--display);
+  font-weight: 300;
+  font-size: 1.5rem;
+  color: var(--cream);
+}
+
+.successBody {
+  color: var(--cream-soft);
+}
+
+@media (min-width: 560px) {
+  .row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* The honeypot.
+
+   Taken off screen rather than hidden with display:none or the hidden
+   attribute: a bot that fills forms in reads the DOM, and skipping anything
+   the CSS hides is the first thing one learns to do. This is present, focusable
+   only by something that ignores tabindex, and invisible to a person. */
+.honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Cloudflare's widget renders into this. It carries its own size, so this is
+   only the space around it. */
+.turnstile:not(:empty) {
+  margin: 0.25rem 0 0.5rem;
+}

@@ -1,0 +1,148 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: color-mix(in srgb, #000 72%, transparent);
+  backdrop-filter: blur(4px);
+  animation: fade 0.25s var(--ease) both;
+}
+
+.dialog {
+  width: 100%;
+  max-width: 34rem;
+  max-height: min(88vh, 44rem);
+  display: flex;
+  flex-direction: column;
+  background: var(--shade-soft);
+  border: 1px solid var(--jade-line);
+  border-radius: var(--radius-card);
+  box-shadow: 0 24px 48px -16px color-mix(in srgb, #000 30%, transparent);
+  animation: rise 0.3s var(--ease) both;
+  overflow: hidden;
+}
+
+.scroll {
+  overflow-y: auto;
+  padding: 1.75rem 1.75rem 0.5rem;
+}
+
+.title {
+  font-family: var(--display);
+  font-weight: 300;
+  font-size: clamp(1.5rem, 4vw, 1.9rem);
+  color: var(--cream);
+}
+
+.intro {
+  margin-top: 0.75rem;
+  color: var(--cream-soft);
+  line-height: 1.7;
+}
+
+.heading {
+  font-family: var(--ui);
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--jade);
+  margin-top: 1.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.risks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.risks li {
+  position: relative;
+  padding-left: 1.4rem;
+  color: var(--cream-soft);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.risks li::before {
+  content: "!";
+  position: absolute;
+  left: 0;
+  top: 0.05rem;
+  width: 1rem;
+  height: 1rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--marigold);
+  color: var(--marigold-ink);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.liability {
+  color: var(--cream-soft);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.agree {
+  margin-top: 1.4rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--jade-line);
+  color: var(--cream-faint);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.1rem 1.75rem;
+  border-top: 1px solid var(--jade-line);
+  background: var(--shade-soft);
+}
+
+.termsLink {
+  font-size: 0.85rem;
+  color: var(--jade);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.termsLink:hover {
+  color: var(--cream);
+}
+
+.actions :global(.btn) {
+  flex: 1;
+  min-width: 12rem;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .termsLink {
+    text-align: center;
+  }
+}

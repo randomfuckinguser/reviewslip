@@ -1,0 +1,100 @@
+/* Shared by /login and /signup — same split layout, different side copy. */
+
+.section {
+  padding-block: clamp(3rem, 8vw, 5.5rem);
+  background: var(--shade);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.copy {
+  max-width: 34rem;
+}
+
+.title {
+  font-size: clamp(2rem, 5.5vw, 3rem);
+  margin: 1rem 0 1.25rem;
+}
+
+.points {
+  list-style: none;
+  padding: 0;
+  margin: 1.75rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.points li {
+  position: relative;
+  padding-left: 1.75rem;
+  color: var(--cream-soft);
+  line-height: 1.6;
+}
+
+.points li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  top: 0.05rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--jade);
+  color: var(--shade-deep);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.platforms {
+  margin-top: 2rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--jade-line);
+}
+
+.platforms :global(ul),
+.platforms > div {
+  justify-content: flex-start;
+}
+
+/* The form column is capped so the fields stay a comfortable reading width on
+   wide screens rather than stretching to half the viewport. */
+.formCol {
+  min-width: 0;
+  width: 100%;
+  max-width: 27rem;
+  justify-self: center;
+}
+
+@media (min-width: 860px) {
+  .grid {
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 3.5rem;
+  }
+
+  .formCol {
+    justify-self: end;
+  }
+}
+
+/* The line shown above the sign-up form when someone arrived through an
+   invitation. Marigold rather than the jade used elsewhere: it is the one
+   thing on this page that is about them being expected. */
+.invited {
+  margin: 0 0 1.1rem;
+  padding: 0.7rem 0.95rem;
+  border: 1px solid color-mix(in srgb, var(--alert) 40%, transparent);
+  border-left-width: 3px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--alert) 10%, transparent);
+  color: var(--cream);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}

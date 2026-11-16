@@ -1,0 +1,174 @@
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.toggle {
+  display: flex;
+  width: max-content;
+  gap: 0.25rem;
+  padding: 0.3rem;
+  border: 1px solid var(--jade-line);
+  border-radius: 999px;
+  background: var(--shade-soft);
+}
+
+.toggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  background: transparent;
+  color: var(--cream-soft);
+  font-family: var(--ui);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.18s var(--ease), color 0.18s var(--ease);
+}
+
+.toggleBtn:hover {
+  color: var(--cream);
+}
+
+.toggleBtn[aria-pressed="true"] {
+  background: var(--jade);
+  color: var(--shade-deep);
+}
+
+.save {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: var(--marigold);
+  color: var(--marigold-ink);
+  white-space: nowrap;
+}
+
+/* When yearly is active the marigold badge sits on the jade pill — keep it readable */
+.toggleBtn[aria-pressed="true"] .save {
+  background: var(--marigold);
+  color: var(--marigold-ink);
+}
+
+.disclaimer {
+  text-align: center;
+  color: var(--cream-faint);
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.billNote {
+  text-align: center;
+  min-height: 1.1rem;
+  margin: -0.5rem 0 0.5rem;
+  font-size: 0.78rem;
+  color: var(--jade);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.card {
+  position: relative;
+  background: var(--shade-soft);
+  border: 1px solid var(--jade-line);
+  border-radius: var(--radius-card);
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.recommended {
+  border-color: var(--marigold);
+}
+
+.badge {
+  position: absolute;
+  top: -0.75rem;
+  left: 1.5rem;
+  background: var(--marigold);
+  color: var(--marigold-ink);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+}
+
+.name {
+  font-size: 1.5rem;
+  color: var(--cream);
+}
+
+.tagline {
+  color: var(--cream-soft);
+  font-size: 0.9rem;
+  margin-top: 0.35rem;
+  min-height: 2.6rem;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin: 1.1rem 0;
+}
+
+.price {
+  font-family: var(--display);
+  font-weight: 300;
+  font-size: 2.6rem;
+  color: var(--cream);
+}
+
+.per {
+  color: var(--cream-faint);
+  font-size: 0.95rem;
+}
+
+.cta {
+  width: 100%;
+}
+
+.features {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.92rem;
+  color: var(--cream-soft);
+}
+
+.check {
+  color: var(--jade);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+@media (min-width: 860px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

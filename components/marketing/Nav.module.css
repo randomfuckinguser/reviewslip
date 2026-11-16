@@ -1,0 +1,197 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--shade) 85%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--jade-line);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  height: 4.25rem;
+}
+
+/* The bar carries more than any content row does — brand, seven links, the
+   locale select, the log-in link, Sign up and the CTA — and translated labels
+   run much longer than the English (German is ~25% wider). Give it a wider
+   track than .wrap's 68rem so nothing overflows. Two-class selector so it beats
+   .wrap regardless of stylesheet order. */
+.header .bar {
+  max-width: 84rem;
+}
+
+.brand {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 1.4rem;
+  letter-spacing: -0.01em;
+  color: var(--cream);
+  /* Wordmark stays on the left; this pushes everything after it (nav links +
+     locale selects + CTA) over to the right edge, so the menu is right-
+     justified. On mobile (where .actions is hidden) it pushes the burger right. */
+  margin-right: auto;
+}
+
+.desktopNav {
+  display: none;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 1rem;
+}
+
+.link {
+  font-size: 0.86rem;
+  color: var(--cream-soft);
+  transition: color 0.18s var(--ease);
+  /* Labels are much longer in some languages (German especially) — never let
+     one break across two lines and blow out the bar height. */
+  white-space: nowrap;
+}
+
+.link:hover {
+  color: var(--cream);
+}
+
+.actions {
+  display: none;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+/* The in-nav CTA sits tighter than a standalone button so the bar still fits
+   long translated labels. */
+.actions :global(.btn) {
+  padding: 0.72rem 1.05rem;
+  font-size: 0.9rem;
+}
+
+/* "Log in" is a text link rather than a third button, so the bar reads as one
+   primary action (Get in touch) with quieter options beside it. */
+.signin {
+  padding-block: 0.7rem;
+  padding-inline: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--cream-soft);
+  white-space: nowrap;
+  transition: color 0.18s var(--ease);
+}
+
+.signin:hover {
+  color: var(--cream);
+}
+
+/* Burger */
+.burger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: transparent;
+  border: 1px solid var(--jade-line);
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  padding: 0;
+}
+
+.burger span,
+.burger span::before,
+.burger span::after {
+  content: "";
+  display: block;
+  width: 1.1rem;
+  height: 1.5px;
+  background: var(--cream);
+  transition: transform 0.2s var(--ease), opacity 0.2s var(--ease);
+}
+
+.burger span {
+  position: relative;
+}
+
+.burger span::before {
+  position: absolute;
+  top: -5px;
+  left: 0;
+}
+
+.burger span::after {
+  position: absolute;
+  top: 5px;
+  left: 0;
+}
+
+.burger span[data-open="true"] {
+  background: transparent;
+}
+
+.burger span[data-open="true"]::before {
+  transform: translateY(5px) rotate(45deg);
+}
+
+.burger span[data-open="true"]::after {
+  transform: translateY(-5px) rotate(-45deg);
+}
+
+.mobileNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.5rem 1.5rem;
+  border-top: 1px solid var(--jade-line);
+  background: var(--shade);
+}
+
+.mobileLink {
+  padding: 0.75rem 0;
+  color: var(--cream-soft);
+  border-bottom: 1px solid var(--jade-line);
+}
+
+.mobileControls {
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--jade-line);
+}
+
+.mobileNav :global(.btn) {
+  margin-top: 0.75rem;
+}
+
+/* Seven nav links plus the locale select, the log-in link, Sign up and the CTA
+   need real room, and the longest translations (Portuguese, German) set the
+   floor. Below this the bar would overflow, so fall back to the burger menu —
+   which is the better experience at that width anyway. */
+@media (min-width: 1360px) {
+  .desktopNav,
+  .actions {
+    display: flex;
+  }
+  .burger {
+    display: none;
+  }
+}
+
+/* The theme toggle: icon-only, so square, and outlined like the quiet button
+   beside it so the row reads as one set of controls. */
+.theme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--jade-line);
+  border-radius: var(--radius-btn);
+  background: transparent;
+  color: var(--cream);
+  cursor: pointer;
+}
+
+.theme:hover {
+  border-color: var(--jade-dim);
+}

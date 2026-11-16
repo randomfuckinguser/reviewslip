@@ -1,0 +1,16 @@
+/* The softphone button and its phone-link fallback occupy one slot: the pair
+   lays itself out as if it were not there, so it drops into a grid or a row of
+   buttons like a single button would. */
+.pair {
+  display: contents;
+}
+
+.call[hidden] {
+  display: none !important;
+}
+
+/* Once the widget shows the softphone button, the phone link beside it is the
+   same action twice. */
+.call:not([hidden]) + .fallback {
+  display: none;
+}

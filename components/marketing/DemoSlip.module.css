@@ -1,0 +1,48 @@
+.slip {
+  width: 100%;
+  max-width: 26rem;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.gear {
+  color: var(--ink-soft);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding-top: 0.35rem;
+}
+
+.prompt {
+  font-family: var(--ui);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--ink);
+  margin: 1.1rem 0 0.7rem;
+}
+
+.review {
+  margin-top: 0.75rem;
+}
+
+.placeholder {
+  color: var(--ink-soft);
+  font-style: italic;
+  font-size: 1rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.actions .btn {
+  flex: 1 1 auto;
+  padding-block: 0.85rem;
+}

@@ -1,0 +1,1202 @@
+/* ==========================================================================
+   The marketplace: search bar, results, venue page, checkout, confirmation.
+
+   The site's own system — the grey ramp, one ink, the system font — laid out
+   the way guests already know from the big booking sites: a bar of fields
+   with Search at the end, a list of cards with the price on the right, a
+   gallery over a list of rooms with their rates in rows.
+   ========================================================================== */
+
+/* ------------------------------------------------------------- the bar -- */
+
+.bar {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr) auto;
+  align-items: stretch;
+  gap: 0;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px -18px rgb(0 0 0 / 0.35);
+}
+
+.barNoWhere {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr) auto;
+}
+
+.field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.65rem 1rem;
+  border-right: 1px solid var(--border);
+}
+
+.fieldLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.fieldInput,
+.fieldButton {
+  width: 100%;
+  min-width: 0;
+  padding: 0.15rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+  outline: none;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fieldInput::placeholder {
+  color: var(--muted-foreground);
+  font-weight: 400;
+}
+
+.field:focus-within {
+  background: var(--muted);
+}
+
+.field:first-child:focus-within {
+  border-radius: 11px 0 0 11px;
+}
+
+.searchButton {
+  margin: 0.45rem;
+  padding-inline: 1.6rem;
+  border-radius: 8px;
+}
+
+.barCompact {
+  box-shadow: none;
+}
+
+/* The guests picker. */
+.popover {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 20;
+  width: min(20rem, 90vw);
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px -16px rgb(0 0 0 / 0.4);
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.stepperLabel {
+  font-weight: 600;
+}
+
+.stepperHint {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+.stepperControls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stepperControls button {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--input);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.stepperControls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.stepperControls output {
+  min-width: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+@media (max-width: 860px) {
+  .bar,
+  .barNoWhere {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .field {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .bar > .field:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .barNoWhere > .field:first-child {
+    grid-column: auto;
+  }
+
+  .fieldGuests {
+    grid-column: 1 / -1;
+  }
+
+  .searchButton {
+    grid-column: 1 / -1;
+  }
+
+  .popover {
+    left: 0;
+    right: auto;
+  }
+}
+
+/* ------------------------------------------------------- the home band -- */
+
+.hero {
+  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+  background: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.heroTitle {
+  margin: 0.4rem 0 0.5rem;
+  font-size: clamp(1.9rem, 4.5vw, 2.8rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.heroLede {
+  margin: 0 0 1.75rem;
+  max-width: 40rem;
+  color: var(--muted-foreground);
+  font-size: 1.05rem;
+}
+
+.places {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.placeChip {
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.placeChip:hover {
+  border-color: var(--input);
+}
+
+/* --------------------------------------------------------- page chrome -- */
+
+.top {
+  padding-block: 1.25rem;
+  background: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+
+.crumbs a {
+  color: inherit;
+}
+
+.page {
+  padding-block: 1.75rem 4rem;
+}
+
+.h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.h2 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+}
+
+.muted {
+  color: var(--muted-foreground);
+}
+
+.error {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--destructive);
+  border-radius: 8px;
+  background: var(--destructive-surface);
+  color: var(--destructive);
+  font-size: 0.9rem;
+}
+
+/* ------------------------------------------------------------- results -- */
+
+.results {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+
+.filters {
+  position: sticky;
+  top: 5rem;
+  display: grid;
+  gap: 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.filters fieldset {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.filters legend {
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.check input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--foreground);
+}
+
+.filterActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filterActions .btn,
+.filterActions a {
+  flex: 1;
+}
+
+.small {
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+.resultsHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.sort {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.sortLink {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.sortLink[aria-current="true"] {
+  background: var(--foreground);
+  border-color: var(--foreground);
+  color: var(--background);
+}
+
+.list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr) 12rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--background);
+  transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+
+.card:hover {
+  border-color: var(--input);
+  box-shadow: 0 10px 30px -20px rgb(0 0 0 / 0.4);
+}
+
+.cardPhoto {
+  position: relative;
+  min-height: 12rem;
+  background: var(--muted);
+}
+
+.cardPhoto img,
+.photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.noPhoto {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0.35rem;
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+}
+
+.cardBody {
+  display: grid;
+  align-content: start;
+  gap: 0.45rem;
+  padding: 1rem 1.1rem;
+  min-width: 0;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.3;
+}
+
+.cardTitle a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cardTitle a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.card {
+  position: relative;
+}
+
+.place {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.score {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.2rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 6px;
+  background: var(--foreground);
+  color: var(--background);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.chipList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chipList li {
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  background: var(--muted);
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}
+
+.cardPrice {
+  display: grid;
+  align-content: end;
+  justify-items: end;
+  gap: 0.2rem;
+  padding: 1rem 1.1rem;
+  border-left: 1px solid var(--border);
+  text-align: right;
+}
+
+.left {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--destructive);
+}
+
+.price {
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.priceNote {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+.cardPrice .btn {
+  position: relative;
+  z-index: 1;
+  margin-top: 0.5rem;
+}
+
+.empty {
+  padding: 2.5rem 1.5rem;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+
+@media (max-width: 900px) {
+  .results {
+    grid-template-columns: 1fr;
+  }
+
+  /* Results first on a phone: the filters are a second look, not the first. */
+  .filters {
+    position: static;
+    order: 2;
+  }
+
+  .card {
+    grid-template-columns: 9rem minmax(0, 1fr);
+  }
+
+  .cardPrice {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    justify-items: start;
+    border-left: 0;
+    border-top: 1px solid var(--border);
+    text-align: left;
+  }
+
+  /* The price, its note and the total stacked on the left; the button on the
+     right beside all of them. */
+  .cardPrice > :not(.btn) {
+    grid-column: 1;
+  }
+
+  .cardPrice .btn {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    align-self: center;
+    justify-self: end;
+  }
+}
+
+/* --------------------------------------------------------- venue page -- */
+
+.venueHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.venueMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1rem;
+  margin-top: 0.4rem;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 11rem 11rem;
+  gap: 0.5rem;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.gallery > :first-child {
+  grid-row: span 2;
+}
+
+.galleryOne {
+  grid-template-columns: 1fr;
+  grid-template-rows: 20rem;
+}
+
+.galleryOne > :first-child {
+  grid-row: auto;
+}
+
+.photo {
+  position: relative;
+  overflow: hidden;
+  background: var(--muted);
+}
+
+.venueGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: 2rem;
+  align-items: start;
+  margin-top: 2rem;
+}
+
+.section + .section {
+  margin-top: 2.25rem;
+}
+
+.section {
+  scroll-margin-top: 6rem;
+}
+
+.about {
+  white-space: pre-line;
+  line-height: 1.7;
+}
+
+.amenityGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 0.5rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+.amenityGrid li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.aside {
+  position: sticky;
+  top: 5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.box {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.boxTitle {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.contactButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.contactButtons a {
+  justify-content: flex-start;
+  padding: 0.65rem 0.8rem;
+  font-size: 0.875rem;
+}
+
+.policy {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+.policy li {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.stickyBar {
+  position: sticky;
+  top: 4.25rem;
+  z-index: 10;
+  padding-block: 0.75rem;
+  background: color-mix(in srgb, var(--background) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Rooms, each with its rates in rows. */
+.room {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.room + .room {
+  margin-top: 1rem;
+}
+
+.roomHead {
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--muted);
+}
+
+.roomName {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.roomGrid {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+}
+
+.roomInfo {
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-right: 1px solid var(--border);
+}
+
+.roomPhoto {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--muted);
+}
+
+.roomPhoto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.roomThumbs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.3rem;
+}
+
+.roomThumbs img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.facts {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.facts li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.roomText {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+
+.offers {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.offers th {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--muted-foreground);
+}
+
+.offers td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.offers tr:last-child td {
+  border-bottom: 0;
+}
+
+.offerName {
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+}
+
+.include {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.include li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.offerPrice {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.offerAction {
+  width: 1%;
+  text-align: right;
+}
+
+.offerAction .btn {
+  padding: 0.65rem 1.1rem;
+}
+
+.unavailable {
+  padding: 1rem;
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .venueGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .aside {
+    position: static;
+  }
+
+  .gallery {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 14rem 7rem;
+  }
+
+  .gallery > :first-child {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .gallery > :nth-child(n + 4) {
+    display: none;
+  }
+
+  .roomGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .roomInfo {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .offers thead {
+    display: none;
+  }
+
+  .offers tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .offers tr:last-child {
+    border-bottom: 0;
+  }
+
+  .offers td {
+    border-bottom: 0;
+  }
+
+  .offers td:first-child {
+    grid-column: 1 / -1;
+    padding-bottom: 0;
+  }
+
+  .offerPrice {
+    text-align: left;
+  }
+
+  .stickyBar {
+    position: static;
+  }
+}
+
+/* ------------------------------------------------------------ checkout -- */
+
+.checkout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 22rem;
+  gap: 2rem;
+  align-items: start;
+}
+
+.form {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.label {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.input {
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--input);
+  border-radius: 8px;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  font-weight: 400;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 1px;
+}
+
+.hint {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+.summary {
+  position: sticky;
+  top: 5rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.summaryPhoto {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--muted);
+}
+
+.summaryPhoto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.summaryBody {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.1rem;
+}
+
+.lines {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.lines div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.lines dt {
+  color: var(--muted-foreground);
+}
+
+.lines dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 600;
+}
+
+.totalLine {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 1.05rem;
+}
+
+.note {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+@media (max-width: 900px) {
+  .checkout {
+    grid-template-columns: 1fr;
+  }
+
+  .summary {
+    position: static;
+    order: -1;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* -------------------------------------------------------- confirmation -- */
+
+.confirmed {
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+.confirmedHead {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.tick {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  background: var(--foreground);
+  color: var(--background);
+}
+
+.reference {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+/* Three photos: the big one and two stacked beside it. */
+.galleryThree {
+  grid-template-columns: 2fr 1fr;
+}
+
+/* Cancelling: a summary to open, then the one red button on the site. */
+.cancelSummary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.danger {
+  background: var(--destructive);
+  /* The page colour: white on the light theme's deep red, near-black on the
+     dark theme's light red. Either way it reads. */
+  color: var(--background);
+}
+
+.danger:hover {
+  background: color-mix(in srgb, var(--destructive) 85%, #000);
+}
+
+/* Manage Booking. */
+.manageButton {
+  margin-top: 0.25rem;
+}
+
+.manage {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  scroll-margin-top: 5rem;
+}
+
+.manageHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.manage .boxTitle,
+.cancelSummary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.changeForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr 6rem 6rem auto;
+  align-items: end;
+  gap: 0.6rem;
+}
+
+.quote {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--input);
+  border-radius: 10px;
+  background: var(--muted);
+}
+
+.was {
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+  font-weight: 400;
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 700px) {
+  .changeForm {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .changeForm button {
+    grid-column: 1 / -1;
+  }
+}
+
+/* A phone: the photo across the top of the card, the details under it at full
+   width, rather than squeezed into the half beside a tall photo. */
+@media (max-width: 560px) {
+  .card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cardPhoto {
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+  }
+}

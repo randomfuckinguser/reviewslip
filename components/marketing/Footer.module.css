@@ -1,0 +1,82 @@
+.footer {
+  background: var(--shade-soft);
+  border-top: 1px solid var(--jade-line);
+  padding-block: 3.5rem 2rem;
+  margin-top: 2rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+.brandCol {
+  max-width: 22rem;
+}
+
+.brand {
+  font-family: var(--display);
+  font-size: 1.5rem;
+  color: var(--cream);
+}
+
+.blurb {
+  color: var(--cream-soft);
+  margin-top: 0.5rem;
+  font-size: 0.92rem;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+.colTitle {
+  font-family: var(--ui);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--jade);
+  margin-bottom: 0.2rem;
+}
+
+.link {
+  font-size: 0.9rem;
+  color: var(--cream-soft);
+  transition: color 0.18s var(--ease);
+}
+
+.link:hover {
+  color: var(--cream);
+}
+
+/* Sits under the primary Sign up button in the last column. */
+.secondaryCta {
+  margin-top: -0.1rem;
+}
+
+.legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--jade-line);
+  font-size: 0.82rem;
+  color: var(--cream-faint);
+}
+
+.note {
+  color: var(--jade);
+}
+
+@media (min-width: 720px) {
+  .grid {
+    grid-template-columns: 2fr 1fr 1fr 1.2fr;
+  }
+}
