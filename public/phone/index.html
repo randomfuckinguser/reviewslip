@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
     <title>Reviewslip Phone</title>
     <!--
@@ -77,6 +77,9 @@
 
       <!-- Signed in -->
       <div id="view-phone" class="stack" hidden>
+        <!-- Two columns on a computer (phone.css): the duty card and any call at
+             the left, the messages and calls beside it. One column on a phone. -->
+        <div class="phone-side">
         <p class="flash" id="flash" role="alert" hidden></p>
 
         <section id="rings" class="stack" aria-live="assertive"></section>
@@ -121,8 +124,10 @@
             <button type="button" class="linkbtn" id="duty-off" data-t="goOff" hidden>Go off duty</button>
           </p>
         </section>
+        </div>
 
-        <!-- Pills across the page on a computer; a bottom tab bar on a phone. -->
+        <div class="phone-main">
+        <!-- Underlined tabs on a computer; a bottom tab bar on a phone. -->
         <nav class="log-tabs" role="tablist" aria-label="Messages and calls">
           <button type="button" class="log-tab" role="tab" data-tab="new" aria-selected="true">
             <span class="tab-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.5" cy="12" r="3.5"/><circle cx="17.5" cy="12" r="3.5"/><path d="M6.5 15.5h11"/></svg><span class="count" id="vm-count" hidden></span></span>
@@ -173,6 +178,7 @@
         </section>
 
         <p class="foot"><button type="button" class="linkbtn" id="foot-signout" data-t="signOut">Sign out</button></p>
+        </div>
       </div>
     </main>
 
