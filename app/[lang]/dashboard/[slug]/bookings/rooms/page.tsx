@@ -3,9 +3,12 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 
+import CleaningResults, { type Results } from "@/components/dashboard/CleaningResults";
 import CleaningStandard, {
   type ChecklistItem,
+  type CleaningArea,
   type RoomState,
+  type StarterLine,
 } from "@/components/dashboard/CleaningStandard";
 import HousekeepingPin, {
   type HousekeepingState,
@@ -27,6 +30,32 @@ export const metadata: Metadata = {
   title: "Rooms",
   robots: { index: false, follow: false },
 };
+
+/**
+ * One call to the review app from a server action, as the result a control
+ * can show. Out here rather than inside the page: a server action can call a
+ * module function, but not close over another function of the page.
+ */
+async function attempt(
+  slug: string,
+  here: string,
+  path: string,
+  method: "POST" | "PUT" | "DELETE",
+  body: unknown,
+  fallback: string,
+  refresh = true
+): Promise<{ ok: boolean; error?: string }> {
+  const current = await sessionToken();
+  if (!current) return { ok: false, error: "Sign in again." };
+
+  try {
+    await call(`/businesses/${slug}${path}`, { method, body, token: current });
+    if (refresh) revalidatePath(here);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : fallback };
+  }
+}
 
 export default async function RoomsPage({
   params,
@@ -80,14 +109,29 @@ export default async function RoomsPage({
    * up and it must not fail to load because a second call did. A review app
    * that has not been deployed yet simply has no standard to show.
    */
-  let standard: { items: ChecklistItem[]; states: RoomState[] } | null = null;
+  type Standard = {
+    items: ChecklistItem[];
+    // Absent from a review app that predates areas: read as none.
+    areas?: CleaningArea[];
+    starter?: StarterLine[];
+    states: RoomState[];
+  };
+  let standard: Standard | null = null;
   try {
-    standard = await call<{ items: ChecklistItem[]; states: RoomState[] }>(
-      `/businesses/${slug}/checklist`,
-      { token }
-    );
+    standard = await call<Standard>(`/businesses/${slug}/checklist`, { token });
   } catch (err) {
     console.error(`Could not read the cleaning standard for ${slug}:`, err);
+  }
+
+  /*
+   * The housekeepers' photographs for today. Caught like the rest: without
+   * them the card simply does not appear.
+   */
+  let results: Results | null = null;
+  try {
+    results = await call<Results>(`/businesses/${slug}/checklist/results`, { token });
+  } catch (err) {
+    console.error(`Could not read the cleaning photos for ${slug}:`, err);
   }
 
   const here = localizedPath(locale, `/dashboard/${slug}/bookings/rooms`);
@@ -177,8 +221,11 @@ export default async function RoomsPage({
     revalidatePath(here);
   }
 
-  /** A line of the standard. No room type means every room. */
-  async function addItem(label: string, groupId: number | null) {
+  /**
+   * A line of the standard. No room type means every room; no area means the
+   * whole room.
+   */
+  async function addItem(label: string, groupId: number | null, areaId: number | null) {
     "use server";
 
     const current = await sessionToken();
@@ -187,7 +234,7 @@ export default async function RoomsPage({
     try {
       await call(`/businesses/${slug}/checklist`, {
         method: "POST",
-        body: { label, groupId },
+        body: { label, groupId, areaId },
         token: current,
       });
       revalidatePath(here);
@@ -277,6 +324,55 @@ export default async function RoomsPage({
     }
   }
 
+  /** A part of the room: Bedroom, Bathroom. */
+  async function addArea(name: string) {
+    "use server";
+    return attempt(slug, here, "/checklist/areas", "POST", { name }, "That area could not be added.");
+  }
+
+  /** Takes an area out; its lines stay, for the whole room. */
+  async function removeArea(id: number) {
+    "use server";
+    if (!Number.isSafeInteger(id)) return { ok: false };
+    return attempt(slug, here, `/checklist/areas/${id}`, "DELETE", undefined, "That area could not be removed.");
+  }
+
+  /** An area's picture of how it should look. No revalidate, as setPhoto. */
+  async function setAreaPhoto(id: number, dataUri: string | null) {
+    "use server";
+    if (!Number.isSafeInteger(id)) return { ok: false };
+    return attempt(
+      slug,
+      here,
+      `/checklist/areas/${id}/photo`,
+      "PUT",
+      { photo: dataUri },
+      "That photo could not be saved.",
+      false
+    );
+  }
+
+  /** The usual lines: beds made, toilet paper replaced, four towels. */
+  async function addStarter() {
+    "use server";
+    return attempt(slug, here, "/checklist/starter", "POST", {}, "Those could not be added.");
+  }
+
+  /** The housekeepers' photographs for another day. */
+  async function loadResults(date: string) {
+    "use server";
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+    const current = await sessionToken();
+    if (!current) return null;
+    try {
+      return await call<Results>(`/businesses/${slug}/checklist/results?date=${date}`, {
+        token: current,
+      });
+    } catch {
+      return null;
+    }
+  }
+
   /** Sets, changes or clears the PIN. Never reads one back. */
   async function savePin(pin: string | null) {
     "use server";
@@ -308,7 +404,12 @@ export default async function RoomsPage({
       sub={`${venueLabel} · ${data.rooms.length} room${data.rooms.length === 1 ? "" : "s"} in ${data.groups.length} type${data.groups.length === 1 ? "" : "s"}`}
       back={localizedPath(locale, `/dashboard/${slug}`)}
     />
-    <div className="page-body flow">
+    {/*
+      Two columns, in pairs that belong together: the room types beside the
+      rooms they hold; then what cleaning a room means, across the page; then
+      the board housekeepers work from beside the photographs they take.
+    */}
+    <div className="page-body cols">
     <p className="lede" style={{ marginBottom: "1rem" }}>
       Set these up once. The calendar and every booking read from them.
     </p>
@@ -319,24 +420,28 @@ export default async function RoomsPage({
       addGroup={addGroup}
       addRoom={addRoom}
       remove={remove}
+      states={standard?.states}
+      setStatus={standard ? setStatus : undefined}
     />
 
     {standard && (
       <CleaningStandard
         slug={slug}
         setPhoto={setPhoto}
-        items={standard.items}
-        states={standard.states}
-        groups={data.groups.map((g) => ({ id: g.id, name: g.name }))}
-        rooms={data.rooms.map((r) => ({
-          id: r.id,
-          name: r.name,
-          groupName: r.groupName,
-          status: r.status,
+        items={standard.items.map((i) => ({
+          ...i,
+          areaId: i.areaId ?? null,
+          areaName: i.areaName ?? null,
         }))}
+        areas={standard.areas ?? []}
+        starter={standard.starter ?? []}
+        groups={data.groups.map((g) => ({ id: g.id, name: g.name }))}
         addItem={addItem}
         removeItem={removeItem}
-        setStatus={setStatus}
+        addArea={addArea}
+        removeArea={removeArea}
+        setAreaPhoto={setAreaPhoto}
+        addStarter={addStarter}
       />
     )}
 
@@ -348,7 +453,15 @@ export default async function RoomsPage({
       />
     )}
 
-    <p style={{ marginTop: "1.5rem" }}>
+    {results && (
+      <CleaningResults
+        slug={slug}
+        initial={results}
+        load={loadResults}
+      />
+    )}
+
+    <p style={{ marginTop: "0.5rem" }}>
       <Link
         className="btn btn-go"
         href={localizedPath(lang, `/dashboard/${slug}/bookings/calendar`)}

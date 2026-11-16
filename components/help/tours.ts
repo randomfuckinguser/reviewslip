@@ -110,9 +110,10 @@ export const TOURS: TourDef[] = [
     screen: "/bookings/rooms",
     steps: [
       { id: "rooms-types", title: "Room Types", body: "What guests book, such as a Deluxe Double. Rates and online booking are set for each type." },
-      { id: "rooms-list", title: "Rooms", body: "The real rooms, each under a type. They are the lines down the side of the calendar." },
-      { id: "rooms-cleaning", title: "Cleaning Standard", body: "The jobs housekeepers tick off in each room. A line with a room type applies to that type only." },
+      { id: "rooms-list", title: "Rooms", body: "The real rooms, each under a type, with whether each is open, held back or being renovated. They are the lines down the side of the calendar." },
+      { id: "rooms-cleaning", title: "Cleaning Standard", body: "The jobs housekeepers tick off, grouped into areas such as Bedroom and Bathroom. Add a photo of how each area should look. A line with a room type applies to that type only." },
       { id: "rooms-board", title: "Housekeeping Board", body: "A page for housekeepers' phones, behind a PIN, listing the rooms in the order to clean them." },
+      { id: "rooms-results", title: "Today's Photos", body: "Housekeepers photograph each area when it is done. See the result here, room by room, for the last 14 days." },
     ],
   },
   {
