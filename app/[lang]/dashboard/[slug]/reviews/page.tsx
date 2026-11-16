@@ -207,11 +207,6 @@ export default async function ReviewsPage({
         back={localizedPath(lang, `/dashboard/${business.slug}`)}
       />
       <div className="page-body">
-        <p className="lede" style={{ marginBottom: "1rem" }}>
-          What guests have written here, and what they have written about you
-          elsewhere.
-        </p>
-
         <div className="cols-grid is-reviews">
           <div data-tour="rv-latest">
           <ReviewList

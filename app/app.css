@@ -2313,3 +2313,223 @@ body:has(.app) {
 .app .container-links :is(a, button):hover {
   color: var(--primary) !important;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Reviews                                                                    */
+/* -------------------------------------------------------------------------- */
+
+/* The listings card's head wraps its two buttons under the title when the
+   side column is narrow, instead of squeezing the title. */
+.app .rv-head {
+  flex-wrap: wrap;
+}
+
+.app .rv-kv {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid var(--divider);
+}
+
+.app .rv-of {
+  font-size: var(--fs14);
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+/* The list scrolls inside the card, with each listing's name held at the top. */
+.app .rv-scroll {
+  max-height: 32rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-inline: calc(-1 * var(--pad));
+  padding-inline: var(--pad);
+}
+
+.app .rv-group {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.6rem 0;
+  font-size: var(--fs14);
+  font-weight: var(--fw6);
+  background: var(--card);
+  border-bottom: 1px solid var(--divider);
+}
+
+.app .rv-group .count {
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+.app .rv-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.app .rv-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.app .rv-rows > li {
+  padding: 0.75rem 0;
+}
+
+.app .rv-rows > li + li {
+  border-top: 1px solid var(--divider);
+}
+
+.app .rv-text {
+  margin: 0;
+  font-size: var(--fs14);
+  line-height: 1.5;
+  color: var(--foreground);
+}
+
+.app .rv-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+  flex-wrap: wrap;
+  font-size: var(--fs12);
+  color: var(--muted-foreground);
+}
+
+.app .rv-stars {
+  display: flex;
+  gap: 0.1rem;
+}
+
+.app .rv-stars button {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted-foreground);
+  opacity: 0.55;
+  cursor: pointer;
+}
+
+.app .rv-stars:hover button {
+  opacity: 0.8;
+}
+
+.app .rv-stars button:hover {
+  background: var(--accent);
+  opacity: 1;
+}
+
+.app .rv-stars button.is-on {
+  color: var(--success);
+  opacity: 1;
+}
+
+/* A full five is the one that changes what gets written: star gold, at a
+   contrast an icon needs on each theme. */
+.app .rv-stars button.is-top {
+  color: #d97706;
+}
+
+.dark .app .rv-stars button.is-top {
+  color: #fbbf24;
+}
+
+.app .rv-empty {
+  margin: 0;
+  font-size: var(--fs14);
+  color: var(--muted-foreground);
+}
+
+.app .rv-empty strong {
+  font-weight: var(--fw6);
+  color: var(--foreground);
+}
+
+.app .rv-empty.is-center {
+  padding: 1.5rem 0.5rem;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* Listings */
+.app .lr-sum {
+  margin: 0 0 0.25rem;
+  font-size: var(--fs14);
+}
+
+.app .lr-groups {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.app .lr-badge {
+  margin-left: auto;
+  font-size: var(--fs12);
+}
+
+.app .lr-author {
+  font-size: var(--fs14);
+  font-weight: var(--fw6);
+}
+
+.app .lr-rating {
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+.app :is(.lr-date) {
+  font-size: var(--fs12);
+  color: var(--muted-foreground);
+}
+
+.app .lr-open {
+  font-size: var(--fs12);
+  font-weight: var(--fw6);
+  color: var(--foreground);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.app .lr-open:hover {
+  color: var(--primary);
+}
+
+/* The note on why a listing is not read sits at the card's foot. */
+.app .container > .lr-why {
+  margin-top: auto;
+}
+
+.app .container > :not(.lr-why):has(+ .lr-why) {
+  margin-bottom: 1rem;
+}
+
+.app .lr-why summary {
+  cursor: pointer;
+  font-weight: var(--fw5);
+}
+
+.app .lr-why ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.app .lr-why strong {
+  font-weight: var(--fw6);
+  color: var(--foreground);
+}

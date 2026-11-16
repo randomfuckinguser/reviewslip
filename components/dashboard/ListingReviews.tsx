@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Plus, RefreshCw, X } from "lucide-react";
 
 import { PLATFORMS } from "@/lib/platforms.data";
 
@@ -187,46 +188,43 @@ export default function ListingReviews({
   const waiting = connectors.filter((c) => !c.ready && c.missing);
 
   return (
-    <div style={card}>
-      <div style={head}>
+    <section className="container" aria-labelledby="lr-h">
+      <div className="container-head rv-head">
         <div>
-          <h2 style={heading}>On Your Listings</h2>
-          <p style={{ fontSize: "0.8rem", color: "var(--ink-soft)", margin: "0.15rem 0 0" }}>
-            What guests wrote on the sites themselves, over the last{" "}
-            {data.days} days.
+          <h2 id="lr-h">
+            On Your Listings
+            {data.total > 0 && <span className="count"> ({data.total})</span>}
+          </h2>
+          <p className="container-desc">
+            What guests wrote on the sites themselves, last {data.days} days.
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        <div className="container-actions">
           {automatic.length > 0 && (
-            <button type="button" onClick={onCheck} disabled={pending} style={quiet}>
+            <button type="button" className="btn btn-quiet" onClick={onCheck} disabled={pending}>
+              <RefreshCw size={15} aria-hidden="true" />
               {pending ? "Looking…" : "Check for New"}
             </button>
           )}
           <button
             type="button"
+            className="btn btn-quiet"
             onClick={() => { setAdding((v) => !v); setError(null); }}
-            style={quiet}
           >
+            {adding ? <X size={15} aria-hidden="true" /> : <Plus size={15} aria-hidden="true" />}
             {adding ? "Cancel" : "Add One"}
           </button>
         </div>
       </div>
 
       {data.total > 0 && (
-        <p style={{ fontSize: "0.85rem", margin: "0.9rem 0 0" }}>
-          <strong style={{ fontWeight: 500 }}>{data.total}</strong> review
-          {data.total === 1 ? "" : "s"}
+        <p className="lr-sum">
           {data.unanswered > 0 ? (
-            <>
-              , <strong style={{ fontWeight: 500, color: "var(--warning)" }}>
-                {data.unanswered} not answered
-              </strong>
-            </>
+            <span className="status is-warn">{data.unanswered} not answered</span>
           ) : (
-            <> — all answered</>
+            <span className="status is-ok">All answered</span>
           )}
-          .
         </p>
       )}
 
@@ -281,44 +279,43 @@ export default function ListingReviews({
       )}
 
       {(data.groups ?? []).length === 0 ? (
-        <p style={{ fontSize: "0.85rem", color: "var(--ink-soft)", margin: "0.9rem 0 0" }}>
-          Nothing here yet. Reviews land here when a listing can be read
-          automatically, or when you add one — and either way they are matched
-          against what is already here, so the same review does not arrive
-          twice.
-        </p>
+        // The console's empty state: what is missing, then how it fills.
+        !adding && (
+          <p className="rv-empty is-center">
+            <strong>No listing reviews yet</strong>
+            <br />
+            Add one by hand, or they arrive once a listing can be read automatically.
+          </p>
+        )
       ) : (
-        <div style={{ display: "grid", gap: "1.6rem", marginTop: "1.2rem" }}>
+        <div className="lr-groups">
           {(data.groups ?? []).map((g) => {
             const hex = hexOf(g.platform);
             return (
               <section key={g.platform}>
-                <h3 style={groupHead}>
-                  {hex && <span aria-hidden="true" style={dot(hex)} />}
+                <h3 className="rv-group">
+                  {hex && <span aria-hidden="true" className="rv-dot" style={{ background: hex }} />}
                   {g.label}
-                  <span style={{ color: "var(--ink-soft)", fontWeight: 400 }}>
-                    {g.reviews.length}
-                  </span>
+                  <span className="count">({g.reviews.length})</span>
                   {g.unanswered > 0 && (
-                    <span style={badge}>{g.unanswered} to answer</span>
+                    <span className="status is-warn lr-badge">{g.unanswered} to answer</span>
                   )}
                 </h3>
 
-                <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: "0.9rem" }}>
+                <ul className="rv-rows">
                   {g.reviews.map((review) => (
-                    <li key={review.id} style={row}>
+                    <li key={review.id}>
                       <div style={rowHead}>
-                        <span style={{ fontSize: "0.8rem", fontWeight: 500 }}>
+                        <span className="lr-author">
                           {review.author ?? "Someone"}
                           {review.rating !== null && (
-                            <span style={{ color: "var(--ink-soft)", fontWeight: 400 }}>
-                              {" · "}
-                              {review.rating}/5
+                            <span className="lr-rating">
+                              {" · "}★ {review.rating}/5
                             </span>
                           )}
                         </span>
                         <span
-                          style={{ fontSize: "0.75rem", color: "var(--ink-soft)" }}
+                          className="lr-date"
                           title={
                             review.approximate
                               ? "The listing page shows how long ago, not a date, so this is worked out from that"
@@ -331,7 +328,7 @@ export default function ListingReviews({
                       </div>
 
                       {review.body && (
-                        <p style={{ fontSize: "0.9rem", lineHeight: 1.5, margin: "0.4rem 0 0" }}>
+                        <p className="rv-text" style={{ marginTop: "0.35rem" }}>
                           {review.body}
                         </p>
                       )}
@@ -358,7 +355,7 @@ export default function ListingReviews({
                             href={review.url}
                             target="_blank"
                             rel="noreferrer noopener"
-                            style={{ fontSize: "0.75rem", color: "var(--jade)" }}
+                            className="lr-open"
                           >
                             Open on {g.label}
                           </a>
@@ -381,14 +378,12 @@ export default function ListingReviews({
         show a Connect button that fails with nothing to do next.
       */}
       {waiting.length > 0 && (
-        <details style={{ marginTop: "1.4rem" }}>
-          <summary style={{ fontSize: "0.8rem", color: "var(--ink-soft)", cursor: "pointer" }}>
-            Reading These Automatically
-          </summary>
-          <ul style={{ margin: "0.6rem 0 0", paddingLeft: "1.1rem", display: "grid", gap: "0.35rem" }}>
+        <details className="container-foot lr-why">
+          <summary>Why some listings are not read automatically</summary>
+          <ul>
             {waiting.map((c) => (
-              <li key={c.id} style={{ fontSize: "0.78rem", color: "var(--ink-soft)" }}>
-                <strong style={{ fontWeight: 500, color: "var(--ink)" }}>{c.label}</strong>
+              <li key={c.id}>
+                <strong>{c.label}</strong>
                 {" needs "}
                 {c.missing}.
               </li>
@@ -396,7 +391,7 @@ export default function ListingReviews({
           </ul>
         </details>
       )}
-    </div>
+    </section>
   );
 }
 
@@ -496,7 +491,7 @@ function AddReview({
       </label>
 
       <div>
-        <button type="submit" disabled={pending || (!body.trim() && rating === "")} style={go}>
+        <button type="submit" className="btn btn-go" disabled={pending || (!body.trim() && rating === "")}>
           {pending ? "Saving…" : "Add It"}
         </button>
       </div>
@@ -504,44 +499,10 @@ function AddReview({
   );
 }
 
-const card: React.CSSProperties = {
-  background: "var(--paper)",
-  color: "var(--ink)",
-  borderRadius: 14,
-  padding: "1.4rem",
-};
 
-const head: React.CSSProperties = {
-  display: "flex",
-  alignItems: "flex-start",
-  justifyContent: "space-between",
-  gap: "1rem",
-  flexWrap: "wrap",
-};
 
-const heading: React.CSSProperties = {
-  fontSize: "1.2rem",
-  margin: 0,
-};
 
-const groupHead: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "0.45rem",
-  margin: "0 0 0.7rem",
-  fontSize: "0.85rem",
-  fontWeight: 500,
-};
 
-function dot(hex: string): React.CSSProperties {
-  return {
-    width: "0.55rem",
-    height: "0.55rem",
-    borderRadius: "50%",
-    background: hex,
-    flex: "0 0 auto",
-  };
-}
 
 const ranList: React.CSSProperties = {
   listStyle: "none",
@@ -553,19 +514,7 @@ const ranList: React.CSSProperties = {
   gap: "0.3rem",
 };
 
-const badge: React.CSSProperties = {
-  fontSize: "0.7rem",
-  fontWeight: 500,
-  color: "var(--warning)",
-  background: "color-mix(in srgb, var(--warning) 14%, transparent)",
-  borderRadius: 999,
-  padding: "0.1rem 0.45rem",
-};
 
-const row: React.CSSProperties = {
-  borderTop: "1px solid color-mix(in srgb, var(--ink) 12%, transparent)",
-  paddingTop: "0.9rem",
-};
 
 const rowHead: React.CSSProperties = {
   display: "flex",
@@ -603,8 +552,8 @@ function mark(on: boolean): React.CSSProperties {
     fontSize: "0.75rem",
     fontWeight: 500,
     cursor: "pointer",
-    borderRadius: 999,
-    padding: "0.22rem 0.6rem",
+    borderRadius: 8,
+    padding: "0.25rem 0.6rem",
     border: on ? "1px solid transparent" : "1px solid color-mix(in srgb, var(--ink) 24%, transparent)",
     background: on ? "color-mix(in srgb, var(--success) 14%, transparent)" : "transparent",
     color: on ? "var(--success)" : "var(--ink)",
@@ -642,25 +591,4 @@ const input: React.CSSProperties = {
   width: "100%",
 };
 
-const quiet: React.CSSProperties = {
-  font: "inherit",
-  fontSize: "0.8rem",
-  cursor: "pointer",
-  borderRadius: 999,
-  padding: "0.3rem 0.75rem",
-  border: "1px solid color-mix(in srgb, var(--ink) 24%, transparent)",
-  background: "transparent",
-  color: "var(--ink)",
-};
 
-const go: React.CSSProperties = {
-  font: "inherit",
-  fontSize: "0.85rem",
-  fontWeight: 500,
-  cursor: "pointer",
-  borderRadius: 999,
-  padding: "0.4rem 1rem",
-  border: 0,
-  background: "var(--jade)",
-  color: "var(--shade-deep)",
-};
