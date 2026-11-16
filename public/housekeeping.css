@@ -6,9 +6,8 @@
  * board that matches without anybody configuring a second theme.
  *
  * Everything here assumes a phone held in one hand, in a corridor, by somebody
- * whose other hand is full. Targets are large, the list is one column at every
- * width, and the only thing that changes on a bigger screen is that the rows
- * stop stretching.
+ * whose other hand is full. Targets are large, the list is one column on a
+ * phone, and a tablet or computer shows the rooms two to a row (see the end).
  */
 
 * { box-sizing: border-box; }
@@ -469,4 +468,89 @@ h1 {
   background: rgba(243, 236, 220, 0.12);
   color: var(--ink, #f3ecdc);
   cursor: pointer;
+}
+
+/* ------------------------------------------------------------------ areas */
+
+/* One part of the room: its name and the picture of how it should look, its
+   lines, and the button that photographs it when it is done. */
+.hk-area {
+  margin-top: 0.8rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--jade-line, rgba(130, 180, 155, 0.18));
+}
+
+.hk-area:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.hk-area-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.hk-area-head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink, #f3ecdc);
+}
+
+/* The owner's picture of the area: wider than a line's, it is a whole room. */
+.hk-look {
+  width: 4.5rem;
+  height: 3.2rem;
+}
+
+.hk-result {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+/* Full width and tall enough to hit with a thumb, like the lines above it. */
+.hk-take {
+  flex: 1 1 12rem;
+  min-height: 2.75rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.5rem 0.8rem;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1px dashed var(--jade, #82b49b);
+  background: rgba(130, 180, 155, 0.08);
+  color: var(--ink, #f3ecdc);
+}
+
+.hk-take.taken {
+  border-style: solid;
+  font-weight: 500;
+  color: var(--ink-soft, #b9b2a2);
+}
+
+.hk-take[disabled] { opacity: 0.6; }
+
+.hk-result-note {
+  font-size: 0.8rem;
+  color: var(--jade, #82b49b);
+}
+
+/* ------------------------------------------------------- bigger screens */
+
+/* A tablet on the trolley, or the board open at the desk: rooms two to a
+   row, so the morning fits on one screen. A phone keeps one column. */
+@media (min-width: 60rem) {
+  .hk { max-width: 68rem; }
+  .hk-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
 }

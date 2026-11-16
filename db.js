@@ -1383,6 +1383,55 @@ const MIGRATIONS = [
     await c.query('ALTER TABLE accounts ADD COLUMN phone_only boolean NOT NULL DEFAULT false');
     await c.query('ALTER TABLE voice_agents DROP CONSTRAINT voice_agents_check');
   },
+
+  /*
+   * Areas of a room, and the housekeepers' photographs of them.
+   *
+   * An area — Bedroom, Bathroom — groups the lines of the standard and has a
+   * photograph of how it should be left, beside the per-line ones. Lines keep
+   * working without one: area_id NULL is a line for the whole room, which is
+   * every line written before this.
+   *
+   * room_area_photos is the result: the housekeeper photographs the area when
+   * it is done, so the owner sees the room as it was left. One per room, area
+   * and day, replaced by a retake. They are kept for a fortnight
+   * (checklist.KEEP_RESULTS_DAYS) — enough to settle a complaint, not a year
+   * of bathrooms in the backup.
+   */
+  async (c) => {
+    await c.query(`
+      CREATE TABLE cleaning_areas (
+        id            integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        subscriber_id integer NOT NULL REFERENCES subscribers (id) ON DELETE CASCADE,
+        name          text NOT NULL,
+        sort          integer NOT NULL DEFAULT 0,
+        photo         text,
+        created_at    timestamptz NOT NULL DEFAULT now()
+      )
+    `);
+    await c.query(`
+      CREATE UNIQUE INDEX cleaning_areas_name
+        ON cleaning_areas (subscriber_id, lower(name))
+    `);
+    await c.query(`
+      ALTER TABLE checklist_items
+        ADD COLUMN area_id integer REFERENCES cleaning_areas (id) ON DELETE SET NULL
+    `);
+    await c.query(`
+      CREATE TABLE room_area_photos (
+        subscriber_id integer NOT NULL REFERENCES subscribers (id) ON DELETE CASCADE,
+        room_id       integer NOT NULL REFERENCES rooms (id) ON DELETE CASCADE,
+        area_id       integer NOT NULL REFERENCES cleaning_areas (id) ON DELETE CASCADE,
+        on_day        date NOT NULL,
+        photo         text NOT NULL,
+        taken_at      timestamptz NOT NULL DEFAULT now(),
+        PRIMARY KEY (room_id, area_id, on_day)
+      )
+    `);
+    await c.query(`
+      CREATE INDEX room_area_photos_day ON room_area_photos (subscriber_id, on_day)
+    `);
+  },
 ];
 
 // Any constant will do; it only has to be the same in every process.

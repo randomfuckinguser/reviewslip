@@ -33,7 +33,7 @@ const el = {
   out: document.getElementById('out'),
 };
 
-const state = { token: null, busy: false, jobs: [] };
+const state = { token: null, busy: false, jobs: [], areas: 0 };
 
 function token() {
   try {
@@ -101,6 +101,9 @@ function stamp(iso) {
 
 function draw(board) {
   state.jobs = board.jobs;
+  // How many areas the venue photographs. A room with none and no lines has
+  // nothing to open.
+  state.areas = Number(board.areas) || 0;
   el.venue.textContent = board.venue || 'Housekeeping';
   el.date.textContent = stamp(board.date);
 
@@ -170,7 +173,7 @@ function draw(board) {
      * in. Fetched on the first open, because the board draws twenty rooms and
      * a dozen lines each is most of a payload nobody has asked for.
      */
-    if (job.checks && job.checks.total) {
+    if ((job.checks && job.checks.total) || state.areas) {
       const open = document.createElement('button');
       open.type = 'button';
       open.className = 'hk-open';
@@ -262,18 +265,21 @@ async function mark(button) {
  */
 const shots = new Map();
 
-async function shotFor(itemId) {
-  if (shots.has(itemId)) return shots.get(itemId);
+async function shotFor(key, path) {
+  if (shots.has(key)) return shots.get(key);
+  const url = await fetchShot(path);
+  if (url) shots.set(key, url);
+  return url;
+}
 
+/** One picture behind the shift, as an object URL, or null. */
+async function fetchShot(path) {
   try {
-    const res = await fetch(`/api/housekeeping/checklist/${itemId}/photo`, {
+    const res = await fetch(path, {
       headers: token() ? { Authorization: `Shift ${token()}` } : {},
     });
     if (!res.ok) return null;
-
-    const url = URL.createObjectURL(await res.blob());
-    shots.set(itemId, url);
-    return url;
+    return URL.createObjectURL(await res.blob());
   } catch {
     // A picture that will not load is not a reason to lose the checklist. The
     // line still says what to do; it just says it in words.
@@ -299,71 +305,234 @@ function closeShot() {
   // in the map, and blanking it makes reopening the same picture flicker.
 }
 
-function drawChecks(panel, data) {
-  panel.replaceChildren();
+/** One line of the list: the tick, and its picture beside it. */
+function lineFor(item, roomId) {
+  const li = document.createElement('li');
 
-  const list = document.createElement('ul');
-  list.className = 'hk-items';
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `hk-item${item.done ? ' done' : ''}`;
+  button.dataset.item = String(item.id);
+  button.dataset.room = roomId;
+  button.setAttribute('aria-pressed', String(item.done));
 
-  for (const item of data.items) {
-    const li = document.createElement('li');
+  const box = document.createElement('span');
+  box.className = 'hk-box';
+  box.setAttribute('aria-hidden', 'true');
+  box.textContent = item.done ? '✓' : '';
 
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = `hk-item${item.done ? ' done' : ''}`;
-    button.dataset.item = String(item.id);
-    button.dataset.room = panel.dataset.for;
-    button.setAttribute('aria-pressed', String(item.done));
+  const label = document.createElement('span');
+  label.textContent = item.label;
 
-    const box = document.createElement('span');
-    box.className = 'hk-box';
-    box.setAttribute('aria-hidden', 'true');
-    box.textContent = item.done ? '✓' : '';
+  button.append(box, label);
 
-    const label = document.createElement('span');
-    label.textContent = item.label;
+  const row = document.createElement('div');
+  row.className = 'hk-line';
+  row.append(button);
 
-    button.append(box, label);
-
-    const row = document.createElement('div');
-    row.className = 'hk-line';
-    row.append(button);
-
-    /*
-     * The picture beside the line, never inside it.
-     *
-     * Everything in the tick button is a tap that marks the line done, so a
-     * thumbnail in there would mean that looking at the photograph ticks the
-     * job off — and the room gets reported clean by somebody who was trying
-     * to find out what clean meant.
-     */
-    if (item.hasPhoto) {
-      const shot = document.createElement('button');
-      shot.type = 'button';
-      shot.className = 'hk-shot';
-      shot.dataset.label = item.label;
-      shot.setAttribute('aria-label', `Photo: ${item.label}`);
-
-      const img = document.createElement('img');
-      img.alt = '';
-      shot.append(img);
-      row.append(shot);
-
-      shotFor(item.id).then((url) => {
-        // Removed rather than left as a broken square. A thumbnail that will
-        // not load is worse than no thumbnail: it reads as something to press
-        // and does nothing.
-        if (!url) return shot.remove();
-        img.src = url;
-        shot.dataset.shot = url;
-      });
-    }
-
-    li.append(row);
-    list.append(li);
+  /*
+   * The picture beside the line, never inside it.
+   *
+   * Everything in the tick button is a tap that marks the line done, so a
+   * thumbnail in there would mean that looking at the photograph ticks the
+   * job off — and the room gets reported clean by somebody who was trying
+   * to find out what clean meant.
+   */
+  if (item.hasPhoto) {
+    row.append(thumb(`i${item.id}`, `/api/housekeeping/checklist/${item.id}/photo`, item.label));
   }
 
-  panel.append(list);
+  li.append(row);
+  return li;
+}
+
+/** A reference picture as a small button that opens it full screen. */
+function thumb(key, path, label) {
+  const shot = document.createElement('button');
+  shot.type = 'button';
+  shot.className = 'hk-shot';
+  shot.dataset.label = label;
+  shot.setAttribute('aria-label', `Photo: ${label}`);
+
+  const img = document.createElement('img');
+  img.alt = '';
+  shot.append(img);
+
+  shotFor(key, path).then((url) => {
+    // Removed rather than left as a broken square. A thumbnail that will not
+    // load is worse than no thumbnail: it reads as something to press and
+    // does nothing.
+    if (!url) return shot.remove();
+    img.src = url;
+    shot.dataset.shot = url;
+  });
+  return shot;
+}
+
+/**
+ * The room's list, area by area: Bedroom, Bathroom.
+ *
+ * Each area shows the owner's picture of how it should look, its lines, and a
+ * button to photograph it when it is done — the photograph is what the owner
+ * sees on the dashboard. Lines for the room as a whole come first, with no
+ * heading, as they always did.
+ */
+function drawChecks(panel, data) {
+  panel.replaceChildren();
+  const roomId = panel.dataset.for;
+  const areas = data.areas || [];
+  const known = new Set(areas.map((a) => a.id));
+
+  const loose = data.items.filter((i) => i.areaId == null || !known.has(i.areaId));
+  if (loose.length) {
+    const list = document.createElement('ul');
+    list.className = 'hk-items';
+    for (const item of loose) list.append(lineFor(item, roomId));
+    panel.append(list);
+  }
+
+  for (const area of areas) {
+    const section = document.createElement('section');
+    section.className = 'hk-area';
+    section.dataset.area = String(area.id);
+
+    const head = document.createElement('div');
+    head.className = 'hk-area-head';
+    const name = document.createElement('h3');
+    name.textContent = area.name;
+    head.append(name);
+    if (area.hasPhoto) {
+      const look = thumb(`a${area.id}`, `/api/housekeeping/areas/${area.id}/photo`, `How ${area.name} should look`);
+      look.classList.add('hk-look');
+      head.append(look);
+    }
+    section.append(head);
+
+    const mine = data.items.filter((i) => i.areaId === area.id);
+    if (mine.length) {
+      const list = document.createElement('ul');
+      list.className = 'hk-items';
+      for (const item of mine) list.append(lineFor(item, roomId));
+      section.append(list);
+    }
+
+    section.append(resultRow(roomId, area));
+    panel.append(section);
+  }
+}
+
+/**
+ * The button that photographs an area when it is done, and the photograph
+ * once it is taken. A retake replaces it.
+ */
+function resultRow(roomId, area) {
+  const row = document.createElement('div');
+  row.className = 'hk-result';
+
+  const picker = document.createElement('input');
+  picker.type = 'file';
+  picker.accept = 'image/*';
+  // The back camera, straight away, on a phone. A computer offers a file.
+  picker.setAttribute('capture', 'environment');
+  picker.hidden = true;
+
+  const take = document.createElement('button');
+  take.type = 'button';
+  take.className = 'hk-take';
+  take.dataset.room = roomId;
+  take.dataset.area = String(area.id);
+
+  const note = document.createElement('span');
+  note.className = 'hk-result-note';
+
+  const mine = document.createElement('button');
+  mine.type = 'button';
+  mine.className = 'hk-shot hk-mine';
+  mine.setAttribute('aria-label', `Your photo of ${area.name}`);
+  mine.dataset.label = `${area.name}: your photo`;
+  mine.hidden = true;
+  const img = document.createElement('img');
+  img.alt = '';
+  mine.append(img);
+
+  function showTaken(taken) {
+    take.textContent = taken ? '📷 Retake photo' : `📷 Photo of ${area.name} done`;
+    take.classList.toggle('taken', Boolean(taken));
+    note.textContent = taken ? '✓ Sent' : '';
+  }
+  showTaken(area.takenAt);
+
+  if (area.takenAt) loadMine();
+
+  async function loadMine() {
+    const url = await fetchShot(`/api/housekeeping/rooms/${roomId}/areas/${area.id}/photo`);
+    if (!url) return;
+    if (mine.dataset.shot) URL.revokeObjectURL(mine.dataset.shot);
+    img.src = url;
+    mine.dataset.shot = url;
+    mine.hidden = false;
+  }
+
+  take.addEventListener('click', () => picker.click());
+  picker.addEventListener('change', async () => {
+    const file = picker.files && picker.files[0];
+    picker.value = '';
+    if (!file) return;
+
+    take.disabled = true;
+    note.textContent = 'Sending…';
+    try {
+      const photo = await shrinkPhoto(file);
+      await call(`/api/housekeeping/rooms/${roomId}/areas/${area.id}/photo`, {
+        method: 'PUT',
+        body: JSON.stringify({ photo }),
+      });
+      showTaken(true);
+      await loadMine();
+      el.note.textContent = '';
+    } catch (err) {
+      if (err.signedOut || err.status === 401) {
+        remember(null);
+        return showGate('That shift has ended. Enter the PIN again.');
+      }
+      note.textContent = err.message || 'That photo could not be sent. Try again.';
+    } finally {
+      take.disabled = false;
+    }
+  });
+
+  row.append(picker, take, mine, note);
+  return row;
+}
+
+/**
+ * A phone photograph, made small enough to send on a corridor signal: the
+ * long edge down to 1000px and JPEG quality down until it is under 230kB.
+ * A twelve-megapixel original is four megabytes; this is a twentieth of that
+ * and still shows whether the towels are on the rail.
+ */
+async function shrinkPhoto(file) {
+  let bitmap;
+  try {
+    bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  } catch {
+    throw new Error('That photo could not be read. Take it again with the camera.');
+  }
+  for (const edge of [1000, 800, 600]) {
+    const scale = Math.min(1, edge / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const g = canvas.getContext('2d');
+    g.fillStyle = '#ffffff';
+    g.fillRect(0, 0, canvas.width, canvas.height);
+    g.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    for (const quality of [0.8, 0.68, 0.55, 0.45]) {
+      const uri = canvas.toDataURL('image/jpeg', quality);
+      if ((uri.length - uri.indexOf(',') - 1) * 0.75 <= 230 * 1024) return uri;
+    }
+  }
+  throw new Error('That photo is too large to send. Take it again.');
 }
 
 /** The counter on the room's own row, kept in step without a reload. */

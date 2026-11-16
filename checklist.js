@@ -22,6 +22,33 @@
 const MAX_ITEMS = 24;
 const MAX_LABEL = 80;
 
+/**
+ * Areas: the parts of a room the list is grouped into — Bedroom, Bathroom.
+ *
+ * Each has a photograph of how it should be left, and each gets a photograph
+ * of how it was left: the housekeeper takes one when the area is done, so the
+ * owner can see the result without walking the corridor. A dozen is more
+ * areas than any room has.
+ */
+const MAX_AREAS = 12;
+const MAX_AREA_NAME = 40;
+
+/** How long the housekeepers' photographs are kept, in days. */
+const KEEP_RESULTS_DAYS = 14;
+
+/**
+ * The usual list, for a venue starting from nothing.
+ *
+ * The three things a guest notices first when they were missed. Added on a
+ * tap from the dashboard rather than to every venue unasked, so nobody finds
+ * lines in their standard that they did not write.
+ */
+const STARTER = [
+  { area: 'Bedroom', label: 'Beds made' },
+  { area: 'Bathroom', label: 'Toilet paper replaced' },
+  { area: 'Bathroom', label: '4 towels in the room' },
+];
+
 function clean(value, max = MAX_LABEL) {
   return String(value ?? '')
     .replace(/\s+/g, ' ')
@@ -37,6 +64,29 @@ function checkLabel(value) {
   if (!label) return 'Write what needs doing.';
   if (label.length < 2) return 'That is too short to be an instruction.';
   return null;
+}
+
+/**
+ * @returns {string|null} why the area name will not do, or null if it will
+ */
+function checkAreaName(value) {
+  const name = clean(value, MAX_AREA_NAME);
+  if (!name) return 'Name the area — Bedroom, Bathroom.';
+  if (name.length < 2) return 'That is too short to be an area.';
+  return null;
+}
+
+/**
+ * Which of the usual lines a venue does not have yet.
+ *
+ * Matched on the words, ignoring case, so a venue that already wrote "Beds
+ * made" is not given a second one.
+ *
+ * @param {object[]} items - the venue's lines, with label
+ */
+function missingStarter(items) {
+  const have = new Set((items ?? []).map((i) => clean(i.label).toLowerCase()));
+  return STARTER.filter((s) => !have.has(s.label.toLowerCase()));
 }
 
 /**
@@ -80,6 +130,7 @@ function forRoom(items, done) {
     id: item.id,
     label: item.label,
     groupId: item.groupId ?? null,
+    areaId: item.areaId ?? null,
     // A flag, not the picture. "Bathroom clean" means something different to
     // everybody reading it, and a photograph settles in one glance what the
     // words cannot — but it is fetched from its own route, so a roomful of
@@ -102,4 +153,17 @@ function forRoom(items, done) {
   };
 }
 
-module.exports = { MAX_ITEMS, MAX_LABEL, clean, checkLabel, forGroup, forRoom };
+module.exports = {
+  MAX_ITEMS,
+  MAX_LABEL,
+  MAX_AREAS,
+  MAX_AREA_NAME,
+  KEEP_RESULTS_DAYS,
+  STARTER,
+  clean,
+  checkLabel,
+  checkAreaName,
+  missingStarter,
+  forGroup,
+  forRoom,
+};

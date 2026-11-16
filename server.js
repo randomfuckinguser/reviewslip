@@ -116,6 +116,8 @@ app.use('/api/customer', express.json({ limit: DASHBOARD_LIMIT }));
 app.use('/api/admin', express.json({ limit: DASHBOARD_LIMIT }));
 // A voicemail is up to two minutes of audio as base64 (voicerules.js).
 app.use('/api/voice/voicemail', express.json({ limit: '2mb' }));
+// A housekeeper's photograph of an area: up to 250kB, as base64.
+app.use('/api/housekeeping/rooms', express.json({ limit: '400kb' }));
 app.use(express.json({ limit: '16kb' }));
 // No max-age: the files are small and served off the same box, and a stale
 // index.html on a guest's phone is far more annoying than a revalidation.
@@ -601,8 +603,13 @@ app.get(
         rooms: day.rooms,
       });
 
+      // How many areas there are to photograph. The board offers a room's
+      // list when it has lines or areas, and only then.
+      const areas = (await checklists.areas(req.subscriber.id)).length;
+
       res.json({
         venue: req.subscriber.name,
+        areas,
         ...housekeeping.board({
           date,
           progress,
@@ -698,6 +705,103 @@ app.get(
       if (!image) return res.status(404).json({ error: 'No photo on that item.' });
 
       res.set(assets.photoHeaders(image)).end(image.buffer);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/** An area's picture of how it should be left, behind the shift. */
+app.get(
+  '/api/housekeeping/areas/:areaId/photo',
+  requireTenant,
+  requireShift,
+  async (req, res, next) => {
+    try {
+      const areaId = Number(req.params.areaId);
+      if (!Number.isSafeInteger(areaId) || areaId <= 0) {
+        return res.status(404).json({ error: 'No such area.' });
+      }
+      const stored = await checklists.areaPhoto({
+        subscriberId: req.subscriber.id,
+        id: areaId,
+      });
+      const image = stored && assets.decodeStoredImage(stored);
+      if (!image) return res.status(404).json({ error: 'No photo on that area.' });
+      res.set(assets.photoHeaders(image)).end(image.buffer);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/**
+ * The housekeeper's photograph of an area as they left it: the result the
+ * owner sees on the dashboard. A retake replaces it; null takes it back.
+ */
+app.put(
+  '/api/housekeeping/rooms/:id/areas/:areaId/photo',
+  requireTenant,
+  requireShift,
+  async (req, res, next) => {
+    try {
+      const id = Number(req.params.id);
+      const areaId = Number(req.params.areaId);
+      if (!Number.isSafeInteger(id) || !Number.isSafeInteger(areaId)) {
+        return res.status(404).json({ error: 'No such area.' });
+      }
+
+      const value = req.body?.photo ?? null;
+      // The board scales the picture down before sending it, as the dashboard
+      // does; raster only, and capped, all the same.
+      if (value !== null && !assets.isStoredPhoto(value)) {
+        return res.status(400).json({ error: 'That photo could not be used. Take it again.' });
+      }
+
+      const date =
+        nights.parse(String(req.body?.date || '')) ||
+        nights.todayAt(req.subscriber.timezone || 'Asia/Bangkok');
+
+      res.json(
+        await checklists.setResult({
+          subscriberId: req.subscriber.id,
+          roomId: id,
+          areaId,
+          day: date,
+          photo: value,
+        })
+      );
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/** The photograph just taken, so the housekeeper can see what they sent. */
+app.get(
+  '/api/housekeeping/rooms/:id/areas/:areaId/photo',
+  requireTenant,
+  requireShift,
+  async (req, res, next) => {
+    try {
+      const id = Number(req.params.id);
+      const areaId = Number(req.params.areaId);
+      if (!Number.isSafeInteger(id) || !Number.isSafeInteger(areaId)) {
+        return res.status(404).json({ error: 'No such photo.' });
+      }
+      const date =
+        nights.parse(String(req.query.date || '')) ||
+        nights.todayAt(req.subscriber.timezone || 'Asia/Bangkok');
+      const stored = await checklists.resultPhoto({
+        subscriberId: req.subscriber.id,
+        roomId: id,
+        areaId,
+        day: date,
+      });
+      const image = stored && assets.decodeStoredImage(stored);
+      if (!image) return res.status(404).json({ error: 'No such photo.' });
+      // Not cached: a retake has the same address.
+      res.set({ ...assets.photoHeaders(image), 'Cache-Control': 'private, no-store' }).end(image.buffer);
     } catch (err) {
       next(err);
     }

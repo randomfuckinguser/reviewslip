@@ -43,6 +43,8 @@ const market = require('./market');
 const marketplace = require('./marketplace');
 const signups = require('./signups');
 const checklists = require('./checklists');
+const checklist = require('./checklist');
+const nights = require('./nights');
 const roomstatus = require('./roomstatus');
 const sitefacts = require('./sitefacts');
 const themenote = require('./themenote');
@@ -618,8 +620,16 @@ router.get(
   requireOwnVenue,
   async (req, res, next) => {
     try {
+      const [items, areas] = await Promise.all([
+        checklists.items(req.venue.id),
+        checklists.areas(req.venue.id),
+      ]);
       res.json({
-        items: await checklists.items(req.venue.id),
+        items,
+        areas,
+        // Which of the usual lines are not there yet, so the dashboard can
+        // offer them without knowing the list itself.
+        starter: checklist.missingStarter(items),
         states: roomstatus.list(),
       });
     } catch (err) {
@@ -638,6 +648,7 @@ router.post(
       const item = await checklists.add({
         subscriberId: req.venue.id,
         groupId: req.body?.groupId ?? null,
+        areaId: req.body?.areaId ?? null,
         label: req.body?.label,
       });
       res.status(201).json({ item });
@@ -728,6 +739,161 @@ router.delete(
       }
       await checklists.remove({ subscriberId: req.venue.id, id });
       res.status(204).end();
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/**
+ * The usual list, added on one tap: Bedroom and Bathroom, beds made, toilet
+ * paper replaced, four towels. Only what the venue does not have yet.
+ */
+router.post(
+  '/businesses/:slug/checklist/starter',
+  requireAccount,
+  requireOwnVenue,
+  async (req, res, next) => {
+    try {
+      res.json(await checklists.starter({ subscriberId: req.venue.id }));
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/** Add an area: Bedroom, Bathroom, Balcony. */
+router.post(
+  '/businesses/:slug/checklist/areas',
+  requireAccount,
+  requireOwnVenue,
+  async (req, res, next) => {
+    try {
+      const area = await checklists.addArea({
+        subscriberId: req.venue.id,
+        name: req.body?.name,
+      });
+      res.status(201).json({ area });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/** Take an area out. Its lines stay, for the whole room. */
+router.delete(
+  '/businesses/:slug/checklist/areas/:id',
+  requireAccount,
+  requireOwnVenue,
+  async (req, res, next) => {
+    try {
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id)) {
+        return res.status(404).json({ error: 'No such area.' });
+      }
+      await checklists.removeArea({ subscriberId: req.venue.id, id });
+      res.status(204).end();
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/** An area's picture of how it should be left. */
+router.get(
+  '/businesses/:slug/checklist/areas/:id/photo',
+  requireAccount,
+  requireOwnVenue,
+  async (req, res, next) => {
+    try {
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id)) {
+        return res.status(404).json({ error: 'No such area.' });
+      }
+      const stored = await checklists.areaPhoto({ subscriberId: req.venue.id, id });
+      const image = stored && assets.decodeStoredImage(stored);
+      if (!image) return res.status(404).json({ error: 'No photo on that area.' });
+      res.set(assets.photoHeaders(image)).end(image.buffer);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/** Attach an area's picture, or take it off with null. Checked like a line's. */
+router.put(
+  '/businesses/:slug/checklist/areas/:id/photo',
+  requireAccount,
+  requireOwnVenue,
+  async (req, res, next) => {
+    try {
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id)) {
+        return res.status(404).json({ error: 'No such area.' });
+      }
+      const value = req.body?.photo ?? null;
+      if (value !== null && !assets.isStoredPhoto(value)) {
+        return res.status(400).json({
+          error: `That photo could not be used. It must be a PNG, JPEG or WebP under ${assets.MAX_REFERENCE_BYTES / 1024}kB.`,
+        });
+      }
+      res.json(
+        await checklists.setAreaPhoto({ subscriberId: req.venue.id, id, photo: value })
+      );
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/**
+ * What the housekeepers photographed on a day, room by room — the result,
+ * for the owner. Today in the venue's own time unless a date is given.
+ */
+router.get(
+  '/businesses/:slug/checklist/results',
+  requireAccount,
+  requireOwnVenue,
+  async (req, res, next) => {
+    try {
+      const date =
+        nights.parse(String(req.query.date || '')) ||
+        nights.todayAt(req.venue.timezone || 'Asia/Bangkok');
+      res.json({
+        date,
+        // So the dashboard shows when each was taken on the venue's own clock.
+        timezone: req.venue.timezone || 'Asia/Bangkok',
+        keepDays: checklist.KEEP_RESULTS_DAYS,
+        rooms: await checklists.results({ subscriberId: req.venue.id, day: date }),
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/** One of those photographs. */
+router.get(
+  '/businesses/:slug/checklist/results/:roomId/:areaId/photo',
+  requireAccount,
+  requireOwnVenue,
+  async (req, res, next) => {
+    try {
+      const roomId = Number(req.params.roomId);
+      const areaId = Number(req.params.areaId);
+      const date = nights.parse(String(req.query.date || ''));
+      if (!Number.isSafeInteger(roomId) || !Number.isSafeInteger(areaId) || !date) {
+        return res.status(404).json({ error: 'No such photo.' });
+      }
+      const stored = await checklists.resultPhoto({
+        subscriberId: req.venue.id,
+        roomId,
+        areaId,
+        day: date,
+      });
+      const image = stored && assets.decodeStoredImage(stored);
+      if (!image) return res.status(404).json({ error: 'No such photo.' });
+      res.set(assets.photoHeaders(image)).end(image.buffer);
     } catch (err) {
       next(err);
     }
