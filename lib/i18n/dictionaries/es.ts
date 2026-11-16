@@ -182,7 +182,7 @@ const es: Dictionary = {
       },
       {
         q: "¿Qué plataformas de reseñas son compatibles?",
-        a: "Google, TripAdvisor, LINE, Facebook, Xiaohongshu y Wongnai. Reviewslip ayuda a tus clientes a publicar en la plataforma que más importe para tu negocio y tu región.",
+        a: "Google, TripAdvisor, Facebook y Wongnai. Reviewslip ayuda a tus clientes a publicar en la plataforma que más importe para tu negocio y tu región.",
       },
       {
         q: "¿Cuánto tarda la configuración?",
@@ -410,7 +410,7 @@ const es: Dictionary = {
           },
           {
             q: "¿Esto se aplica fuera de Estados Unidos?",
-            a: "Sí — la norma de la FTC es legislación estadounidense, pero la mayoría de los mercados ya tienen la suya propia. La Directiva sobre prácticas comerciales desleales (Unfair Commercial Practices Directive) de la EU (actualizada por la Directiva Ómnibus / Omnibus Directive) y la Ley de Servicios Digitales (Digital Services Act), la Digital Markets, Competition and Consumers Act 2024 del UK, la normativa de 2023 de Japón sobre marketing encubierto y las reglas chinas contra la competencia desleal en materia de reseñas fabricadas apuntan todas a la misma conducta — y varias se han ido endureciendo. Las políticas de las plataformas (Google, TripAdvisor, Facebook, LINE, Xiaohongshu, Wongnai) se aplican en todas partes en cualquier caso. Toma esta guía como el mínimo, no como el máximo, y consulta las reglas de los mercados en los que operes.",
+            a: "Sí — la norma de la FTC es legislación estadounidense, pero la mayoría de los mercados ya tienen la suya propia. La Directiva sobre prácticas comerciales desleales (Unfair Commercial Practices Directive) de la EU (actualizada por la Directiva Ómnibus / Omnibus Directive) y la Ley de Servicios Digitales (Digital Services Act), la Digital Markets, Competition and Consumers Act 2024 del UK, la normativa de 2023 de Japón sobre marketing encubierto y las reglas chinas contra la competencia desleal en materia de reseñas fabricadas apuntan todas a la misma conducta — y varias se han ido endureciendo. Las políticas de las plataformas (Google, TripAdvisor, Facebook, Wongnai) se aplican en todas partes en cualquier caso. Toma esta guía como el mínimo, no como el máximo, y consulta las reglas de los mercados en los que operes.",
           },
         ],
       },
@@ -433,7 +433,7 @@ const es: Dictionary = {
           },
           {
             q: "¿Qué plataformas admite Reviewslip?",
-            a: "Google, TripAdvisor, LINE, Facebook, Xiaohongshu y Wongnai — así puedes encontrarte con tus clientes en la plataforma que más importe en tu mercado. Cada plataforma tiene sus propias reglas, no obstante, y algunas son más estrictas que Google: varias restringen o prohíben por completo solicitar reseñas. Consulta la política de cualquier plataforma antes de dirigir a tus clientes a ella, dondequiera que operes.",
+            a: "Google, TripAdvisor, Facebook y Wongnai — así puedes encontrarte con tus clientes en la plataforma que más importe en tu mercado. Cada plataforma tiene sus propias reglas, no obstante, y algunas son más estrictas que Google: varias restringen o prohíben por completo solicitar reseñas. Consulta la política de cualquier plataforma antes de dirigir a tus clientes a ella, dondequiera que operes.",
           },
         ],
       },

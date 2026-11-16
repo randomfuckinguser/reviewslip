@@ -182,7 +182,7 @@ const nl: Dictionary = {
       },
       {
         q: "Welke reviewplatforms worden ondersteund?",
-        a: "Google, TripAdvisor, LINE, Facebook, Xiaohongshu en Wongnai. Reviewslip helpt je klanten te plaatsen op het platform dat voor jouw zaak en jouw regio het belangrijkst is.",
+        a: "Google, TripAdvisor, Facebook en Wongnai. Reviewslip helpt je klanten te plaatsen op het platform dat voor jouw zaak en jouw regio het belangrijkst is.",
       },
       {
         q: "Hoe lang duurt het instellen?",
@@ -410,7 +410,7 @@ const nl: Dictionary = {
           },
           {
             q: "Geldt dit ook buiten de Verenigde Staten?",
-            a: "Ja — de FTC-regel is Amerikaans recht, maar de meeste markten hebben nu hun eigen regels. De Richtlijn oneerlijke handelspraktijken van de EU (bijgewerkt door de Omnibusrichtlijn) en de digitaledienstenverordening, de Britse Digital Markets, Competition and Consumers Act 2024, de Japanse regulering van stealth marketing uit 2023 en de Chinese regels tegen oneerlijke concurrentie rond verzonnen reviews richten zich allemaal op hetzelfde gedrag — en verschillende zijn strenger geworden. Platformbeleid (Google, TripAdvisor, Facebook, LINE, Xiaohongshu, Wongnai) geldt hoe dan ook overal. Beschouw de richtlijnen hier als de ondergrens, niet als de bovengrens, en controleer de regels van de markten waarin je actief bent.",
+            a: "Ja — de FTC-regel is Amerikaans recht, maar de meeste markten hebben nu hun eigen regels. De Richtlijn oneerlijke handelspraktijken van de EU (bijgewerkt door de Omnibusrichtlijn) en de digitaledienstenverordening, de Britse Digital Markets, Competition and Consumers Act 2024, de Japanse regulering van stealth marketing uit 2023 en de Chinese regels tegen oneerlijke concurrentie rond verzonnen reviews richten zich allemaal op hetzelfde gedrag — en verschillende zijn strenger geworden. Platformbeleid (Google, TripAdvisor, Facebook, Wongnai) geldt hoe dan ook overal. Beschouw de richtlijnen hier als de ondergrens, niet als de bovengrens, en controleer de regels van de markten waarin je actief bent.",
           },
         ],
       },
@@ -433,7 +433,7 @@ const nl: Dictionary = {
           },
           {
             q: "Welke platforms ondersteunt Reviewslip?",
-            a: "Google, TripAdvisor, LINE, Facebook, Xiaohongshu en Wongnai — zodat je je klanten kunt bereiken op het platform dat in jouw markt het belangrijkst is. Elk platform heeft echter zijn eigen regels, en sommige zijn strenger dan Google: verschillende beperken of verbieden het vragen om reviews helemaal. Controleer het beleid van een platform voordat je klanten ernaartoe stuurt, waar je ook actief bent.",
+            a: "Google, TripAdvisor, Facebook en Wongnai — zodat je je klanten kunt bereiken op het platform dat in jouw markt het belangrijkst is. Elk platform heeft echter zijn eigen regels, en sommige zijn strenger dan Google: verschillende beperken of verbieden het vragen om reviews helemaal. Controleer het beleid van een platform voordat je klanten ernaartoe stuurt, waar je ook actief bent.",
           },
         ],
       },

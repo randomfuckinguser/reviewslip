@@ -7,13 +7,11 @@ import { type Locale, DEFAULT_LOCALE } from "./i18n/config";
 export const SUPPORTED_PLATFORMS = [
   "Google",
   "TripAdvisor",
-  "LINE",
   "Facebook",
-  "Xiaohongshu",
   "Wongnai",
 ] as const;
 
-/** Human-readable list, e.g. "Google, TripAdvisor, LINE, Facebook, Xiaohongshu and Wongnai". */
+/** Human-readable list, e.g. "Google, TripAdvisor, Facebook and Wongnai". */
 export function platformsSentence(conjunction = "and"): string {
   const list = [...SUPPORTED_PLATFORMS];
   const last = list.pop();

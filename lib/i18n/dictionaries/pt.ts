@@ -182,7 +182,7 @@ const pt: Dictionary = {
       },
       {
         q: "Que plataformas de avaliação são suportadas?",
-        a: "Google, TripAdvisor, LINE, Facebook, Xiaohongshu e Wongnai. A Reviewslip ajuda os seus clientes a publicar na plataforma que for mais importante para o seu negócio e para a sua região.",
+        a: "Google, TripAdvisor, Facebook e Wongnai. A Reviewslip ajuda os seus clientes a publicar na plataforma que for mais importante para o seu negócio e para a sua região.",
       },
       {
         q: "Quanto tempo demora a configuração?",
@@ -410,7 +410,7 @@ const pt: Dictionary = {
           },
           {
             q: "Isto aplica-se fora dos Estados Unidos?",
-            a: "Sim — a regra da FTC é lei norte-americana, mas a maioria dos mercados tem agora as suas próprias regras. A Diretiva relativa às Práticas Comerciais Desleais da União Europeia (atualizada pela Diretiva Omnibus) e a Lei dos Serviços Digitais, a Digital Markets, Competition and Consumers Act 2024 do Reino Unido, a regulamentação japonesa de 2023 sobre marketing dissimulado e as regras chinesas contra a concorrência desleal em matéria de avaliações fabricadas visam todas a mesma conduta — e várias têm vindo a apertar. As políticas das plataformas (Google, TripAdvisor, Facebook, LINE, Xiaohongshu, Wongnai) aplicam-se em todo o lado, de qualquer forma. Encare estas orientações como o mínimo, não como o máximo, e verifique as regras dos mercados onde opera.",
+            a: "Sim — a regra da FTC é lei norte-americana, mas a maioria dos mercados tem agora as suas próprias regras. A Diretiva relativa às Práticas Comerciais Desleais da União Europeia (atualizada pela Diretiva Omnibus) e a Lei dos Serviços Digitais, a Digital Markets, Competition and Consumers Act 2024 do Reino Unido, a regulamentação japonesa de 2023 sobre marketing dissimulado e as regras chinesas contra a concorrência desleal em matéria de avaliações fabricadas visam todas a mesma conduta — e várias têm vindo a apertar. As políticas das plataformas (Google, TripAdvisor, Facebook, Wongnai) aplicam-se em todo o lado, de qualquer forma. Encare estas orientações como o mínimo, não como o máximo, e verifique as regras dos mercados onde opera.",
           },
         ],
       },
@@ -433,7 +433,7 @@ const pt: Dictionary = {
           },
           {
             q: "Que plataformas é que a Reviewslip suporta?",
-            a: "Google, TripAdvisor, LINE, Facebook, Xiaohongshu e Wongnai — para que possa ir ao encontro dos seus clientes na plataforma que for mais importante no seu mercado. No entanto, cada plataforma tem as suas próprias regras, e algumas são mais rigorosas do que o Google: várias restringem ou proíbem qualquer solicitação de avaliações. Verifique a política de qualquer plataforma antes de encaminhar clientes para ela, onde quer que opere.",
+            a: "Google, TripAdvisor, Facebook e Wongnai — para que possa ir ao encontro dos seus clientes na plataforma que for mais importante no seu mercado. No entanto, cada plataforma tem as suas próprias regras, e algumas são mais rigorosas do que o Google: várias restringem ou proíbem qualquer solicitação de avaliações. Verifique a política de qualquer plataforma antes de encaminhar clientes para ela, onde quer que opere.",
           },
         ],
       },

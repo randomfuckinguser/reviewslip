@@ -186,7 +186,7 @@ const en = {
       },
       {
         q: "Which review platforms are supported?",
-        a: "Google, TripAdvisor, LINE, Facebook, Xiaohongshu and Wongnai. Reviewslip helps your customers post to whichever platform matters most for your business and your region.",
+        a: "Google, TripAdvisor, Facebook and Wongnai. Reviewslip helps your customers post to whichever platform matters most for your business and your region.",
       },
       {
         q: "How long does setup take?",
@@ -414,7 +414,7 @@ const en = {
           },
           {
             q: "Does this apply outside the United States?",
-            a: "Yes — the FTC rule is US law, but most markets now have their own. The EU's Unfair Commercial Practices Directive (updated by the Omnibus Directive) and Digital Services Act, the UK's Digital Markets, Competition and Consumers Act 2024, Japan's 2023 stealth-marketing regulation, and China's anti-unfair-competition rules on fabricated reviews all target the same conduct — and several have been tightening. Platform policies (Google, TripAdvisor, Facebook, LINE, Xiaohongshu, Wongnai) apply everywhere regardless. Treat the guidance here as the floor, not the ceiling, and check the rules for the markets you operate in.",
+            a: "Yes — the FTC rule is US law, but most markets now have their own. The EU's Unfair Commercial Practices Directive (updated by the Omnibus Directive) and Digital Services Act, the UK's Digital Markets, Competition and Consumers Act 2024, Japan's 2023 stealth-marketing regulation, and China's anti-unfair-competition rules on fabricated reviews all target the same conduct — and several have been tightening. Platform policies (Google, TripAdvisor, Facebook, Wongnai) apply everywhere regardless. Treat the guidance here as the floor, not the ceiling, and check the rules for the markets you operate in.",
           },
         ],
       },
@@ -437,7 +437,7 @@ const en = {
           },
           {
             q: "Which platforms does Reviewslip support?",
-            a: "Google, TripAdvisor, LINE, Facebook, Xiaohongshu and Wongnai — so you can meet your customers on whichever platform matters most in your market. Each platform has its own rules, though, and some are stricter than Google: several restrict or prohibit soliciting reviews at all. Check the policy of any platform before you point customers at it, wherever you operate.",
+            a: "Google, TripAdvisor, Facebook and Wongnai — so you can meet your customers on whichever platform matters most in your market. Each platform has its own rules, though, and some are stricter than Google: several restrict or prohibit soliciting reviews at all. Check the policy of any platform before you point customers at it, wherever you operate.",
           },
         ],
       },

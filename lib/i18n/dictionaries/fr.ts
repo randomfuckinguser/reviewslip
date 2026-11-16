@@ -182,7 +182,7 @@ const fr: Dictionary = {
       },
       {
         q: "Quelles plateformes d'avis sont prises en charge ?",
-        a: "Google, TripAdvisor, LINE, Facebook, Xiaohongshu et Wongnai. Reviewslip aide vos clients à publier sur la plateforme la plus importante pour votre entreprise et votre région.",
+        a: "Google, TripAdvisor, Facebook et Wongnai. Reviewslip aide vos clients à publier sur la plateforme la plus importante pour votre entreprise et votre région.",
       },
       {
         q: "Combien de temps prend la configuration ?",
@@ -410,7 +410,7 @@ const fr: Dictionary = {
           },
           {
             q: "Cela s'applique-t-il en dehors des États-Unis ?",
-            a: "Oui — la règle de la FTC est une loi américaine, mais la plupart des marchés disposent désormais des leurs. La directive sur les pratiques commerciales déloyales de l'UE (Unfair Commercial Practices Directive, mise à jour par la directive Omnibus) et le règlement sur les services numériques (Digital Services Act), le Digital Markets, Competition and Consumers Act 2024 du Royaume-Uni, la réglementation japonaise de 2023 sur le marketing furtif et les règles chinoises contre la concurrence déloyale visant les avis fabriqués ciblent tous les mêmes comportements — et plusieurs se sont durcis. Les politiques des plateformes (Google, TripAdvisor, Facebook, LINE, Xiaohongshu, Wongnai) s'appliquent partout quoi qu'il en soit. Considérez ces recommandations comme un plancher, et non comme un plafond, et vérifiez les règles des marchés où vous exercez.",
+            a: "Oui — la règle de la FTC est une loi américaine, mais la plupart des marchés disposent désormais des leurs. La directive sur les pratiques commerciales déloyales de l'UE (Unfair Commercial Practices Directive, mise à jour par la directive Omnibus) et le règlement sur les services numériques (Digital Services Act), le Digital Markets, Competition and Consumers Act 2024 du Royaume-Uni, la réglementation japonaise de 2023 sur le marketing furtif et les règles chinoises contre la concurrence déloyale visant les avis fabriqués ciblent tous les mêmes comportements — et plusieurs se sont durcis. Les politiques des plateformes (Google, TripAdvisor, Facebook, Wongnai) s'appliquent partout quoi qu'il en soit. Considérez ces recommandations comme un plancher, et non comme un plafond, et vérifiez les règles des marchés où vous exercez.",
           },
         ],
       },
@@ -433,7 +433,7 @@ const fr: Dictionary = {
           },
           {
             q: "Quelles plateformes Reviewslip prend-il en charge ?",
-            a: "Google, TripAdvisor, LINE, Facebook, Xiaohongshu et Wongnai — pour que vous puissiez rejoindre vos clients sur la plateforme la plus importante de votre marché. Chaque plateforme a toutefois ses propres règles, et certaines sont plus strictes que Google : plusieurs restreignent ou interdisent purement et simplement toute sollicitation d'avis. Vérifiez la politique de toute plateforme avant d'y diriger vos clients, où que vous exerciez.",
+            a: "Google, TripAdvisor, Facebook et Wongnai — pour que vous puissiez rejoindre vos clients sur la plateforme la plus importante de votre marché. Chaque plateforme a toutefois ses propres règles, et certaines sont plus strictes que Google : plusieurs restreignent ou interdisent purement et simplement toute sollicitation d'avis. Vérifiez la politique de toute plateforme avant d'y diriger vos clients, où que vous exerciez.",
           },
         ],
       },

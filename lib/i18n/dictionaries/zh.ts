@@ -178,7 +178,7 @@ const zh: Dictionary = {
       },
       {
         q: "支持哪些评价平台？",
-        a: "Google、TripAdvisor、LINE、Facebook、Xiaohongshu（小红书）和 Wongnai。Reviewslip 会帮助您的顾客发布到对您的业务和所在地区最重要的那个平台。",
+        a: "Google、TripAdvisor、Facebook 和 Wongnai。Reviewslip 会帮助您的顾客发布到对您的业务和所在地区最重要的那个平台。",
       },
       {
         q: "设置需要多长时间？",
@@ -406,7 +406,7 @@ const zh: Dictionary = {
           },
           {
             q: "这在美国以外也适用吗？",
-            a: "适用——FTC 的规定是美国法律，但如今大多数市场都有了各自的规定。EU 的《不公平商业行为指令》（Unfair Commercial Practices Directive，经《综合指令》Omnibus Directive 修订）与《数字服务法》（Digital Services Act）、UK 的《2024 年数字市场、竞争与消费者法》（Digital Markets, Competition and Consumers Act 2024）、日本 2023 年的隐性营销法规，以及中国反不正当竞争法中关于编造评价的规则，全都针对同样的行为——其中有几项还在不断收紧。无论如何，平台政策（Google、TripAdvisor、Facebook、LINE、Xiaohongshu、Wongnai）在任何地方都适用。请把这里的指引视为下限，而非上限，并查阅您经营所在市场的相关规则。",
+            a: "适用——FTC 的规定是美国法律，但如今大多数市场都有了各自的规定。EU 的《不公平商业行为指令》（Unfair Commercial Practices Directive，经《综合指令》Omnibus Directive 修订）与《数字服务法》（Digital Services Act）、UK 的《2024 年数字市场、竞争与消费者法》（Digital Markets, Competition and Consumers Act 2024）、日本 2023 年的隐性营销法规，以及中国反不正当竞争法中关于编造评价的规则，全都针对同样的行为——其中有几项还在不断收紧。无论如何，平台政策（Google、TripAdvisor、Facebook、Wongnai）在任何地方都适用。请把这里的指引视为下限，而非上限，并查阅您经营所在市场的相关规则。",
           },
         ],
       },
@@ -429,7 +429,7 @@ const zh: Dictionary = {
           },
           {
             q: "Reviewslip 支持哪些平台？",
-            a: "Google、TripAdvisor、LINE、Facebook、Xiaohongshu（小红书）和 Wongnai——因此您可以在对您市场最重要的那个平台上与顾客相遇。不过，每个平台都有各自的规则，有些甚至比 Google 更为严格：有几家明确限制或禁止以任何方式主动索取评价。无论您在何处经营，在引导顾客前往任何平台之前，请先查看该平台的政策。",
+            a: "Google、TripAdvisor、Facebook 和 Wongnai——因此您可以在对您市场最重要的那个平台上与顾客相遇。不过，每个平台都有各自的规则，有些甚至比 Google 更为严格：有几家明确限制或禁止以任何方式主动索取评价。无论您在何处经营，在引导顾客前往任何平台之前，请先查看该平台的政策。",
           },
         ],
       },

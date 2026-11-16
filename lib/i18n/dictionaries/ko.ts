@@ -180,7 +180,7 @@ const ko: Dictionary = {
       },
       {
         q: "어떤 리뷰 플랫폼이 지원되나요?",
-        a: "Google, TripAdvisor, LINE, Facebook, Xiaohongshu, Wongnai를 지원합니다. Reviewslip은 여러분의 비즈니스와 지역에 가장 중요한 플랫폼이 무엇이든, 고객이 그곳에 리뷰를 게시하도록 도와드립니다.",
+        a: "Google, TripAdvisor, Facebook, Wongnai를 지원합니다. Reviewslip은 여러분의 비즈니스와 지역에 가장 중요한 플랫폼이 무엇이든, 고객이 그곳에 리뷰를 게시하도록 도와드립니다.",
       },
       {
         q: "설정에는 얼마나 걸리나요?",
@@ -408,7 +408,7 @@ const ko: Dictionary = {
           },
           {
             q: "이것이 미국 밖에서도 적용되나요?",
-            a: "네 — FTC 규정은 미국 법이지만, 이제 대부분의 시장에 자체 규정이 있습니다. EU의 불공정 상거래 관행 지침(Unfair Commercial Practices Directive, 옴니버스 지침으로 개정)과 디지털 서비스법(Digital Services Act), UK의 디지털 시장·경쟁·소비자법(Digital Markets, Competition and Consumers Act 2024), 일본의 2023년 스텔스 마케팅 규정, 그리고 조작된 리뷰에 관한 중국의 반부정당경쟁법 규정은 모두 동일한 행위를 겨냥하며 — 여러 곳이 이를 강화해 왔습니다. 플랫폼 정책(Google, TripAdvisor, Facebook, LINE, Xiaohongshu, Wongnai)은 어디에서든 관계없이 적용됩니다. 여기의 지침을 최소 기준으로 여기시고 상한선으로 여기지 마시며, 여러분이 운영하는 시장의 규정을 확인하세요.",
+            a: "네 — FTC 규정은 미국 법이지만, 이제 대부분의 시장에 자체 규정이 있습니다. EU의 불공정 상거래 관행 지침(Unfair Commercial Practices Directive, 옴니버스 지침으로 개정)과 디지털 서비스법(Digital Services Act), UK의 디지털 시장·경쟁·소비자법(Digital Markets, Competition and Consumers Act 2024), 일본의 2023년 스텔스 마케팅 규정, 그리고 조작된 리뷰에 관한 중국의 반부정당경쟁법 규정은 모두 동일한 행위를 겨냥하며 — 여러 곳이 이를 강화해 왔습니다. 플랫폼 정책(Google, TripAdvisor, Facebook, Wongnai)은 어디에서든 관계없이 적용됩니다. 여기의 지침을 최소 기준으로 여기시고 상한선으로 여기지 마시며, 여러분이 운영하는 시장의 규정을 확인하세요.",
           },
         ],
       },
@@ -431,7 +431,7 @@ const ko: Dictionary = {
           },
           {
             q: "Reviewslip은 어떤 플랫폼을 지원하나요?",
-            a: "Google, TripAdvisor, LINE, Facebook, Xiaohongshu, Wongnai를 지원합니다 — 그래서 여러분의 시장에서 가장 중요한 플랫폼이 무엇이든 그곳에서 고객을 만날 수 있습니다. 다만 각 플랫폼에는 고유한 규정이 있고 일부는 Google보다 더 엄격합니다. 여러 곳은 리뷰 요청 자체를 제한하거나 금지합니다. 어디에서 운영하시든, 고객을 어떤 플랫폼으로 안내하기 전에 그 플랫폼의 정책을 확인하세요.",
+            a: "Google, TripAdvisor, Facebook, Wongnai를 지원합니다 — 그래서 여러분의 시장에서 가장 중요한 플랫폼이 무엇이든 그곳에서 고객을 만날 수 있습니다. 다만 각 플랫폼에는 고유한 규정이 있고 일부는 Google보다 더 엄격합니다. 여러 곳은 리뷰 요청 자체를 제한하거나 금지합니다. 어디에서 운영하시든, 고객을 어떤 플랫폼으로 안내하기 전에 그 플랫폼의 정책을 확인하세요.",
           },
         ],
       },
