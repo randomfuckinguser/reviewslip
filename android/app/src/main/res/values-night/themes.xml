@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Phone" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#09090b</item>
+        <item name="android:colorAccent">#7fa2e6</item>
+    </style>
+</resources>

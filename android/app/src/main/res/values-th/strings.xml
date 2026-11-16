@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="channel_calls">สายเรียกเข้า</string>
+    <string name="channel_calls_note">ดังเมื่อแขกโทรเข้าสายที่คุณรับ</string>
+    <string name="channel_ongoing">สายที่กำลังคุย</string>
+    <string name="incoming">สายเรียกเข้า</string>
+    <string name="a_guest">แขก</string>
+    <string name="answer">รับสาย</string>
+    <string name="decline">ปฏิเสธ</string>
+    <string name="on_a_call">กำลังคุยสาย</string>
+    <string name="on_a_call_note">แตะเพื่อกลับไปที่สาย</string>
+    <string name="full_screen_title">ให้สายเรียกเข้าแสดงเต็มจอ</string>
+    <string name="full_screen_note">สายจะดังบนหน้าจอล็อกได้ก็ต่อเมื่อ Reviewslip Phone ได้รับอนุญาตให้แสดงการแจ้งเตือนแบบเต็มจอ เปิดได้ในหน้าถัดไป</string>
+    <string name="open_settings">เปิดการตั้งค่า</string>
+    <string name="not_now">ไว้ทีหลัง</string>
+    <string name="offline">ไม่มีการเชื่อมต่อ กำลังลองใหม่…</string>
+</resources>

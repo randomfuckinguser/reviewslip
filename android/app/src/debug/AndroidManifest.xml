@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: plain http to a dev server, and a way to ring without
+     Firebase (adb shell am broadcast -a com.reviewslip.phone.debug.RING …). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:usesCleartextTraffic="true">
+        <receiver
+            android:name=".DebugRingReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.reviewslip.phone.debug.RING" />
+                <action android:name="com.reviewslip.phone.debug.SETTLED" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

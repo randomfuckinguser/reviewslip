@@ -278,6 +278,17 @@
   var worker = null;
   var pushSub = null;
 
+  // Inside the Reviewslip Phone app for Android, which rings through a
+  // sleeping phone itself: the page hands it nothing but the token it is rung
+  // by, and says when a call starts and ends so the call keeps going with the
+  // screen off.
+  var APP = window.ReviewslipApp || null;
+  var appToken = '';
+  // The app's Answer, pressed before this page opened: answer that call as
+  // soon as its ring arrives.
+  var answerOnRing = new URLSearchParams(location.search).get('answer') || '';
+  if (answerOnRing) history.replaceState(null, '', location.pathname);
+
   /* ------------------------------------------------------------- sound */
 
   var audioCtx = null;
@@ -392,7 +403,10 @@
     if (active && !window.confirm(t('confirmSignOut'))) return;
     endCall(true);
     closeMenu();
-    fetch('/api/auth', { method: 'DELETE', credentials: 'same-origin' })
+    // Signed out, this phone stops ringing for them.
+    var leaving = appToken ? api('/push', { method: 'DELETE', body: { endpoint: 'fcm:' + appToken } }).catch(function () {}) : Promise.resolve();
+    appToken = '';
+    leaving.then(function () { return fetch('/api/auth', { method: 'DELETE', credentials: 'same-origin' }); })
       .catch(function () {})
       .then(function () { showLogin(); });
   }
@@ -504,7 +518,7 @@
     $('duty-off-sep').hidden = !me.agent.onDuty;
     $('m-duty').textContent = me.agent.onDuty ? t('goOff') : t('goOn');
     $('sound').hidden = unlocked || !me.agent.onDuty;
-    var canPush = me.pushKey && worker && 'PushManager' in window;
+    var canPush = !APP && me.pushKey && worker && 'PushManager' in window;
     $('push-note').hidden = !(me.agent.onDuty && canPush && !pushSub && !(window.Notification && Notification.permission === 'denied'));
   }
 
@@ -600,6 +614,7 @@
 
   document.addEventListener('visibilitychange', function () {
     sendVisibility();
+    if (APP) paintRings();
     if (document.visibilityState === 'visible' && me) {
       refreshMe();
       loadVoicemail();
@@ -611,6 +626,10 @@
       ice = msg.ice || [];
     } else if (msg.t === 'ring') {
       rings[msg.call.id] = msg.call;
+      if (answerOnRing && msg.call.id === answerOnRing) {
+        answerOnRing = '';
+        return answer(msg.call);
+      }
       paintRings();
       notify(msg.call);
     } else if (msg.t === 'cancelled' || msg.t === 'taken') {
@@ -683,7 +702,8 @@
     // On a phone the ring and the call cover the page; the page behind
     // stays still rather than scrolling under a thumb.
     document.body.dataset.screen = active ? 'call' : list.length ? 'ring' : '';
-    ringtone(list.length > 0);
+    // In the app, a page in the background stays quiet: the app rings instead.
+    ringtone(list.length > 0 && !(APP && document.visibilityState === 'hidden'));
     var brand = PHONE === 'reviewslip' ? t('brandReviewslip') : t('brandVenues');
     document.title = list.length ? '📞 ' + t('incoming') + ' — ' + brand : brand;
   }
@@ -701,6 +721,7 @@
     navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } })
       .then(function (stream) {
         active = { id: call.id, call: call, stream: stream, pc: null, queued: [], since: null, timer: null, muted: false };
+        appInCall(true);
         delete rings[call.id];
         closeNotification(call.id);
         paintRings();
@@ -780,6 +801,7 @@
     if (!a) return;
     if (tellServer) sendWs({ t: 'hangup', callId: a.id });
     active = null;
+    appInCall(false);
     clearInterval(a.timer);
     if (a.pc) try { a.pc.close(); } catch (e) { /* closed */ }
     if (a.stream) a.stream.getTracks().forEach(function (tr) { tr.stop(); });
@@ -847,8 +869,29 @@
     return out;
   }
 
+  function appInCall(on) {
+    if (APP && APP.inCall) try { APP.inCall(on); } catch (e) { /* older app */ }
+  }
+
+  /** The app's token to the server, so a call rings this phone while closed. */
+  function appRegister(token) {
+    token = String(token || '');
+    if (!token || !me || token === appToken) return;
+    appToken = token;
+    api('/push', { method: 'POST', body: { subscription: { app: token } } }).catch(function () { appToken = ''; });
+  }
+  // The app calls this when Firebase hands it a new token.
+  window.rsAppToken = appRegister;
+
   function paintPush() {
     var item = $('m-push');
+    if (APP) {
+      // The app rings by itself: nothing to switch on.
+      item.hidden = true;
+      $('push-note').hidden = true;
+      try { appRegister(APP.pushToken()); } catch (e) { /* no token yet */ }
+      return;
+    }
     if (!me || !me.pushKey || !worker || !('PushManager' in window)) {
       // Nothing to switch, but an iPhone outside the Home Screen can be told why.
       var ios = /iPhone|iPad/.test(navigator.userAgent) && !window.navigator.standalone;
@@ -1166,6 +1209,8 @@
   /* -------------------------------------------------------------- start */
 
   paintWords();
+  // The app lets the page play sound without a tap first.
+  if (APP) unlock();
 
   // Tokens arrive in the fragment, which never reaches a server log, and are
   // wiped from the address bar before anything else happens.

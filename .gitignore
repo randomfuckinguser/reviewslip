@@ -4,3 +4,6 @@ settings.json
 data/
 *.log
 .DS_Store
+# Firebase service account keys (docs/phone-app.md): never committed.
+firebase-phone.json
+*service-account*.json

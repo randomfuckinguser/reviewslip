@@ -200,6 +200,8 @@ router.get('/me', requireAgent, async (req, res) => {
       // comes back on by itself when they start.
       inHours: rules.inHours(hours, req.agent.timezone),
       pushKey: hub.PUSH_PUBLIC_KEY,
+      // The Reviewslip Phone app can be rung while closed.
+      appPush: hub.APP_PUSH,
     });
   } catch (err) {
     sendError(res, err);
@@ -249,6 +251,13 @@ router.post('/push', requireAgent, async (req, res) => {
   } catch (err) {
     sendError(res, err);
   }
+});
+
+// The app's Decline, pressed on a phone whose page is closed: no socket to
+// say it down, so it comes here.
+router.post('/decline', requireAgent, (req, res) => {
+  hub.declineFor(req.agent.id, String(req.body?.callId || ''));
+  res.json({ ok: true });
 });
 
 router.delete('/push', requireAgent, async (req, res) => {

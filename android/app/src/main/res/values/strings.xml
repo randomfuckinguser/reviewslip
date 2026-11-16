@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Reviewslip Phone</string>
+    <string name="channel_calls">Incoming calls</string>
+    <string name="channel_calls_note">Rings when a guest calls a line you take.</string>
+    <string name="channel_ongoing">Calls in progress</string>
+    <string name="incoming">Incoming call</string>
+    <string name="a_guest">A guest</string>
+    <string name="answer">Answer</string>
+    <string name="decline">Decline</string>
+    <string name="on_a_call">On a call</string>
+    <string name="on_a_call_note">Tap to go back to the call.</string>
+    <string name="full_screen_title">Let calls ring full screen</string>
+    <string name="full_screen_note">Calls ring over the lock screen only if Reviewslip Phone may show full-screen notifications. Turn it on in the next screen.</string>
+    <string name="open_settings">Open settings</string>
+    <string name="not_now">Not now</string>
+    <string name="offline">No connection. Trying again…</string>
+</resources>

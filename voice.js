@@ -391,7 +391,21 @@ async function removeStaff(ownerAccountId, subscriberId, agentId) {
 
 /* ------------------------------------------------------------------- push */
 
+/** How the app's Firebase tokens are kept beside browsers' endpoints. */
+const APP_PREFIX = 'fcm:';
+
 async function addPush(agentId, sub) {
+  // The Reviewslip Phone app: a Firebase token, no keys.
+  if (sub && typeof sub.app === 'string') {
+    const token = sub.app.trim();
+    if (!/^[\w:.-]{20,500}$/.test(token)) throw fail(400, 'That is not an app token.');
+    await query(
+      `INSERT INTO voice_push (endpoint, agent_id, p256dh, auth) VALUES ($1, $2, '', '')
+       ON CONFLICT (endpoint) DO UPDATE SET agent_id = EXCLUDED.agent_id`,
+      [APP_PREFIX + token, agentId]
+    );
+    return;
+  }
   const endpoint = String(sub?.endpoint || '');
   const p256dh = String(sub?.keys?.p256dh || '');
   const auth = String(sub?.keys?.auth || '');
@@ -623,6 +637,7 @@ module.exports = {
   acceptInvite,
   staffFor,
   removeStaff,
+  APP_PREFIX,
   addPush,
   removePush,
   pushFor,

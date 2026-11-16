@@ -4,6 +4,8 @@ const crypto = require('crypto');
 const { WebSocketServer } = require('ws');
 const webpush = require('web-push');
 
+const fcm = require('./fcm');
+
 const voice = require('./voice');
 const rules = require('./voicerules');
 const subscribers = require('./subscribers');
@@ -67,11 +69,26 @@ if (pushReady) {
   }
 }
 
+/**
+ * Rings every phone the agents signed up: a browser's web push, or the
+ * Reviewslip Phone app's Firebase token (kept as "fcm:<token>").
+ */
 async function push(agentIds, payload, ttl = 60) {
-  if (!pushReady || !agentIds.length) return;
+  if ((!pushReady && !fcm.ready) || !agentIds.length) return;
   const subs = await voice.pushFor(agentIds);
   await Promise.all(
     subs.map(async (s) => {
+      if (s.endpoint.startsWith(voice.APP_PREFIX)) {
+        try {
+          const r = await fcm.send(s.endpoint.slice(voice.APP_PREFIX.length), payload, ttl);
+          // Uninstalled, or its data cleared: that phone is gone.
+          if (r === 'gone') await voice.removePush(s.endpoint);
+        } catch (err) {
+          console.error('Phone app ring failed:', err.message);
+        }
+        return;
+      }
+      if (!pushReady) return;
       try {
         await webpush.sendNotification(
           { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
@@ -277,6 +294,9 @@ async function startCall(ws, msg) {
         callId: call.id,
         title: call.title,
         caller: call.callerName,
+        phone: line.subscriberId ? 'venues' : 'reviewslip',
+        // How long the app rings before giving up by itself.
+        seconds: rules.RING_SECONDS + rules.PUSH_EXTRA_SECONDS,
         // The phone the line belongs to: a venue's, or Reviewslip's own.
         url: `${VOICE_URL}${line.subscriberId ? '/phone/' : '/phone/reviewslip/'}?call=${call.id}`,
       },
@@ -330,12 +350,22 @@ async function answer(conn, callId) {
 }
 
 function decline(conn, callId) {
+  declineFor(conn.agentId, callId);
+}
+
+/**
+ * "Not me": from a page's Decline, or the app's Decline on a phone whose page
+ * is closed. Once everyone it rang has said no, the caller is told at once
+ * rather than left to ring out.
+ */
+function declineFor(agentId, callId) {
   const call = calls.get(callId);
-  if (!call || call.settled || !call.wanted.has(conn.agentId)) return;
-  call.declined.add(conn.agentId);
+  if (!call || call.settled || !call.wanted.has(agentId)) return false;
+  call.declined.add(agentId);
   // Their other pages stop ringing too.
-  toAgent(conn.agentId, { t: 'cancelled', callId });
+  toAgent(agentId, { t: 'cancelled', callId });
   if ([...call.wanted].every((id) => call.declined.has(id))) giveUp(call, 'declined');
+  return true;
 }
 
 function endCall(call, by) {
@@ -570,6 +600,8 @@ function presence(agentIds) {
 module.exports = {
   VOICE_URL,
   PUSH_PUBLIC_KEY: pushReady ? PUSH.publicKey : '',
+  APP_PUSH: fcm.ready,
+  declineFor,
   attach,
   status,
   changed,

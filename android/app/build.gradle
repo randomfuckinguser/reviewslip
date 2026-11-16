@@ -1,0 +1,64 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Firebase rings the app while it is closed. Its config comes from the
+// Firebase console (docs/phone-app.md); without it the app still answers
+// calls while it is open.
+if (file('google-services.json').exists()) {
+    apply plugin: 'com.google.gms.google-services'
+}
+
+// The release key lives outside the repository, and must be kept for good:
+// an update signed by any other key will not install over this app.
+def keys = new Properties()
+def keysFile = file(System.getenv('RS_PHONE_KEYS') ?: "${System.getProperty('user.home')}/.reviewslip/phone-keystore.properties")
+if (keysFile.exists()) keysFile.withInputStream { keys.load(it) }
+
+android {
+    namespace 'com.reviewslip.phone'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.reviewslip.phone'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+        // The site the phone page is on: -PsiteUrl=… to point a build elsewhere.
+        buildConfigField 'String', 'SITE', "\"${project.findProperty('siteUrl') ?: 'https://reviewslip.com'}\""
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    signingConfigs {
+        release {
+            if (keys.storeFile) {
+                storeFile file(keys.storeFile)
+                storePassword keys.storePassword
+                keyAlias keys.keyAlias
+                keyPassword keys.keyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (keys.storeFile) signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:33.7.0')
+    implementation 'com.google.firebase:firebase-messaging'
+    implementation 'androidx.core:core:1.13.1'
+}
