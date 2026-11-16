@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
+import { ExternalLink } from "lucide-react";
 
 import PageHeader from "@/components/app-shell/PageHeader";
 import MarketListing, { type ListingDraft } from "@/components/dashboard/MarketListing";
@@ -107,6 +108,7 @@ export default async function OnlineBookingPage({
       >
         {data.listed && (
           <a className="btn btn-quiet" href={publicPage} target="_blank" rel="noreferrer">
+            <ExternalLink size={15} aria-hidden="true" />
             View on Reviewslip
           </a>
         )}

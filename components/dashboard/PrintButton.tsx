@@ -1,5 +1,7 @@
 "use client";
 
+import { Printer } from "lucide-react";
+
 /**
  * Prints the card.
  *
@@ -11,6 +13,7 @@
 export default function PrintButton() {
   return (
     <button type="button" className="btn btn-go" onClick={() => window.print()}>
+      <Printer size={15} aria-hidden="true" />
       Print
     </button>
   );

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { CircleAlert, CircleCheck } from "lucide-react";
+import { CircleAlert, CircleCheck, Plus } from "lucide-react";
 
 import PageHeader from "@/components/app-shell/PageHeader";
 import { currentUser } from "@/lib/customer";
@@ -80,6 +80,7 @@ export default async function DashboardPage({
           className="btn btn-go"
           href={localizedPath(lang, "/dashboard/businesses/new")}
         >
+          <Plus size={15} aria-hidden="true" />
           Add a Business
         </Link>
       </PageHeader>

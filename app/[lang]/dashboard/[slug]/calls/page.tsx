@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
+import { Phone } from "lucide-react";
 
 import PageHeader from "@/components/app-shell/PageHeader";
 import VoiceTeam, { type VoiceTeamData } from "@/components/dashboard/VoiceTeam";
@@ -84,6 +85,7 @@ export default async function CallsPage({ params }: PageProps<"/[lang]/dashboard
         {/* A plain link: the phone is served beside the dashboard, not by this app's router. */}
         {/* Outlined: the screen's one filled button is Add Person. */}
         <a className="btn btn-quiet" href="/phone/" target="_blank" rel="noopener">
+          <Phone size={15} aria-hidden="true" />
           Open the Phone
         </a>
       </PageHeader>

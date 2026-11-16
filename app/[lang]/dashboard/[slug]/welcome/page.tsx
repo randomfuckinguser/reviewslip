@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
+import { ExternalLink } from "lucide-react";
 
 import PageHeader from "@/components/app-shell/PageHeader";
 import WelcomeLinks from "@/components/dashboard/WelcomeLinks";
@@ -103,6 +104,7 @@ export default async function WelcomePage({
         back={localizedPath(locale, `/dashboard/${slug}`)}
       >
         <a className="btn btn-quiet" href={data.url} target="_blank" rel="noreferrer">
+          <ExternalLink size={15} aria-hidden="true" />
           Open Guest App
         </a>
       </PageHeader>
