@@ -97,7 +97,7 @@ export default async function CallsPage({ params }: PageProps<"/[lang]/dashboard
 
         <section className="group-box" aria-labelledby="line-title" data-tour="calls-line">
           <h2 id="line-title">Your Line</h2>
-          <p style={{ margin: 0, color: status.tone, fontWeight: 500 }}>{status.text}</p>
+          <p role="status" style={{ margin: 0, color: status.tone, fontWeight: 500 }}>{status.text}</p>
           <ol style={{ margin: 0, paddingLeft: "1.2rem", display: "grid", gap: "0.35rem" }}>
             <li>Open the phone and press Go on duty. It stays on duty until you press Go off duty.</li>
             <li>On a phone, turn on ringing so a call rings even with the page closed.</li>

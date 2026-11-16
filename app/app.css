@@ -114,7 +114,7 @@
    hairline tinted with the accent would be the accent used as decoration, so
    washes are neutral here. */
 .app {
-  --shade: var(--background);
+  --shade: var(--card);
   --shade-soft: var(--card);
   /* Only ever used as the text colour on a --jade fill. */
   --shade-deep: var(--primary-foreground);
@@ -2043,4 +2043,137 @@ body:has(.app) {
 
 .tour-steps li + li {
   margin-top: 0.2rem;
+}
+
+/* -------------------------------------------------------------------------- */
+/* The hybrid look                                                            */
+/* -------------------------------------------------------------------------- */
+
+/* Half console, half app standard. From the console: a light grey canvas the
+   white cards stand on, a 12px card corner with the faintest lift, larger
+   page and card titles, and cards in a row that end level. From the
+   standard: Thai blue as the one accent, the Sidebar and its pill, the 56px
+   header with Back and Help, 14px text, 8px controls, status dots, underlined
+   tabs and labels above fields. Last in the file, so it wins. */
+.app {
+  --background: #f4f4f5;
+  --radius-card: 12px;
+  --shadow-card: 0 1px 2px rgb(9 9 11 / 0.05);
+}
+
+.dark .app {
+  --background: #09090b;
+  --shadow-card: none;
+}
+
+body:has(.app) {
+  background: #f4f4f5;
+}
+
+.dark body:has(.app) {
+  background: #09090b;
+}
+
+.sidebar {
+  background: var(--card);
+}
+
+.page-header {
+  background: var(--card);
+}
+
+.app .page-title h1 {
+  font-size: 1.25rem !important;
+}
+
+.app
+  :is(
+    .container,
+    .bw,
+    .setup,
+    .admin-card,
+    .admin-tile,
+    .panel,
+    .desk-card,
+    .group-box,
+    .admin-scroll,
+    .admin-empty,
+    .bl-bar
+  ) {
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+/* A List View's table still has no frame: edge to edge, square. */
+.app .page-body > :is(.admin-scroll, .list-view, .bl-wrap) {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Card titles: 16px, the console's weight of heading over the standard's. */
+.app :is(.container-head h2, .bw-head h2, .admin-card > h2, .group-box > h2, .desk-card > h2, .list-head h2):not(.venue-look *) {
+  font-size: var(--fs16) !important;
+  font-weight: var(--fw6) !important;
+}
+
+/* Cards in a row end level: the shorter one grows to its neighbour's height
+   and keeps its own content at the top, so no row leaves a ragged edge. */
+.page-body.cols,
+.cols-grid,
+.console-grid,
+.console-pair,
+.desk-grid {
+  align-items: stretch;
+}
+
+.page-body.cols > :is(section, .container, .group-box, .admin-card, .desk-card, .panel, .bw),
+.cols-grid > *,
+.console-grid > *,
+.console-pair > *,
+.desk-grid > .desk-card {
+  height: 100%;
+}
+
+/* A card that is one figure (Refer a Business' progress) sits in the middle
+   of the height it is given. */
+.app .container.is-figure {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* The canvas carries its own padding: cards are not flush to the header. */
+.page-body {
+  padding-top: 1.25rem;
+}
+
+/* Main and side columns keep their own heights: a short side card stretched
+   to a long main one is a tall empty box. Pairs of equals still end level. */
+.page-body.cols.is-main,
+.cols-grid.is-reviews,
+.console-grid {
+  align-items: start;
+}
+
+.page-body.cols.is-main > *,
+.cols-grid.is-reviews > *,
+.console-grid > * {
+  height: auto;
+}
+
+/* A grown card keeps its rows together at the top. */
+.app .group-box,
+.app .console-col {
+  align-content: start;
+}
+
+/* A status line under a card's heading stays where it is: only a hint moves
+   to the bottom. */
+.app .group-box > h2 + p[role="status"],
+.app .admin-card > h2 + p[role="status"] {
+  order: 0;
+  margin: 0 !important;
+  padding: 0;
+  border-top: 0;
+  font-size: var(--fs14) !important;
 }

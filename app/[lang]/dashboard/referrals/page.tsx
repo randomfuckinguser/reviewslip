@@ -119,7 +119,7 @@ export default async function ReferralsPage({
 
         {/* ---------------------------------------------------- the progress */}
 
-        <section className="container" aria-label="Progress" style={{ marginBottom: "1.25rem" }}>
+        <section className="container is-figure" aria-label="Progress" style={{ marginBottom: "1.25rem" }}>
           <div
             style={{
               display: "flex",

@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { CircleAlert, CircleCheck, ExternalLink, RefreshCw } from "lucide-react";
 
-import type { BookingSummary, BusinessDetail } from "@/lib/customer";
+import type { BookingSummary, BusinessDetail, DayView } from "@/lib/customer";
 
 /**
  * One venue at a glance, laid out like a cloud console's service dashboard:
  *
  *   - Resources: everything there is a count of, each one a way into the
  *     screen behind it, and the ones needing somebody marked;
- *   - Take a Booking and Review Page Health, side by side underneath;
+ *   - Today at the Desk and Review Page Health, side by side underneath (a
+ *     booking starts from the header's New Booking);
  *   - Reviews down the right: the month's figures and the last thirty days.
  *
  * Every number here has a page behind it, so nothing on this screen is the only
@@ -21,6 +22,8 @@ interface Props {
   stats: BusinessDetail["stats"];
   /** Null when the venue has no rooms yet, or the call failed. */
   summary: BookingSummary | null;
+  /** Today at the desk, by name. Null with no rooms, or when the call failed. */
+  day: DayView | null;
   /** The venue's dashboard root, already localised. */
   base: string;
 }
@@ -33,7 +36,7 @@ interface Resource {
   attention?: boolean;
 }
 
-export default function VenueOverview({ business, setup, stats, summary, base }: Props) {
+export default function VenueOverview({ business, setup, stats, summary, day, base }: Props) {
   const bookings = `${base}/bookings`;
   const hasRooms = Boolean(summary && summary.rooms > 0);
 
@@ -93,29 +96,70 @@ export default function VenueOverview({ business, setup, stats, summary, base }:
         </section>
 
         <div className="console-pair">
-          <section className="container" aria-labelledby="book-h" data-tour="vd-booking">
+          <section className="container" aria-labelledby="desk-h" data-tour="vd-desk">
             <div className="container-head">
-              <h2 id="book-h">Take a Booking</h2>
+              <h2 id="desk-h">Today at the Desk</h2>
+              <div className="container-actions">
+                <Link className="btn btn-quiet" href={bookings}>
+                  Open Today
+                </Link>
+              </div>
             </div>
-            {/* Outlined: the screen's one filled button is New Booking in the
-                header. What each does is said on it as a tip. */}
-            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-              <Link
-                className="btn btn-quiet"
-                href={bookings}
-                data-tip="A walk-in or a phone booking. It lands on today's arrivals and holds the room straight away."
-              >
-                New Booking
-              </Link>
-              <Link
-                className="btn btn-quiet"
-                href={`${bookings}/online`}
-                data-tip="Where guests book themselves, confirmed straight away and on your calendar."
-              >
-                Online Booking Page
-              </Link>
-            </div>
+            {day ? (
+              <>
+                <h3 style={{ margin: "0 0 0.25rem" }}>
+                  Arriving{" "}
+                  <span style={{ color: "var(--muted-foreground)", fontWeight: 400 }}>({day.arrivals.length})</span>
+                </h3>
+                {day.arrivals.length ? (
+                  <ul className="row-list" style={{ margin: "0 calc(-1 * var(--pad)) 0.75rem" }}>
+                    {day.arrivals.slice(0, 4).map((b) => (
+                      <li key={b.id}>
+                        <span>
+                          {b.guestName}
+                          <span style={{ color: "var(--muted-foreground)" }}> · {b.roomName ?? "no room yet"}</span>
+                        </span>
+                        <span className={`status ${b.status === "in_house" ? "is-ok" : b.roomName ? "is-info" : "is-warn"}`}>
+                          {b.status === "in_house" ? "In" : b.roomName ? "Due" : "No room"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="container-desc" style={{ marginBottom: "0.75rem" }}>
+                    Nobody is due today.
+                  </p>
+                )}
+                <h3 style={{ margin: "0 0 0.25rem" }}>
+                  Leaving{" "}
+                  <span style={{ color: "var(--muted-foreground)", fontWeight: 400 }}>({day.departures.length})</span>
+                </h3>
+                {day.departures.length ? (
+                  <ul className="row-list" style={{ margin: "0 calc(-1 * var(--pad)) calc(-1 * var(--pad))" }}>
+                    {day.departures.slice(0, 3).map((b) => (
+                      <li key={b.id}>
+                        <span>
+                          {b.guestName}
+                          <span style={{ color: "var(--muted-foreground)" }}> · {b.roomName ?? "no room"}</span>
+                        </span>
+                        <span className={`status ${b.status === "checked_out" ? "is-off" : "is-info"}`}>
+                          {b.status === "checked_out" ? "Out" : "Due out"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="container-desc">Nobody is leaving today.</p>
+                )}
+              </>
+            ) : (
+              <p className="container-desc">
+                No rooms set up yet. <Link href={`${bookings}/rooms`}>Add your room types</Link> and
+                today&apos;s arrivals and departures show here.
+              </p>
+            )}
           </section>
+
 
           <section className="container" aria-labelledby="health-h" data-tour="vd-health">
             <div className="container-head">
@@ -277,30 +321,32 @@ function ReviewsPanel({ stats, href }: { stats: BusinessDetail["stats"]; href: s
         </div>
       </div>
 
-      {stats.byCategory.length > 0 ? (
-        <>
-          <hr className="container-rule" />
-          <h3 style={{ margin: "0 0 0.4rem" }}>What guests pick</h3>
-          <table className="console-table container-bleed" style={{ marginBottom: "-0.5rem" }}>
-            <thead>
-              <tr>
-                <th scope="col">Topic</th>
-                <th scope="col" className="num">
-                  Reviews
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats.byCategory.slice(0, 5).map((row) => (
-                <tr key={row.category}>
-                  <td>{row.category}</td>
-                  <td className="num">{row.reviews.toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
-      ) : null}
+      <hr className="container-rule" />
+      <h3 style={{ margin: "0 0 0.4rem" }}>What guests pick</h3>
+            {stats.byCategory.length > 0 ? (
+              <table className="console-table container-bleed" style={{ marginBottom: "-1rem" }}>
+                <thead>
+                  <tr>
+                    <th scope="col">Topic</th>
+                    <th scope="col" className="num">
+                      Reviews
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.byCategory.slice(0, 6).map((row) => (
+                    <tr key={row.category}>
+                      <td>{row.category}</td>
+                      <td className="num">{row.reviews.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="container-desc">
+                No reviews yet. The topics guests choose most will show here.
+              </p>
+            )}
     </section>
   );
 }

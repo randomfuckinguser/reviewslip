@@ -10,6 +10,7 @@ import {
   sessionToken,
   type BookingSummary,
   type BusinessDetail,
+  type DayView,
 } from "@/lib/customer";
 import { isLocale } from "@/lib/i18n/config";
 import { localizedPath } from "@/lib/i18n/routing";
@@ -74,6 +75,17 @@ export default async function BusinessPage({
     console.error(`Could not load the bookings summary for ${slug}:`, err);
   }
 
+  // Today's arrivals and departures by name, for the dashboard's desk card.
+  // Its own call, and its own failure: a venue with no rooms gets no card.
+  let day: DayView | null = null;
+  if (summary && summary.rooms > 0) {
+    try {
+      day = await call<DayView>(`/businesses/${slug}/day?date=${summary.date}`, { token });
+    } catch (err) {
+      console.error(`Could not load today's desk for ${slug}:`, err);
+    }
+  }
+
   const { business, stats } = data;
 
   return (
@@ -107,6 +119,7 @@ export default async function BusinessPage({
           setup={data.setup}
           stats={stats}
           summary={summary}
+          day={day}
           base={localizedPath(lang, `/dashboard/${business.slug}`)}
         />
       </div>

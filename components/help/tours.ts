@@ -38,13 +38,13 @@ export interface TourDef {
 export const TOURS: TourDef[] = [
   {
     id: "venue-dashboard",
-    version: 1,
+    version: 2,
     title: "The Venue Dashboard",
     summary: "What each part of the venue's home screen tells you.",
     screen: "",
     steps: [
       { id: "vd-resources", title: "Resources", body: "Everything at the venue there is a count of, today. Each name opens the screen behind it, and an amber number needs someone." },
-      { id: "vd-booking", title: "Take a Booking", body: "Starts a walk-in or phone booking, or opens the page guests book themselves on." },
+      { id: "vd-desk", title: "Today at the Desk", body: "Who is arriving and leaving today, by name. Open Today has the full desk." },
       { id: "vd-health", title: "Review Page Health", body: "Whether your review page is taking reviews, and which setup steps are left." },
       { id: "vd-reviews", title: "Reviews", body: "This month's and all-time reviews, the last 30 days, and the topics guests pick most." },
     ],
