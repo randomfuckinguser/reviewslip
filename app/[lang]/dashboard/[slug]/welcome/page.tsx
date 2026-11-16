@@ -154,10 +154,8 @@ export default async function WelcomePage({
         <section className="group-box" aria-labelledby="links-title" data-tour="ga-links">
           <h2 id="links-title">Links</h2>
           <p style={{ margin: 0, color: "var(--muted-foreground)" }}>
-            The tiles guests see once they have signed up, in this order. A web address, a phone
-            number (tel:+66…) or an email (mailto:…). The picture on each tile comes from the
-            label and address — &ldquo;Wi-Fi&rdquo;, &ldquo;Menu&rdquo;, a map or a LINE link each
-            get their own.
+            Tiles guests see after they sign up, in this order. An address can be a web page,
+            tel:+66… or mailto:…, and each tile&apos;s picture comes from its label and address.
           </p>
           <WelcomeLinks
             initial={data.links}

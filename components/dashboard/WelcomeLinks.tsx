@@ -62,6 +62,13 @@ export default function WelcomeLinks({
 
   return (
     <div style={{ display: "grid", gap: "0.5rem" }}>
+      {rows.length ? (
+        // What each column is, once, over the rows (the console's form grid).
+        <div className="links-head" aria-hidden="true">
+          <span>Label</span>
+          <span>Web address, phone or email</span>
+        </div>
+      ) : null}
       {rows.map((row, index) => (
         <div
           key={index}

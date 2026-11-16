@@ -1095,7 +1095,7 @@ body:has(.app) {
     [type="file"],
     [type="hidden"]
   ) {
-  background-color: var(--background) !important;
+  background-color: var(--card) !important;
   border: 1px solid var(--input) !important;
   color: var(--foreground) !important;
 }
@@ -2176,4 +2176,30 @@ body:has(.app) {
   padding: 0;
   border-top: 0;
   font-size: var(--fs14) !important;
+}
+
+/* Every field has room inside it: a box with no style of its own (the Guest
+   App's links) had its words against the left edge. A component's own
+   padding, written inline, still wins. */
+.app :is(select, textarea),
+.app
+  input:not(
+    [type="checkbox"],
+    [type="radio"],
+    [type="color"],
+    [type="range"],
+    [type="file"],
+    [type="hidden"]
+  ) {
+  padding-inline: 0.75rem;
+}
+
+/* The links editor's column captions, over the rows. */
+.links-head {
+  display: grid;
+  grid-template-columns: minmax(9rem, 14rem) minmax(0, 1fr) 100px;
+  gap: 0.5rem;
+  font-size: var(--fs12);
+  font-weight: var(--fw6);
+  color: var(--muted-foreground);
 }
