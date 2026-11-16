@@ -13,7 +13,7 @@
 }
 
 .warning strong {
-  color: var(--marigold);
+  color: var(--warning);
 }
 
 .warningIcon {
@@ -23,8 +23,8 @@
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: var(--marigold);
-  color: var(--marigold-ink);
+  background: var(--warning);
+  color: var(--warning-foreground);
   font-weight: 700;
   font-size: 0.95rem;
   line-height: 1;
@@ -75,7 +75,7 @@
 }
 
 .cta {
-  background: var(--shade-soft);
+  background: var(--muted);
   padding-block: clamp(3.5rem, 9vw, 5.5rem);
   border-top: 1px solid var(--jade-line);
 }

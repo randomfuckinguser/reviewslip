@@ -131,7 +131,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
       </section>
 
       {/* Features */}
-      <section className="section" id="features">
+      <section className="section is-band" id="features">
         <div className="wrap">
           <div className={styles.sectionHead}>
             <span className="eyebrow">{h.featuresEyebrow}</span>
@@ -162,7 +162,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
       </section>
 
       {/* Pricing */}
-      <section className="section" id="pricing">
+      <section className="section is-band" id="pricing">
         <div className="wrap">
           <div className={styles.sectionHead}>
             <span className="eyebrow">{h.pricingEyebrow}</span>

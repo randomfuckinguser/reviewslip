@@ -10,6 +10,7 @@
   border: 1px solid var(--jade-line);
   border-radius: var(--radius-card);
   background: var(--shade-soft);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
 }
 

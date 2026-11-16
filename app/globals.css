@@ -1,10 +1,10 @@
 /* ==========================================================================
    Reviewslip — the public site
 
-   The marketing pages wear the Vibe Crafted Software monochrome brand
-   (05-frontend.md): one pinned grey ramp, zero hue, the system font, and
-   light and dark from the same theme system as the app. The one colour
-   allowed is a functional red, for a form field that is wrong.
+   The marketing pages wear the same hybrid as the app: the standards' zinc
+   greys and Thai blue as the one accent (buttons, links, ticks, the active
+   toggle), with the console's white cards, faint shadow and grey bands. The
+   system font, and light and dark from the same theme system as the app.
 
    The authenticated app re-points these tokens again in app.css, and
    `.venue-look` (below) puts the venue's own palette back for the things
@@ -18,23 +18,32 @@
    the page's --shade, --ink and the rest. */
 :root,
 [data-embed-theme] {
-  /* The ramp, as vibecraftedsoftware.com pins it. */
-  --gray-950: #050505;
-  --gray-900: #0c0c0c;
-  --gray-800: #262626;
-  --gray-700: #404040;
-  --gray-600: #525252;
-  --gray-500: #6b6b6b;
-  --gray-400: #a3a3a3;
-  --gray-300: #d4d4d4;
-  --gray-200: #e5e5e5;
-  --gray-100: #f0f0f0;
-  --gray-50: #f7f7f7;
+  /* The ramp: zinc, the app's greys. */
+  --gray-950: #09090b;
+  --gray-900: #18181b;
+  --gray-800: #27272a;
+  --gray-700: #3f3f46;
+  --gray-600: #52525b;
+  --gray-500: #71717a;
+  --gray-400: #a1a1aa;
+  --gray-300: #d4d4d8;
+  --gray-200: #e4e4e7;
+  --gray-100: #f4f4f5;
+  --gray-50: #fafafa;
+
+  /* Thai royal blue, the one accent (7.8:1 on white), as in the app. */
+  --primary: #1f4fa3;
+  --primary-hover: #1a4389;
+  --primary-foreground: #ffffff;
+  /* A card on the page, and the console's faint lift under it. */
+  --surface: #ffffff;
+  --shadow-card: 0 1px 2px rgb(9 9 11 / 0.05), 0 2px 8px rgb(9 9 11 / 0.04);
 
   /* The shared token set, light. */
   --background: #ffffff;
   --foreground: var(--gray-900);
-  --muted: var(--gray-50);
+  /* The grey of a band across the page: the app's canvas. */
+  --muted: var(--gray-100);
   /* 7.8:1 on white, 7.3 on a --muted panel. */
   --muted-foreground: var(--gray-600);
   --border: var(--gray-200);
@@ -54,28 +63,32 @@
      it the background. --jade, which marked links, ticks and active toggles,
      becomes the foreground too. */
   --shade: var(--background);
-  --shade-soft: var(--muted);
+  /* Was the grey panel; every card that used it is a white card now, and the
+     bands across the page name --muted for themselves. */
+  --shade-soft: var(--surface);
   /* Only ever the text on a --jade fill now; the deep section grounds that
      also used it read --shade-soft instead. */
-  --shade-deep: var(--background);
+  --shade-deep: var(--primary-foreground);
   --paper: var(--muted);
   --paper-shadow: var(--border);
   --ink: var(--foreground);
   --ink-soft: var(--muted-foreground);
-  --jade: var(--foreground);
+  --jade: var(--primary);
   --jade-dim: var(--input);
   --jade-line: var(--border);
-  --marigold: var(--foreground);
-  --marigold-ink: var(--background);
+  --marigold: var(--primary);
+  --marigold-ink: var(--primary-foreground);
   --cream: var(--foreground);
   --cream-soft: var(--muted-foreground);
   --cream-faint: var(--muted-foreground);
 
   /* What the translucent washes are mixed from: neutral, like everything. */
   --wash: var(--foreground);
-  --alert: var(--foreground);
-  --success: var(--foreground);
-  --warning: var(--foreground);
+  /* A warning's tint is the warning's colour. */
+  --alert: var(--warning);
+  --success: #166534;
+  --warning: #92400e;
+  --warning-foreground: #ffffff;
 
   /* Type: the system font, no webfont, no display face. */
   --display: var(--sans);
@@ -87,7 +100,7 @@
   /* Layout */
   --wrap: 68rem;
   --radius-btn: 8px;
-  --radius-card: 8px;
+  --radius-card: 12px;
 }
 
 /* Dark: the same ramp, inverted. next-themes puts `dark` on <html>. */
@@ -95,7 +108,16 @@
 [data-embed-theme="dark"] {
   --background: var(--gray-950);
   --foreground: var(--gray-50);
-  --muted: var(--gray-900);
+  --muted: #111113;
+  --surface: var(--gray-900);
+  --shadow-card: none;
+  /* Same hue, lighter, to hold contrast on the dark ground; dark text on it. */
+  --primary: #7fa2e6;
+  --primary-hover: #9bb7ec;
+  --primary-foreground: #0b1b3a;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --warning-foreground: #1c1917;
   /* 8.1:1 on the page, 7.75 on a --muted panel. */
   --muted-foreground: var(--gray-400);
   --border: var(--gray-800);
@@ -259,13 +281,13 @@ img {
 }
 
 .btn-go:hover {
-  background: color-mix(in srgb, var(--marigold) 85%, var(--shade));
+  background: var(--primary-hover);
 }
 
 .btn-quiet {
-  background: transparent;
+  background: var(--surface);
   color: var(--cream);
-  border-color: var(--jade-line);
+  border-color: var(--input);
 }
 
 .btn-quiet:hover {
@@ -2700,4 +2722,25 @@ body:has([data-embed]) {
    while the button is, which is whenever nobody answers that line. */
 [data-voice-only]:has([data-rs-call][hidden]) {
   display: none;
+}
+
+/* -------------------------------------------------------------------------- */
+/* The hybrid: the console's cards and bands on the public pages              */
+/* -------------------------------------------------------------------------- */
+
+/* A band across the page in the app's canvas grey, for the white cards in it
+   to sit on, as they do in the console. */
+.section.is-band {
+  background: var(--muted);
+  border-block: 1px solid var(--border);
+}
+
+/* Cards lift off the page a little. */
+.panel {
+  box-shadow: var(--shadow-card);
+}
+
+/* The header's links light up in the accent, the console's nav does. */
+body:not(:has(.app)) header nav a:hover {
+  color: var(--primary);
 }

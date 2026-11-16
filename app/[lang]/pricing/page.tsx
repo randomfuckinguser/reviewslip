@@ -37,7 +37,7 @@ export default async function PricingPage({
         </div>
       </header>
 
-      <section className="section">
+      <section className="section is-band">
         <div className="wrap">
           <PricingCards
             lang={lang}

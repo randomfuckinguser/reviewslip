@@ -68,7 +68,7 @@
 
 .proof {
   border-block: 1px solid var(--jade-line);
-  background: var(--shade-soft);
+  background: var(--muted);
   padding-block: 1.1rem;
 }
 
@@ -84,7 +84,8 @@
 }
 
 .proofStars {
-  color: var(--marigold);
+  /* Star gold: a rating, not a button. */
+  color: #d97706;
   letter-spacing: 0.1em;
 }
 
@@ -122,13 +123,14 @@
   padding: 1.75rem;
   border: 1px solid var(--jade-line);
   border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
 }
 
 .stepNum {
   font-family: var(--display);
   font-size: 2.25rem;
   color: var(--jade);
-  opacity: 0.7;
 }
 
 .stepTitle {
@@ -192,7 +194,7 @@
 /* -------------------------------------------------------------------------- */
 
 .metricsSection {
-  background: var(--shade-soft);
+  background: var(--background);
   border-block: 1px solid var(--jade-line);
   padding-block: clamp(2.5rem, 6vw, 4rem);
 }
@@ -247,13 +249,16 @@
   margin-top: 2rem;
 }
 
+/* The console's "Learn more": the accent, underlined. */
 .textLink {
   color: var(--jade);
-  font-weight: 500;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .textLink:hover {
-  color: var(--cream);
+  color: var(--primary-hover);
 }
 
 .trust {
@@ -265,7 +270,7 @@
 }
 
 .cta {
-  background: var(--shade-soft);
+  background: var(--muted);
   padding-block: clamp(4rem, 10vw, 6rem);
   border-top: 1px solid var(--jade-line);
 }
