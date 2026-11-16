@@ -47,6 +47,15 @@ export default async function StaffVenuesPage() {
         </p>
       ) : null}
 
+      <section className="container is-table" aria-labelledby="venues-h">
+      <div className="container-head">
+        <div>
+          <h2 id="venues-h">
+            Venues <span className="count">({venues.length})</span>
+          </h2>
+          <p className="container-desc">Every venue on the platform and who owns it.</p>
+        </div>
+      </div>
       {venues.length === 0 ? (
         <p className="admin-empty">No venues yet.</p>
       ) : (
@@ -102,6 +111,7 @@ export default async function StaffVenuesPage() {
           </table>
         </div>
       )}
+      </section>
       </div>
     </>
   );

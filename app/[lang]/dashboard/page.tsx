@@ -118,15 +118,15 @@ export default async function DashboardPage({
             </dl>
           </section>
 
-          {/* A List View: its name and count, then the table with no frame,
-              edge to edge, Status first. */}
-          <div className="list-head">
-            <h2 id="biz-h">
-              Businesses{" "}
-              <span style={{ color: "var(--muted-foreground)", fontWeight: 400 }}>
-                ({me.businesses.length})
-              </span>
-            </h2>
+          {/* The console's table container: name and count, then the rows. */}
+          <section className="container is-table" aria-labelledby="biz-h">
+          <div className="container-head">
+            <div>
+              <h2 id="biz-h">
+                Businesses <span className="count">({me.businesses.length})</span>
+              </h2>
+              <p className="container-desc">Each business on this account and how much of this month it has used.</p>
+            </div>
           </div>
 
             {me.businesses.length === 0 ? (
@@ -210,6 +210,7 @@ export default async function DashboardPage({
                 </table>
               </div>
             )}
+          </section>
       </div>
     </>
   );

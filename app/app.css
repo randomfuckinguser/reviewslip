@@ -2178,6 +2178,10 @@ body:has(.app) {
   font-size: var(--fs14) !important;
 }
 
+/* -------------------------------------------------------------------------- */
+/* The console, second pass                                                   */
+/* -------------------------------------------------------------------------- */
+
 /* Every field has room inside it: a box with no style of its own (the Guest
    App's links) had its words against the left edge. A component's own
    padding, written inline, still wins. */
@@ -2202,4 +2206,110 @@ body:has(.app) {
   font-size: var(--fs12);
   font-weight: var(--fw6);
   color: var(--muted-foreground);
+}
+
+/* A count after a card's name: "Bookings (16)". */
+.app :is(h1, h2) .count {
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+/* The console's table container: the list's name, count and actions, then
+   its filters, then the rows to the card's edges. Replaces the standard's
+   frameless List View. */
+.app .container.is-table {
+  padding-bottom: 0 !important;
+  overflow: hidden;
+}
+
+.app .container.is-table > .bl-bar {
+  margin: 0 0 0.75rem !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.app .container.is-table > :is(.admin-scroll, .list-view) {
+  margin: 0 calc(-1 * var(--pad)) !important;
+  max-height: none;
+  border: 0 !important;
+  border-top: 1px solid var(--divider) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent;
+  overflow-x: auto;
+}
+
+.app .container.is-table > .admin-empty {
+  margin: 0 calc(-1 * var(--pad)) !important;
+  border: 0 !important;
+  border-top: 1px solid var(--divider) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.app .container.is-table > .bl-pager {
+  padding: 0.75rem 0;
+}
+
+/* Table headings as the console draws them: the column names in the text
+   colour, a short divider between headings and none down the rows. */
+.app :is(.admin-table, .bl-table, .console-table) th {
+  font-size: var(--fs14);
+  font-weight: var(--fw6);
+  color: var(--foreground);
+}
+
+@media (min-width: 768px) {
+  .app :is(.admin-table, .bl-table, .console-table) :is(th, td) + :is(th, td) {
+    border-left: 0;
+  }
+
+  .app :is(.admin-table, .bl-table, .console-table) th + th {
+    background-image: linear-gradient(var(--border), var(--border));
+    background-size: 1px 50%;
+    background-position: left center;
+    background-repeat: no-repeat;
+  }
+}
+
+.app .console-table tbody tr:hover td {
+  background: var(--accent);
+}
+
+/* A card's links along its foot, the console's "View in …": the card is a
+   column, so in a row of level cards the feet line up too. */
+.app .container {
+  display: flex;
+  flex-direction: column;
+}
+
+.app .container > .container-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.5rem;
+  margin: auto calc(-1 * var(--pad)) calc(-1 * var(--pad)) !important;
+  padding: 0.75rem var(--pad);
+  border-top: 1px solid var(--divider);
+}
+
+/* At least 16px between a card's content and its links. */
+.app .container > :not(.container-links):has(+ .container-links) {
+  margin-bottom: 1rem !important;
+}
+
+.app .container-links :is(a, button) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--foreground) !important;
+  font-weight: var(--fw6);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.app .container-links :is(a, button):hover {
+  color: var(--primary) !important;
 }

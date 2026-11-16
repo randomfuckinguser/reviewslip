@@ -35,6 +35,15 @@ export default async function StaffTicketsPage() {
         back="/"
       />
       <div className="page-body">
+      <section className="container is-table" aria-labelledby="tickets-h">
+      <div className="container-head">
+        <div>
+          <h2 id="tickets-h">
+            Tickets <span className="count">({tickets.length})</span>
+          </h2>
+          <p className="container-desc">Oldest waiting first. A subject opens its conversation.</p>
+        </div>
+      </div>
       {tickets.length === 0 ? (
         <p className="admin-empty">
           No tickets yet. They arrive here the moment a customer opens one.
@@ -99,6 +108,7 @@ export default async function StaffTicketsPage() {
           </table>
         </div>
       )}
+      </section>
       </div>
     </>
   );

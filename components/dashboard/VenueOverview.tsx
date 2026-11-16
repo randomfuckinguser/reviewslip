@@ -99,11 +99,6 @@ export default function VenueOverview({ business, setup, stats, summary, day, ba
           <section className="container" aria-labelledby="desk-h" data-tour="vd-desk">
             <div className="container-head">
               <h2 id="desk-h">Today at the Desk</h2>
-              <div className="container-actions">
-                <Link className="btn btn-quiet" href={bookings}>
-                  Open Today
-                </Link>
-              </div>
             </div>
             {day ? (
               <>
@@ -158,6 +153,10 @@ export default function VenueOverview({ business, setup, stats, summary, day, ba
                 today&apos;s arrivals and departures show here.
               </p>
             )}
+            <div className="container-links">
+              <Link href={bookings}>Open Today</Link>
+              <Link href={`${bookings}/calendar`}>Calendar</Link>
+            </div>
           </section>
 
 
@@ -165,17 +164,6 @@ export default function VenueOverview({ business, setup, stats, summary, day, ba
             <div className="container-head">
               <div>
                 <h2 id="health-h">Review Page Health</h2>
-              </div>
-              <div className="container-actions">
-                <a
-                  className="btn btn-quiet"
-                  href={business.url}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Open
-                  <ExternalLink size={14} aria-hidden="true" />
-                </a>
               </div>
             </div>
 
@@ -235,6 +223,13 @@ export default function VenueOverview({ business, setup, stats, summary, day, ba
                 ))}
               </tbody>
             </table>
+            <div className="container-links">
+              <a href={business.url} target="_blank" rel="noreferrer">
+                Open Review Page
+                <ExternalLink size={14} aria-hidden="true" />
+              </a>
+              <Link href={`${base}/settings`}>Settings</Link>
+            </div>
           </section>
         </div>
       </div>
@@ -260,11 +255,6 @@ function ReviewsPanel({ stats, href }: { stats: BusinessDetail["stats"]; href: s
     <section className="container" aria-labelledby="reviews-h" data-tour="vd-reviews">
       <div className="container-head">
         <h2 id="reviews-h">Reviews</h2>
-        <div className="container-actions">
-          <Link className="btn btn-quiet" href={href}>
-            Open Reviews
-          </Link>
-        </div>
       </div>
 
       <dl className="kv" style={{ gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}>
@@ -347,6 +337,9 @@ function ReviewsPanel({ stats, href }: { stats: BusinessDetail["stats"]; href: s
                 No reviews yet. The topics guests choose most will show here.
               </p>
             )}
+      <div className="container-links">
+        <Link href={href}>Open Reviews</Link>
+      </div>
     </section>
   );
 }

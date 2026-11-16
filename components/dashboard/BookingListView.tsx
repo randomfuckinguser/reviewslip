@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Plus, RefreshCw } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import BookingPanel, {
@@ -114,6 +115,27 @@ export default function BookingListView({
 
   return (
     <>
+      {/* The console's table container: the list's name and count with its
+          actions, then the filters, then the rows, all in one card. */}
+      <section className="container is-table" aria-labelledby="bl-h">
+      <div className="container-head">
+        <div>
+          <h2 id="bl-h">
+            Bookings{" "}
+            <span className="count">({data.total.toLocaleString()})</span>
+          </h2>
+          <p className="container-desc">Every stay at the venue. A row opens its booking.</p>
+        </div>
+        <div className="container-actions">
+          <Link className="icon-btn is-outlined" href={href({})} aria-label="Refresh" data-tip="Refresh">
+            <RefreshCw size={16} aria-hidden="true" />
+          </Link>
+          <button type="button" className="btn btn-go" onClick={() => setOpen("new")} data-tour="bl-take">
+            <Plus size={15} aria-hidden="true" />
+            Take a Booking
+          </button>
+        </div>
+      </div>
       <div className="bl-bar" data-tour="bl-filters">
         <div className="bl-statuses">
           {STATUSES.map((s) => {
@@ -222,14 +244,6 @@ export default function BookingListView({
         </div>
       </div>
 
-      <div className="bl-count">
-        {data.total === 0
-          ? null
-          : `${data.total.toLocaleString()} booking${data.total === 1 ? "" : "s"}`}
-        <button type="button" className="btn btn-go" onClick={() => setOpen("new")} data-tour="bl-take">
-          Take a Booking
-        </button>
-      </div>
 
       {data.bookings.length === 0 ? (
         // Named, not "nothing yet". A property with forty bookings being told
@@ -303,6 +317,7 @@ export default function BookingListView({
           </Link>
         </div>
       ) : null}
+      </section>
 
       <BookingPanel
         booking={open}

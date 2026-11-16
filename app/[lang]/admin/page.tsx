@@ -107,12 +107,19 @@ export default async function AdminAccountsPage() {
         />
       </div>
 
-      <h2 style={{ fontSize: "1.05rem", margin: "0 0 0.25rem" }}>Accounts</h2>
-      <p className="admin-sub" style={{ marginBottom: "1rem" }}>
+      <section className="container is-table" aria-labelledby="accounts-h">
+      <div className="container-head">
+        <div>
+      <h2 id="accounts-h">
+        Accounts <span className="count">({accounts.length})</span>
+      </h2>
+      <p className="container-desc">
         Newest first · {overview.referralsJoined} referral
         {overview.referralsJoined === 1 ? "" : "s"} joined · {earned} at the
         discount
       </p>
+        </div>
+      </div>
 
       {accounts.length === 0 ? (
         <p className="admin-empty">No accounts yet.</p>
@@ -170,6 +177,7 @@ export default async function AdminAccountsPage() {
           </table>
         </div>
       )}
+      </section>
       </div>
     </>
   );
