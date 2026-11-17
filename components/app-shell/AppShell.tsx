@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { Suspense, useState, useSyncExternalStore } from "react";
 import { LogOut, Menu, PanelLeft, UserRound, X } from "lucide-react";
 
 import ThemeToggle from "@/components/ThemeToggle";
+import GrandTour from "@/components/help/GrandTour";
 import type { Locale } from "@/lib/i18n/config";
 import { localizedPath } from "@/lib/i18n/routing";
 import {
@@ -203,6 +204,12 @@ export default function AppShell({ kind, lang, email, venues = [], isAdmin = fal
       </aside>
 
       <div className="app-main">{children}</div>
+      {/* The dashboard's one tour: runs whenever the address says tour=all. */}
+      {kind === "customer" && venue ? (
+        <Suspense fallback={null}>
+          <GrandTour base={to(`/dashboard/${venue.slug}`)} />
+        </Suspense>
+      ) : null}
     </div>
   );
 }

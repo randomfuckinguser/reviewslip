@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Search } from "lucide-react";
 import Desk, { type DeskResult } from "./Desk";
 import BookingPanel, { type CreateResult, type EditResult } from "./BookingPanel";
 import type { Booking, DayView, RatePlan, Room } from "@/lib/customer";
@@ -22,6 +23,7 @@ export default function DeskBoard({
   groups,
   plans,
   slug,
+  listHref,
   create,
   checkIn,
   checkOut,
@@ -35,6 +37,8 @@ export default function DeskBoard({
   groups: { id: number; name: string }[];
   plans: RatePlan[];
   slug: string;
+  /** The bookings list, which the search box opens on what was typed. */
+  listHref: string;
   create: (values: Record<string, unknown>) => Promise<CreateResult>;
   checkIn: (id: number) => Promise<DeskResult>;
   checkOut: (id: number) => Promise<DeskResult>;
@@ -54,8 +58,19 @@ export default function DeskBoard({
             <h2 id="desk-h">At the Desk</h2>
             <p className="container-desc">Who is coming, who is going, and which rooms need cleaning.</p>
           </div>
-          <div className="container-actions">
-            <button type="button" className="btn btn-go" onClick={() => setOpen("new")} data-tour="today-take">
+          <div className="container-actions" data-tour="today-take">
+            {/* The other thing the desk is asked all day: "I have a booking
+                under…". A plain form: it opens the bookings list on the name. */}
+            <form className="desk-find" action={listHref} role="search">
+              <Search size={15} aria-hidden="true" />
+              <input
+                name="q"
+                type="search"
+                placeholder="Find a guest or booking"
+                aria-label="Find a guest or booking"
+              />
+            </form>
+            <button type="button" className="btn btn-go" onClick={() => setOpen("new")}>
               Take a Booking
             </button>
           </div>
@@ -91,9 +106,11 @@ export default function DeskBoard({
       <div className="desk-grid">
         <Desk
           day={day}
+          rooms={rooms}
           checkIn={checkIn}
           checkOut={checkOut}
           setHousekeeping={setHousekeeping}
+          assign={assign}
           onOpen={setOpen}
         />
       </div>

@@ -28,7 +28,8 @@ export default function PageHeader({
   sub: string;
   /** Where Back goes. A List View's Back goes to the dashboard above it. */
   back?: string;
-  /** This screen's tour (components/help/tours.ts): adds Take the Tour. */
+  /** This screen's steps in the dashboard's tour (components/help/tours.ts):
+   *  adds Take the Tour, which starts the tour here. */
   tour?: string;
   children?: React.ReactNode;
 }) {
@@ -49,7 +50,7 @@ export default function PageHeader({
 
       <div className="page-actions">
         {children}
-        {tour ? <TourButton tour={tour} /> : null}
+        {tour ? <TourButton /> : null}
         <a
           className="icon-btn page-help"
           href={`${SITE_URL}/faq`}

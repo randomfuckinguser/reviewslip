@@ -8,7 +8,6 @@ import {
   HandHeart,
   LayoutDashboard,
   LifeBuoy,
-  List,
   MessageSquareText,
   Phone,
   PhoneCall,
@@ -16,7 +15,7 @@ import {
   Settings,
   Stamp,
   Globe,
-  GraduationCap,
+  Map,
   Tag,
   Ticket,
   Users,
@@ -63,8 +62,13 @@ export interface Venue {
  * language. `venue` is the one being worked on — from the address, or the
  * account's only one — and without it there is nothing venue-shaped to list.
  *
- * Bookings has its own group, in the order the front desk uses it through the
- * day, not alphabetical: who is arriving comes before what a night costs.
+ * Ordered by how often a screen is wanted, not by what it is: Settings sits
+ * under Dashboard where it is found without hunting; the front desk's daily
+ * screens come next; then the guest-facing ones; and the screens set up once
+ * and seldom touched (rooms, rates, the online listing) last, as Setup.
+ *
+ * Calendar covers the bookings list too: the list is the calendar's List tab,
+ * so it lights up on either rather than being a second entry for one thing.
  */
 export function customerNav(
   venue: Venue | null,
@@ -78,6 +82,15 @@ export function customerNav(
         {
           items: [
             { title: "Dashboard", href: at(), icon: LayoutDashboard, exact: true },
+            { title: "Settings", href: at("/settings"), icon: Settings },
+          ],
+        },
+        {
+          label: "Bookings",
+          items: [
+            { title: "Today", href: at("/bookings"), icon: CalendarCheck, exact: true },
+            { title: "Calendar", href: at("/bookings/calendar"), icon: CalendarDays, also: at("/bookings/list") },
+            { title: "TM30", href: at("/bookings/tm30"), icon: Stamp },
           ],
         },
         {
@@ -86,23 +99,18 @@ export function customerNav(
           label: "Guests",
           items: [
             { title: "Reviews", href: at("/reviews"), icon: MessageSquareText },
-            { title: "Table Card", href: at("/poster"), icon: QrCode },
-            { title: "Guest App", href: at("/welcome"), icon: HandHeart },
             { title: "Phone", href: "/phone/", icon: Phone, external: true },
             { title: "Calls", href: at("/calls"), icon: PhoneCall },
+            { title: "Guest App", href: at("/welcome"), icon: HandHeart },
+            { title: "Table Card", href: at("/poster"), icon: QrCode },
           ],
         },
         {
-          label: "Bookings",
+          label: "Setup",
           items: [
-            { title: "Today", href: at("/bookings"), icon: CalendarCheck, exact: true },
-            { title: "Calendar", href: at("/bookings/calendar"), icon: CalendarDays },
-            { title: "Bookings", href: at("/bookings/list"), icon: List },
             { title: "Rooms", href: at("/bookings/rooms"), icon: BedDouble },
             { title: "Rates", href: at("/bookings/rates"), icon: Tag },
             { title: "Online Booking", href: at("/bookings/online"), icon: Globe },
-            { title: "TM30", href: at("/bookings/tm30"), icon: Stamp },
-            { title: "Tutorials", href: at("/tutorials"), icon: GraduationCap },
           ],
         },
       ]
@@ -126,11 +134,11 @@ export function customerNav(
     last: {
       items: [
         { title: "Businesses", href: to("/dashboard"), icon: Building2, exact: true },
+        // One tour of the whole dashboard, from the top. Every screen's header
+        // also has Take the Tour, which starts it at that screen.
+        ...(venue ? [{ title: "Take the Tour", href: at("?tour=all"), icon: Map, exact: true }] : []),
         { title: "Refer a Business", href: to("/dashboard/referrals"), icon: Gift },
         { title: "Support", href: to("/dashboard/support"), icon: LifeBuoy },
-        ...(venue
-          ? [{ title: "Settings", href: at("/settings"), icon: Settings }]
-          : []),
       ],
     },
   };

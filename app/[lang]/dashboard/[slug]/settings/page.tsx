@@ -369,9 +369,10 @@ export default async function BusinessSettingsPage({
         sub={data.business.name}
         back={localizedPath(lang, `/dashboard/${slug}`)}
       />
-      <div className="page-body is-narrow">
-        <p className="lede" style={{ marginBottom: "1rem" }}>
-          Everything a review about this business is allowed to say.
+      <div className="page-body">
+        <p className="lede">
+          Your business details, the review sites guests are sent to, what reviews talk about, and
+          your colours.
         </p>
 
         {/* Deleting is passed in rather than rendered after: it lives on the

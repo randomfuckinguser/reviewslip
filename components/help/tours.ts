@@ -1,12 +1,17 @@
 /**
- * Every screen's tour, in one place: read by `useTour` to run one and by the
- * Tutorials page to list them.
+ * Every screen's steps, in one place. They run as one tour of the whole
+ * dashboard (`GRAND`, run by GrandTour): the screens in the sidebar's order,
+ * moving to the next screen by itself at the end of each.
  *
- * The app standards' rules (help-and-onboarding, guidance §4): 1–4 steps on
- * one screen, each pointing at one `data-tour` mark and saying in a sentence
- * or two what it is for. No links, no "now press…" (the screen is inert while
- * a tour runs), and the last step ends with Done. A job that crosses screens
- * is a docs how-to, not a tour.
+ * One tour rather than one per screen is the owner's call, against the app
+ * standards' "a job that crosses screens is a docs how-to" (help-and-onboarding
+ * §4): somebody new wants to be walked round the place once, not to find twelve
+ * tours. The rest of §4 still holds per step: each points at one `data-tour`
+ * mark and says in a sentence or two what it is for, with no "now press…"
+ * (the screen is inert while it runs).
+ *
+ * The booking form's steps run on their own, from the form's own button: the
+ * form is a dialog opened over a screen, not a screen the tour can go to.
  *
  * `version` goes up when a tour's steps change in a way someone who has seen
  * it should see again.
@@ -51,15 +56,15 @@ export const TOURS: TourDef[] = [
   },
   {
     id: "today",
-    version: 1,
+    version: 2,
     title: "The Front Desk",
     summary: "Today's arrivals, departures and rooms to clean, and where bookings start.",
     screen: "/bookings",
     steps: [
       { id: "today-summary", title: "At the Desk", body: "The day in figures: who is arriving and leaving, who is staying tonight, and the rooms to clean." },
-      { id: "today-take", title: "Take a Booking", body: "Opens the booking form over this page, for a walk-in or a phone booking. The form has a tour of its own." },
-      { id: "today-arrivals", title: "Arriving", body: "Everyone due today. Check In shows once their room is ready, and a note says when it isn't." },
-      { id: "today-housekeeping", title: "Housekeeping", body: "Rooms left by guests who have gone. Mark Clean makes a room ready for the next guest." },
+      { id: "today-take", title: "Find or Take a Booking", body: "Type a guest's name to find their booking, or Take a Booking for a walk-in or a phone booking. The booking form has a guide of its own." },
+      { id: "today-arrivals", title: "Arriving", body: "Everyone due today, each fixed on their own row: Give a Room if they have none, Mark Clean if their room isn't ready, then Check In." },
+      { id: "today-housekeeping", title: "Housekeeping", body: "Only the rooms that need cleaning, each with Mark Clean. The clean ones sit underneath; press one if it needs cleaning again." },
     ],
   },
   {
@@ -205,3 +210,40 @@ export const TOURS: TourDef[] = [
 ];
 
 export const tourById = (id: string) => TOURS.find((t) => t.id === id) ?? null;
+
+/** The screens the one tour visits, in the sidebar's order. */
+const GRAND_ORDER = [
+  "venue-dashboard",
+  "settings",
+  "today",
+  "calendar",
+  "bookings-list",
+  "tm30",
+  "reviews",
+  "calls",
+  "guest-app",
+  "rooms",
+  "rates",
+  "online-booking",
+];
+
+export interface GrandStep extends TourStepDef {
+  /** The screen, under the venue's dashboard ("" is the dashboard itself). */
+  screen: string;
+  /** The screen's name, shown on every card as where the tour has got to. */
+  section: string;
+}
+
+/** The whole tour, every screen's steps end to end. */
+export const GRAND: GrandStep[] = GRAND_ORDER.flatMap((id) => {
+  const tour = tourById(id);
+  if (!tour || tour.screen === null) return [];
+  const screen = tour.screen;
+  return tour.steps.map((step) => ({ ...step, screen, section: tour.title }));
+});
+
+/** The screens in tour order, each once. */
+export const GRAND_SCREENS: string[] = GRAND.reduce<string[]>(
+  (all, step) => (all.includes(step.screen) ? all : [...all, step.screen]),
+  []
+);

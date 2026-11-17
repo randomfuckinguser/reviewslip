@@ -227,13 +227,11 @@ export default async function TodayPage({
       <div className="flash is-warn" role="status">
         <span>
           {day.counts.unassignedArrivals} arrival
-          {day.counts.unassignedArrivals === 1 ? "" : "s"} with no room — give them one on the{" "}
-          <Link href={localizedPath(lang, `/dashboard/${slug}/bookings/calendar`)}>calendar</Link>.
+          {day.counts.unassignedArrivals === 1 ? "" : "s"} with no room yet: pick one with Give a Room in
+          the Arriving list.
         </span>
       </div>
-    ) : (
-      <p className="admin-sub">Everything arriving today has a room.</p>
-    )}
+    ) : null}
 
     <DeskBoard
       day={day}
@@ -241,6 +239,7 @@ export default async function TodayPage({
       groups={rooms.groups.map((g) => ({ id: g.id, name: g.name }))}
       plans={plans.plans}
       slug={slug}
+      listHref={localizedPath(locale, `/dashboard/${slug}/bookings/list`)}
       create={book}
       checkIn={checkIn}
       checkOut={checkOut}

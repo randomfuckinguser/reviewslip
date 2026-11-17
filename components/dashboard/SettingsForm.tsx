@@ -275,10 +275,14 @@ const row: React.CSSProperties = { display: "flex", gap: "0.6rem", flexWrap: "wr
 function Panel({
   id,
   current,
+  card = false,
   children,
 }: {
   id: TabId;
   current: TabId;
+  /** Drawn as one card, like a section on the other screens. General is
+   *  two cards side by side instead, so it draws its own. */
+  card?: boolean;
   children: React.ReactNode;
 }) {
   const on = id === current;
@@ -288,6 +292,7 @@ function Panel({
       role="tabpanel"
       aria-labelledby={`tab-${id}`}
       hidden={!on}
+      className={card ? "group-box" : undefined}
       style={{ display: on ? "grid" : "none", gap: "1.25rem" }}
     >
       {children}
@@ -861,8 +866,10 @@ export default function SettingsForm({
   };
 
   return (
-    <div className="container" style={{ maxWidth: "60rem" }}>
-      <div role="tablist" aria-label="Settings sections" style={tablist} data-tour="st-tabs">
+    // No card round the whole form: the sections are the cards, as on every
+    // other screen, and the tabs are the same words-on-a-rule as Calendar's.
+    <div className="settings">
+      <div role="tablist" aria-label="Settings sections" className="view-toggle" data-tour="st-tabs">
         {TABS.map((t, index) => {
           const on = t.id === tab;
           return (
@@ -879,7 +886,7 @@ export default function SettingsForm({
               tabIndex={on ? 0 : -1}
               onClick={() => setTab(t.id)}
               onKeyDown={(e) => onTabKey(e, index)}
-              style={tabStyle(on)}
+              className="view-tab"
             >
               {t.label}
               {counts[t.id] !== undefined && (
@@ -900,20 +907,9 @@ export default function SettingsForm({
         {/* ------------------------------------------------------- general */}
 
         <Panel id="general" current={tab}>
-          {/* Temporary. It answers "what is the AI actually working from",
-              which nothing else here does, and the file says so itself. */}
-          <TopAction>
-            <button
-              type="button"
-              className="btn btn-quiet"
-              disabled={busy}
-              onClick={onRulebook}
-              data-tip="Everything the writer is told about this business. Temporary."
-            >
-              Download context.md
-            </button>
-          </TopAction>
-
+          <div className="cols-grid">
+          <section className="group-box" aria-labelledby="st-business-h">
+          <h2 id="st-business-h">Your Business</h2>
           <div style={field}>
             <label style={label} htmlFor="name">Business Name</label>
             {/* Not `required`. With panels hidden rather than unmounted, the
@@ -960,12 +956,29 @@ export default function SettingsForm({
             </p>
           </div>
 
-          {/* Two review sites to a row: each is a short field and a tick box. */}
-          <div
-            className="cols-grid settings-links"
+          {/* Temporary. It answers "what is the AI actually working from",
+              which nothing else here does, and the file says so itself. */}
+          <div>
+            <button
+              type="button"
+              className="btn btn-quiet"
+              disabled={busy}
+              onClick={onRulebook}
+              data-tip="Everything the writer is told about this business. Temporary."
+            >
+              Download context.md
+            </button>
+          </div>
+          </section>
+
+          {/* One review site under another, each a field and a tick box. */}
+          <section
+            className="group-box settings-links"
+            aria-labelledby="st-links-h"
             data-tour="st-links"
             data-tip="Each link you set becomes its own button on the guest page; an empty one stays off. Tick “we are not on” to say you decided, so the setup checklist can finish."
           >
+          <h2 id="st-links-h">Review Links</h2>
           {PLATFORMS.map((platform) => {
             const key = LINK_FIELD[platform.id];
             const setting = (settings as unknown as Record<string, { value: string; source: string }>)[key];
@@ -1014,6 +1027,7 @@ export default function SettingsForm({
               </div>
             );
           })}
+          </section>
           </div>
 
           {/*
@@ -1029,7 +1043,7 @@ export default function SettingsForm({
 
         {/* -------------------------------------------------------- topics */}
 
-        <Panel id="topics" current={tab}>
+        <Panel id="topics" current={tab} card>
           <TopAction>
             <button
               type="button"
@@ -1380,7 +1394,7 @@ export default function SettingsForm({
 
         {/* --------------------------------------------------------- theme */}
 
-        <Panel id="theme" current={tab}>
+        <Panel id="theme" current={tab} card>
           <div style={field}>
             <span style={label}>
               Colours
@@ -1464,10 +1478,11 @@ export default function SettingsForm({
           {state.error ?? state.warning ?? (notice || (state.ok ? "Saved." : ""))}
         </p>
 
-        <div>
+        <div className="settings-save">
           <button className="btn btn-go" type="submit" disabled={pending || busy} data-tour="st-save">
             {pending ? "Saving…" : "Save Settings"}
           </button>
+          <span className="hint">Saves all three tabs.</span>
         </div>
       </form>
 
@@ -1476,32 +1491,6 @@ export default function SettingsForm({
       {tab === "general" && children}
     </div>
   );
-}
-
-const tablist: React.CSSProperties = {
-  display: "flex",
-  gap: "1.4rem",
-  borderBottom: "1px solid var(--jade-line)",
-  marginBottom: "1.25rem",
-  overflowX: "auto",
-};
-
-function tabStyle(on: boolean): React.CSSProperties {
-  return {
-    appearance: "none",
-    flex: "0 0 auto",
-    border: 0,
-    borderBottom: `2px solid ${on ? "var(--jade)" : "transparent"}`,
-    background: "transparent",
-    color: on ? "var(--cream)" : "var(--ink-soft)",
-    font: "inherit",
-    fontSize: "0.9rem",
-    fontWeight: 500,
-    padding: "0.55rem 0.1rem",
-    marginBottom: "-1px",
-    cursor: "pointer",
-    whiteSpace: "nowrap",
-  };
 }
 
 /**

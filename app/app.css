@@ -2533,3 +2533,149 @@ body:has(.app) {
   font-weight: var(--fw6);
   color: var(--foreground);
 }
+
+/* -------------------------------------------------------------------------- */
+/* Settings: the tabs, then each tab's cards, laid out like the other screens */
+/* -------------------------------------------------------------------------- */
+
+.app .settings {
+  display: grid;
+  gap: 1.25rem;
+}
+
+/* The tabs are buttons (role="tab") rather than links, so the chosen one is
+   aria-selected rather than aria-current; it reads the same as Calendar's. */
+.app .view-toggle button.view-tab {
+  font: inherit;
+  cursor: pointer;
+}
+
+.app .view-tab[aria-selected="true"] {
+  border-bottom-color: var(--primary);
+  color: var(--foreground) !important;
+}
+
+.app .settings-links {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.app .settings-save {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app .settings-save .hint {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+/* -------------------------------------------------------------------------- */
+/* The front desk: fixing an arrival on its own row, and the clean rooms      */
+/* -------------------------------------------------------------------------- */
+
+/* Give a Room: a select dressed as the row's button, in the action column. */
+.app .desk-pick {
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0 0.6rem;
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* Find a guest: a search box in the desk's header, beside Take a Booking. */
+.app .desk-find {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 32px;
+  padding: 0 0.6rem;
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--muted-foreground);
+}
+
+/* The box is the form's; the field inside it is bare. !important because the
+   app's own field rule (border, fill, padding) is the stronger selector. */
+.app .desk-find input {
+  width: 12rem;
+  height: auto;
+  min-height: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  outline: 0;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.app .desk-find:focus-within {
+  outline: 2px solid var(--ring, var(--primary));
+  outline-offset: 1px;
+}
+
+/* The rooms already clean: small, under the ones to do. */
+.app .desk-ready {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.app .desk-ready > p {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}
+
+.app .desk-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.app .desk-chip {
+  min-width: 2.75rem;
+  height: 28px;
+  padding: 0 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.app .desk-chip:hover:not(:disabled) {
+  border-color: var(--muted-foreground);
+}
+
+/* A phone: the desk's heading, then search and Take a Booking stacked under
+   it at full width, rather than three things fighting for one line. */
+@media (max-width: 40rem) {
+  .app .container-head:has(.desk-find) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .app .container-head:has(.desk-find) .container-actions {
+    display: grid;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .app .desk-find,
+  .app .desk-find input {
+    width: 100%;
+  }
+}

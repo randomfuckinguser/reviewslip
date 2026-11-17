@@ -1,6 +1,6 @@
 "use client";
 
-import TourButton from "@/components/help/TourButton";
+import FormTourButton from "@/components/help/FormTourButton";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import GuestList from "./GuestList";
@@ -441,7 +441,7 @@ export default function BookingPanel({
           </div>
           <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
             {/* The form's own tour: it runs inside this dialog. */}
-            {taking ? <TourButton tour="booking-form" fromLink={false} /> : null}
+            {taking ? <FormTourButton tour="booking-form" /> : null}
             <button type="button" className="btn btn-quiet" onClick={onClose}>
               Close
             </button>
