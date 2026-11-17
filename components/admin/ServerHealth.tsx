@@ -176,6 +176,7 @@ function Sparkline({
   tall = false,
   floor0 = true,
   percent = false,
+  caption,
 }: {
   samples: Sample[];
   pick: (s: Sample) => number | null;
@@ -184,9 +185,11 @@ function Sparkline({
   floor0?: boolean;
   /** A percentage: drawn on 0–100, so 43% disk does not read as full. */
   percent?: boolean;
+  /** A line above a tall chart, kept with it at the foot of the panel. */
+  caption?: string;
 }) {
   const points = samples.map((s) => ({ t: s.t, v: pick(s) })).filter((p): p is { t: number; v: number } => p.v !== null);
-  if (points.length < 2) return <p className={styles.tileNote}>Trend appears after a few checks.</p>;
+  if (points.length < 2) return <p className={`${styles.tileNote} ${tall ? styles.trend : ""}`}>Trend appears after a few checks.</p>;
 
   const W = 240;
   const H = tall ? 72 : 34;
@@ -201,7 +204,7 @@ function Sparkline({
   const area = `${line}L${x(t1).toFixed(1)},${H}L0,${H}Z`;
   const step = W / points.length;
 
-  return (
+  const chart = (
     <>
       <svg
         className={`${styles.spark} ${tall ? styles.sparkTall : ""}`}
@@ -226,6 +229,14 @@ function Sparkline({
       )}
     </>
   );
+  // A tall chart sits at the foot of its panel, so two panels side by side
+  // have their charts, and their time axes, on the same line.
+  return tall ? (
+    <div className={styles.trend}>
+      {caption && <p className={styles.panelNote}>{caption}</p>}
+      {chart}
+    </div>
+  ) : chart;
 }
 
 function Meter({ label, value, max, text, tone = "good" }: { label: string; value: number; max: number; text: string; tone?: Tone }) {
@@ -251,6 +262,45 @@ function BarCell({ value, max, text }: { value: number; max: number; text: strin
       </div>
       <span>{text}</span>
     </div>
+  );
+}
+
+/** A list cut in two for side-by-side columns: the first half on the left. */
+function halves<T>(list: T[]): T[][] {
+  const cut = Math.ceil(list.length / 2);
+  return list.length > 1 ? [list.slice(0, cut), list.slice(cut)] : [list];
+}
+
+function ProcessTable({ rows, max }: { rows: NonNullable<Readings["processes"]>; max: number }) {
+  return (
+    <table className={`${styles.table} ${styles.fixed}`}>
+      {/* Fixed widths, so the two halves side by side start their bars and
+          their figures at the same place. */}
+      <colgroup>
+        <col className={styles.colName} />
+        <col />
+        <col className={styles.colNum} />
+        <col className={styles.colNum} />
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Process</th>
+          <th>Memory</th>
+          <th className={styles.num}>CPU</th>
+          <th className={styles.num}>Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((p) => (
+          <tr key={p.name}>
+            <td className={styles.name} title={p.name}>{p.name}</td>
+            <td><BarCell value={p.memoryMb} max={max} text={mb(p.memoryMb)} /></td>
+            <td className={styles.num}>{p.cpuPct}%</td>
+            <td className={styles.num}>{p.count}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
@@ -377,10 +427,8 @@ export default async function ServerHealth({ tab = "overview", base }: { tab?: s
               </Link>
             </div>
 
-            <Panel title="Open Problems" note={problems.length ? "Emailed when they start, every 6 h, and when they clear" : undefined}>
-              {problems.length === 0 ? (
-                <p className={styles.empty}>{monitor ? "Nothing wrong at the last check." : "No readings yet."}</p>
-              ) : (
+            {problems.length > 0 && (
+            <Panel title="Open Problems" note="Emailed when they start, every 6 h, and when they clear">
                 <table className={styles.table}>
                   <thead>
                     <tr><th>Severity</th><th>Problem</th><th className={styles.num}>Since</th></tr>
@@ -395,10 +443,17 @@ export default async function ServerHealth({ tab = "overview", base }: { tab?: s
                     ))}
                   </tbody>
                 </table>
-              )}
             </Panel>
+            )}
 
-            <div className={styles.grid2}>
+            {/* With nothing wrong, "nothing wrong" is one line: it sits beside
+                the other two rather than taking a row of its own. */}
+            <div className={problems.length ? styles.grid2 : styles.grid3}>
+              {problems.length === 0 && (
+                <Panel title="Open Problems">
+                  <p className={styles.empty}>{monitor ? "Nothing wrong at the last check." : "No readings yet."}</p>
+                </Panel>
+              )}
               <Panel title="Services" note={r ? `${r.services.filter((s) => s.state === "active").length} of ${r.services.length} running` : undefined}>
                 {r ? (
                   <div className={styles.chips}>
@@ -476,7 +531,14 @@ export default async function ServerHealth({ tab = "overview", base }: { tab?: s
 
             <Panel title="Who Is Connected" note="Grouped by the application that opened them">
               {connections && connections.byApp.length ? (
-                <table className={styles.table}>
+                <table className={`${styles.table} ${styles.fixed}`}>
+                  <colgroup>
+                    <col className={styles.colWide} />
+                    <col />
+                    <col className={styles.colStat} />
+                    <col className={styles.colStat} />
+                    <col className={styles.colStat} />
+                  </colgroup>
                   <thead>
                     <tr>
                       <th>Application</th>
@@ -610,14 +672,31 @@ export default async function ServerHealth({ tab = "overview", base }: { tab?: s
                         tone={r.system.swapTotalMb ? toneFor(r.system.swapUsedPct, 50, 80) : "warning"}
                       />
                     )}
-                    <p className={styles.panelNote}>Memory free over the last day</p>
-                    <Sparkline samples={history} pick={(s) => s.memory} unit="%" tall percent />
+                    <Sparkline samples={history} pick={(s) => s.memory} unit="%" tall percent caption="Memory free over the last day" />
                   </Panel>
+                  <Panel title="Load" note={`${r.system.cores} core${r.system.cores === 1 ? "" : "s"} · up ${duration(r.system.uptimeHours)}`}>
+                    {r.system.load1 != null && (
+                      <Meter
+                        label="Last minute"
+                        value={r.system.load1}
+                        max={r.system.cores * (health.limits.loadPerCore ?? 2)}
+                        text={`${r.system.load1} of ${r.system.cores * (health.limits.loadPerCore ?? 2)}`}
+                        tone={toneFor(r.system.load1, r.system.cores, r.system.cores * (health.limits.loadPerCore ?? 2))}
+                      />
+                    )}
+                    <Sparkline samples={history} pick={(s) => s.load} unit="" tall caption="Load over the last day" />
+                  </Panel>
+                </div>
+
+                <div className={styles.grid2}>
                   <Panel title="Disk" note={r.system.diskFreeGb != null ? `${r.system.diskFreeGb} GB free` : undefined}>
                     {r.system.diskUsedPct != null && (
                       <Meter label="Used" value={r.system.diskUsedPct} max={100} text={`${r.system.diskUsedPct}%`} tone={toneFor(r.system.diskUsedPct, 85, 95)} />
                     )}
-                    {r.disk && r.disk.length > 0 && (
+                    <Sparkline samples={history} pick={(s) => s.disk} unit="%" tall percent caption="Disk used over the last day" />
+                  </Panel>
+                  <Panel title="Where the Disk Goes" note="Our folders, largest first">
+                    {r.disk && r.disk.length > 0 ? (
                       <table className={styles.table}>
                         <tbody>
                           {r.disk.map((d) => (
@@ -629,38 +708,23 @@ export default async function ServerHealth({ tab = "overview", base }: { tab?: s
                           {pg && <tr><td>Postgres data (databases)</td><td><BarCell value={pg.sizeMb} max={r.disk[0].mb} text={mb(pg.sizeMb)} /></td></tr>}
                         </tbody>
                       </table>
+                    ) : (
+                      <p className={styles.empty}>Not reported by this monitor version.</p>
                     )}
                   </Panel>
                 </div>
 
-                <Panel title="What Is Using the Memory" note="Processes grouped by what they are">
+                <Panel title="What Is Using the Memory" note="Processes grouped by what they are, largest first">
                   {r.processes && r.processes.length ? (
-                    <table className={styles.table}>
-                      <thead><tr><th>Process</th><th>Memory</th><th className={styles.num}>CPU</th><th className={styles.num}>Processes</th></tr></thead>
-                      <tbody>
-                        {r.processes.map((p) => (
-                          <tr key={p.name}>
-                            <td>{p.name}</td>
-                            <td><BarCell value={p.memoryMb} max={r.processes![0].memoryMb} text={mb(p.memoryMb)} /></td>
-                            <td className={styles.num}>{p.cpuPct}%</td>
-                            <td className={styles.num}>{p.count}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <div className={styles.split}>
+                      {halves(r.processes).map((part, i) => (
+                        <ProcessTable key={i} rows={part} max={r.processes![0].memoryMb} />
+                      ))}
+                    </div>
                   ) : (
                     <p className={styles.empty}>Not reported by this monitor version.</p>
                   )}
                 </Panel>
-
-                <div className={styles.grid2}>
-                  <Panel title="Load" note={`${r.system.cores} core${r.system.cores === 1 ? "" : "s"} · up ${duration(r.system.uptimeHours)}`}>
-                    <Sparkline samples={history} pick={(s) => s.load} unit="" tall />
-                  </Panel>
-                  <Panel title="Disk Used Over the Day">
-                    <Sparkline samples={history} pick={(s) => s.disk} unit="%" tall percent />
-                  </Panel>
-                </div>
               </>
             )}
           </>
@@ -669,56 +733,27 @@ export default async function ServerHealth({ tab = "overview", base }: { tab?: s
         {/* ------------------------------------------------------ services */}
         {current === "services" && (
           <>
-            <Panel title="Services" note="systemd, at the last monitor check">
-              {r ? (
-                <table className={styles.table}>
-                  <thead><tr><th>Service</th><th>State</th><th className={styles.num}>Up for</th><th className={styles.num}>Memory</th><th className={styles.num}>Restarts</th></tr></thead>
-                  <tbody>
-                    {r.services.map((s) => (
-                      <tr key={s.name}>
-                        <td>{s.name}</td>
-                        <td><Pill tone={s.state === "active" ? "good" : "critical"}>{s.state}</Pill></td>
-                        <td className={styles.num}>{duration(s.upHours)}</td>
-                        <td className={styles.num}>{s.memoryMb != null ? mb(s.memoryMb) : "—"}</td>
-                        <td className={styles.num}>{s.restarts ? <Pill tone="warning">{s.restarts}</Pill> : 0}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p className={styles.empty}>From the monitor.</p>
-              )}
-            </Panel>
-
+            {/* What is running beside what keeps it reachable; then how fast
+                each part answers, in one row. */}
             <div className={styles.grid2}>
-              {[
-                { name: "Review app", pick: (s: Sample) => s.appMs },
-                { name: "Website", pick: (s: Sample) => s.siteMs },
-              ].map(({ name, pick }) => {
-                const h = http(name);
-                return (
-                  <Panel key={name} title={name} note={h ? (h.ok ? `${h.ms} ms at the last check` : `down — ${h.error ?? `HTTP ${h.status}`}`) : undefined}>
-                    <Sparkline samples={history} pick={pick} unit=" ms" tall />
-                  </Panel>
-                );
-              })}
-            </div>
-
-            <div className={styles.grid2}>
-              <Panel title="Public Pages" note="Through nginx and TLS, as guests arrive">
-                {r && r.http.length > 2 ? (
+              <Panel title="Services" note="systemd, at the last monitor check">
+                {r ? (
                   <table className={styles.table}>
+                    <thead><tr><th>Service</th><th>State</th><th className={styles.num}>Up for</th><th className={styles.num}>Memory</th><th className={styles.num}>Restarts</th></tr></thead>
                     <tbody>
-                      {r.http.slice(2).map((h) => (
-                        <tr key={h.name}>
-                          <td>{h.name}</td>
-                          <td className={styles.num}>{h.ok ? <Pill tone="good">{h.ms} ms</Pill> : <Pill tone="critical">{h.error ?? `HTTP ${h.status}`}</Pill>}</td>
+                      {r.services.map((s) => (
+                        <tr key={s.name}>
+                          <td>{s.name}</td>
+                          <td><Pill tone={s.state === "active" ? "good" : "critical"}>{s.state}</Pill></td>
+                          <td className={styles.num}>{duration(s.upHours)}</td>
+                          <td className={styles.num}>{s.memoryMb != null ? mb(s.memoryMb) : "—"}</td>
+                          <td className={styles.num}>{s.restarts ? <Pill tone="warning">{s.restarts}</Pill> : 0}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 ) : (
-                  <p className={styles.empty}>Checked on the server only.</p>
+                  <p className={styles.empty}>From the monitor.</p>
                 )}
               </Panel>
               <Panel title="Certificates and Backups">
@@ -747,6 +782,36 @@ export default async function ServerHealth({ tab = "overview", base }: { tab?: s
                   </table>
                 ) : (
                   <p className={styles.empty}>From the monitor.</p>
+                )}
+              </Panel>
+            </div>
+
+            <div className={styles.grid3}>
+              {[
+                { name: "Review app", pick: (s: Sample) => s.appMs },
+                { name: "Website", pick: (s: Sample) => s.siteMs },
+              ].map(({ name, pick }) => {
+                const h = http(name);
+                return (
+                  <Panel key={name} title={name} note={h ? (h.ok ? `${h.ms} ms at the last check` : `down — ${h.error ?? `HTTP ${h.status}`}`) : undefined}>
+                    <Sparkline samples={history} pick={pick} unit=" ms" tall />
+                  </Panel>
+                );
+              })}
+              <Panel title="Public Pages" note="Through nginx and TLS, as guests arrive">
+                {r && r.http.length > 2 ? (
+                  <table className={styles.table}>
+                    <tbody>
+                      {r.http.slice(2).map((h) => (
+                        <tr key={h.name}>
+                          <td>{h.name}</td>
+                          <td className={styles.num}>{h.ok ? <Pill tone="good">{h.ms} ms</Pill> : <Pill tone="critical">{h.error ?? `HTTP ${h.status}`}</Pill>}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p className={styles.empty}>Checked on the server only.</p>
                 )}
               </Panel>
             </div>

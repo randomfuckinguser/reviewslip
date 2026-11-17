@@ -190,10 +190,22 @@ a.tile:hover {
 
 /* ------------------------------------------------------------ panels -- */
 
-.grid2 {
+.grid2,
+.grid3 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
+}
+
+.grid3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* One long table shown as two, side by side, inside a panel. */
+.split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 1.5rem;
 }
 
 .panel {
@@ -210,7 +222,11 @@ a.tile:hover {
 .panel + .panel,
 .grid2 + .panel,
 .panel + .grid2,
-.grid2 + .grid2 {
+.grid2 + .grid2,
+.panel + .grid3,
+.grid3 + .panel,
+.grid2 + .grid3,
+.grid3 + .grid2 {
   margin-top: 0.75rem;
 }
 
@@ -299,16 +315,74 @@ a.tile:hover {
   border-bottom: 0;
 }
 
-.num {
+.num,
+.table th.num {
+  /* th.num as well: the header rule above is the stronger selector, and a
+     number column with a left-hand heading reads as two columns. */
   text-align: right;
   white-space: nowrap;
+}
+
+/* A name column that does not wrap "Website (Next.js)" onto two lines. */
+.name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Column widths set by the table, not its contents: two tables side by side
+   then line up column for column. */
+.fixed {
+  table-layout: fixed;
+}
+
+.colName {
+  width: 9.5rem;
+}
+
+.colNum {
+  width: 3.75rem;
+}
+
+.colWide {
+  width: 14rem;
+}
+
+.colStat {
+  width: 8.5rem;
+}
+
+.fixed .barCell {
+  min-width: 0;
+}
+
+/* A panel with a chart at its foot: the chart goes to the bottom, so charts
+   in panels side by side are level whatever sits above them. */
+.panel:has(> .trend) {
+  display: flex;
+  flex-direction: column;
+}
+
+.trend {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: auto;
 }
 
 .barCell {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   min-width: 8rem;
+}
+
+/* The figure in a fixed width, right-aligned, so every bar ends at the same
+   place and the figures line up on their units. */
+.barCell > span:last-child {
+  flex: none;
+  min-width: 4.25rem;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .bar {
@@ -371,14 +445,50 @@ a.tile:hover {
   color: var(--muted-foreground);
 }
 
+@media (max-width: 1100px) {
+  .grid3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 900px) {
-  .grid2 {
+  .grid2,
+  .grid3,
+  .split {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Stacked, the two halves read as one list: one heading row, not two. */
+@media (max-width: 900px) {
+  .split > .table + .table thead {
+    display: none;
+  }
+}
+
+/* A phone: narrower name and number columns, so the memory figure keeps its
+   room and a short bar beside it. */
+@media (max-width: 600px) {
+  .colName {
+    width: 7rem;
+  }
+
+  .colNum {
+    width: 2.75rem;
+  }
+
+  .colWide {
+    width: 8rem;
+  }
+
+  .colStat {
+    width: 4.5rem;
   }
 }
 
 /* Side by side, the pair starts level: the stacking gap above is for panels
    one under another. */
-.grid2 > .panel {
+.grid2 > .panel,
+.grid3 > .panel {
   margin-top: 0;
 }
