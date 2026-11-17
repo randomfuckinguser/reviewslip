@@ -231,15 +231,20 @@ function serviceDetail(name) {
  */
 function processes() {
   if (process.platform !== 'linux') return [];
-  const r = run('ps', ['-eo', 'rss=,pcpu=,comm=,args=']);
+  const r = run('ps', ['-eo', 'pid=,rss=,pcpu=,comm=,args=']);
   const groups = new Map();
   for (const line of r.out.split('\n')) {
-    const m = line.trim().match(/^(\d+)\s+([\d.]+)\s+(\S+)\s+(.*)$/);
+    const m = line.trim().match(/^(\d+)\s+(\d+)\s+([\d.]+)\s+(\S+)\s+(.*)$/);
     if (!m) continue;
-    const [, rss, cpu, comm, args] = m;
+    const [, pid, rss, cpu, comm, args] = m;
+    // This check itself: a second old, so ps's CPU figure (CPU time over its
+    // age) reads as 100%+ from start-up alone. It is gone once it has written.
+    if (Number(pid) === process.pid) continue;
+    // By the command line, not the name: newer Node calls its main thread
+    // "MainThread", which is what ps shows as the name.
     const label = /reviewslip-site|next-server/.test(args) ? 'Website (Next.js)'
       : /monitor\.js/.test(args) ? 'Server monitor'
-      : /reviewslip.*server\.js|server\.js/.test(args) && comm === 'node' ? 'Review app'
+      : /\bnode\b.*server\.js/.test(args) ? 'Review app'
       : comm.startsWith('postgres') ? 'Postgres'
       : comm.startsWith('nginx') ? 'nginx'
       : comm;
