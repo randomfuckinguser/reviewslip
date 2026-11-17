@@ -48,6 +48,8 @@
       takingFor: 'Taking calls for', pushNote: 'On a phone? Let it ring even when this page is closed.', pushTurnOn: 'Turn on',
       pushOn: 'Ringing when closed: on', pushOff: 'Ringing when closed: off', pushBlocked: 'Notifications are blocked in this browser’s settings.',
       pushIos: 'On iPhone, add this page to the Home Screen first (Share, then Add to Home Screen).',
+      appNote: 'On Android? Get the Reviewslip Phone app: it rings like a call even when your phone is locked.',
+      appGet: 'Get the app', appMenu: 'Get the Android app',
       howItWorks: 'How this works', myHours: 'My hours', tabNew: 'New messages', tabAll: 'Messages', tabCalls: 'Recent calls',
       tabNewShort: 'New', tabAllShort: 'Messages', tabCallsShort: 'Calls', tabTeamShort: 'Who\u2019s on', moreRinging: '{n} more ringing',
       tabTeam: 'Who’s on', vmSub: 'Recorded when nobody on the line could take the call. Playing one marks it heard with your name, so two of you don’t ring the same person back.',
@@ -95,6 +97,8 @@
       takingFor: 'รับสายของ', pushNote: 'ใช้โทรศัพท์มือถือ? ให้ดังแม้ปิดหน้านี้', pushTurnOn: 'เปิด',
       pushOn: 'ดังเมื่อปิดหน้า: เปิด', pushOff: 'ดังเมื่อปิดหน้า: ปิด', pushBlocked: 'การแจ้งเตือนถูกบล็อกในการตั้งค่าเบราว์เซอร์',
       pushIos: 'บน iPhone ให้เพิ่มหน้านี้ไปที่หน้าจอโฮมก่อน (แชร์ แล้วเพิ่มไปยังหน้าจอโฮม)',
+      appNote: 'ใช้ Android? ติดตั้งแอป Reviewslip Phone แล้วสายจะดังเหมือนมีคนโทรเข้า แม้หน้าจอล็อกอยู่',
+      appGet: 'ดาวน์โหลดแอป', appMenu: 'ดาวน์โหลดแอป Android',
       howItWorks: 'วิธีใช้งาน', myHours: 'เวลาทำงาน', tabNew: 'ข้อความใหม่', tabAll: 'ข้อความ', tabCalls: 'สายล่าสุด',
       tabNewShort: 'ใหม่', tabAllShort: 'ข้อความ', tabCallsShort: 'สาย', tabTeamShort: 'ใครอยู่', moreRinging: 'อีก {n} สายกำลังดัง',
       tabTeam: 'ใครอยู่', vmSub: 'บันทึกไว้เมื่อไม่มีใครรับสายได้ เมื่อเปิดฟังจะขึ้นชื่อคุณ เพื่อไม่ให้โทรกลับคนเดียวกันซ้ำ',
@@ -283,6 +287,9 @@
   // by, and says when a call starts and ends so the call keeps going with the
   // screen off.
   var APP = window.ReviewslipApp || null;
+  // Android in a browser rather than in the app: offered the app, which rings
+  // through a locked phone where a page's notification cannot.
+  var ANDROID = !APP && /Android/i.test(navigator.userAgent);
   var appToken = '';
   // The app's Answer, pressed before this page opened: answer that call as
   // soon as its ring arrives.
@@ -389,6 +396,8 @@
   $('m-hours').addEventListener('click', function () { closeMenu(); openHours(); });
   $('m-push').addEventListener('click', function () { closeMenu(); togglePush(); });
   $('m-guide').addEventListener('click', function () { closeMenu(); openGuide(); });
+  $('m-app').hidden = !ANDROID;
+  $('m-app').addEventListener('click', function () { closeMenu(); location.href = '/phone/app'; });
   $('help').addEventListener('click', openGuide);
   $('m-lang').addEventListener('click', function () {
     closeMenu();
@@ -519,7 +528,9 @@
     $('m-duty').textContent = me.agent.onDuty ? t('goOff') : t('goOn');
     $('sound').hidden = unlocked || !me.agent.onDuty;
     var canPush = !APP && me.pushKey && worker && 'PushManager' in window;
-    $('push-note').hidden = !(me.agent.onDuty && canPush && !pushSub && !(window.Notification && Notification.permission === 'denied'));
+    // On Android the app is the better answer, so it is offered instead.
+    $('push-note').hidden = ANDROID || !(me.agent.onDuty && canPush && !pushSub && !(window.Notification && Notification.permission === 'denied'));
+    $('app-note').hidden = !ANDROID;
   }
 
   function setDuty(on) {

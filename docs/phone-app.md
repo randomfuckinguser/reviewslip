@@ -74,10 +74,25 @@ adb shell am broadcast -a com.reviewslip.phone.debug.RING -p com.reviewslip.phon
   --es callId c1 --es caller Anna --es title "Baanpong Lodge" --es phone venues --es seconds 45
 ```
 
+## Publishing a build
+
+The review app serves the APK at **`/phone/app`** (reviewslip.com/phone/app),
+from `downloads/ReviewslipPhone.apk`. After a release build, copy it there,
+raise `versionCode` for the next one, commit and deploy:
+
+```
+cp android/app/build/outputs/apk/release/app-release.apk downloads/ReviewslipPhone.apk
+```
+
+The phone page offers it to anyone on Android in a browser (a note under the
+duty status and **Get the Android app** in the menu), in place of the browser's
+own "ring when closed" note. Inside the app neither shows.
+
 ## Installing on staff phones
 
-Until it is on Google Play: send the APK (LINE, email, a link), open it on the
-phone and allow **Install unknown apps** for whatever opened it. Then:
+Until it is on Google Play: open **reviewslip.com/phone/app** on the phone (or
+tap **Get the app** on the phone page), download it, open it and allow
+**Install unknown apps** for the browser. Then:
 
 1. Open **Reviewslip Phone**, allow notifications and the microphone.
 2. Sign in, tap **Go on duty**.

@@ -47,6 +47,7 @@
           <button type="button" role="menuitem" id="m-duty"></button>
           <button type="button" role="menuitem" id="m-hours" data-t="myHours">My hours</button>
           <button type="button" role="menuitem" id="m-push" hidden></button>
+          <button type="button" role="menuitem" id="m-app" data-t="appMenu" hidden>Get the Android app</button>
           <button type="button" role="menuitem" id="m-guide" data-t="howItWorks">How this works</button>
           <button type="button" role="menuitem" id="m-lang"></button>
           <button type="button" role="menuitem" id="m-signout" data-t="signOut">Sign out</button>
@@ -117,6 +118,11 @@
           <p class="note" id="push-note" hidden>
             <span data-t="pushNote">On a phone? Let it ring even when this page is closed.</span>
             <button type="button" class="linkbtn" id="push-note-on" data-t="pushTurnOn">Turn on</button>
+          </p>
+          <!-- Android in a browser: the app rings through a locked phone, which a page cannot. -->
+          <p class="note" id="app-note" hidden>
+            <span data-t="appNote">On Android? Get the Reviewslip Phone app: it rings like a call even when your phone is locked.</span>
+            <a class="linkbtn" id="app-get" href="/phone/app" data-t="appGet">Get the app</a>
           </p>
           <p class="duty-help">
             <button type="button" class="linkbtn" id="help" data-t="howItWorks">How this works</button>

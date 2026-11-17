@@ -5,3 +5,6 @@ local.properties
 *.jks
 *.keystore
 keystore.properties
+
+# Firebase app config: kept beside the build, not in the repo.
+app/google-services.json

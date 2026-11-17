@@ -232,6 +232,16 @@ app.get('/welcome.webmanifest', resolveTenant, (req, res) => {
 // Reviewslip's own Sales and Support phone is the phone page at its own
 // address, so it installs and takes pushes apart from a venue's. Its manifest
 // and service worker are files beside it; the page is the shared one.
+// The Android app, for staff to install from a link on the phone page while
+// it is not on Google Play. Built from android/ and copied to downloads/ (see
+// docs/phone-app.md). no-cache: a new build is fetched, not an old one kept.
+const PHONE_APK = path.join(__dirname, 'downloads', 'ReviewslipPhone.apk');
+app.get(['/phone/app', '/phone/app/'], (req, res) => {
+  res.download(PHONE_APK, 'ReviewslipPhone.apk', { cacheControl: false, headers: { 'Cache-Control': 'no-cache' } }, (err) => {
+    if (err && !res.headersSent) res.status(404).type('text').send('The Android app is not available here yet.');
+  });
+});
+
 app.get(['/phone/reviewslip', '/phone/reviewslip/'], (req, res) => {
   if (!req.path.endsWith('/')) return res.redirect(301, '/phone/reviewslip/');
   res.sendFile(path.join(__dirname, 'public', 'phone', 'index.html'));
