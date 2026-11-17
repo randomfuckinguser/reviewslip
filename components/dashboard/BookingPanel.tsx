@@ -24,6 +24,15 @@ export interface Prefill {
   departure?: string;
 }
 
+/** A booking being taken, as far as the form has it: for the calendar to draw. */
+export interface Draft {
+  roomId: number | null;
+  groupId: number;
+  arrival: string;
+  departure: string;
+  guestName: string;
+}
+
 const field: React.CSSProperties = {
   width: "100%",
   padding: "0.6rem 0.8rem",
@@ -99,6 +108,8 @@ export default function BookingPanel({
   save,
   assign,
   setStatus,
+  docked = false,
+  onDraft,
 }: {
   /** A booking to correct, the string "new" to take one, or nothing. */
   booking: Booking | "new" | null;
@@ -124,6 +135,14 @@ export default function BookingPanel({
   /** Separate from `save` because it rewrites the night ledger, not a column. */
   assign: (id: number, roomId: number | null) => Promise<EditResult>;
   setStatus: (id: number, status: string) => Promise<EditResult>;
+  /**
+   * At the side of the screen and not modal, on the calendar: the schedule
+   * stays in sight and can still be clicked while a booking is taken, so a
+   * free night is picked by looking at it rather than remembered.
+   */
+  docked?: boolean;
+  /** Told the room and dates as they are typed, so the calendar can show them. */
+  onDraft?: (draft: Draft | null) => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
 
@@ -241,17 +260,64 @@ export default function BookingPanel({
     }
   }
 
+  // A night picked on the calendar while a booking is being taken moves the
+  // room and the dates, and nothing else: the guest typed so far stays.
+  const [seenPrefill, setSeenPrefill] = useState(prefill);
+  if (prefill !== seenPrefill) {
+    setSeenPrefill(prefill);
+    if (booking === "new" && booking === seen && prefill) {
+      setForm((was) => ({
+        ...was,
+        groupId: prefill.groupId ? String(prefill.groupId) : was.groupId,
+        roomId: prefill.roomId ? String(prefill.roomId) : was.roomId,
+        arrival: prefill.arrival ?? was.arrival,
+        departure:
+          prefill.departure ?? (prefill.arrival ? nextDay(prefill.arrival) : was.departure),
+      }));
+    }
+  }
+
   // showModal is imperative — there is no prop for "open" that also traps focus
   // and lights the backdrop, so opening and closing has to be done to the node.
+  // Docked, it is shown without the modal: the calendar beside it stays live.
   useEffect(() => {
     const node = dialog.current;
     if (!node) return;
-    if (opened && !node.open) node.showModal();
+    if (opened && !node.open) {
+      if (docked) node.show();
+      else node.showModal();
+    }
     if (!opened && node.open) node.close();
-  }, [opened]);
+  }, [opened, docked]);
+
+  // The booking being taken, for the calendar to draw where it would go.
+  const draftRoom = form.roomId;
+  const draftGroup = form.groupId;
+  const draftArrival = form.arrival;
+  const draftDeparture = form.departure;
+  const draftName = form.guestName;
+  useEffect(() => {
+    if (!onDraft) return;
+    const valid =
+      booking === "new" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(draftArrival) &&
+      /^\d{4}-\d{2}-\d{2}$/.test(draftDeparture) &&
+      draftDeparture > draftArrival;
+    onDraft(
+      valid
+        ? {
+            roomId: draftRoom ? Number(draftRoom) : null,
+            groupId: Number(draftGroup) || 0,
+            arrival: draftArrival,
+            departure: draftDeparture,
+            guestName: draftName.trim(),
+          }
+        : null
+    );
+  }, [onDraft, booking, draftRoom, draftGroup, draftArrival, draftDeparture, draftName]);
 
   if (!opened) {
-    return <dialog ref={dialog} className="editor" aria-label="Booking" />;
+    return <dialog ref={dialog} className={`editor${docked ? " is-docked" : ""}`} aria-label="Booking" />;
   }
 
   const groupId = Number(form.groupId) || 0;
@@ -402,9 +468,13 @@ export default function BookingPanel({
   return (
     <dialog
       ref={dialog}
-      className="editor"
+      className={`editor${docked ? " is-docked" : ""}`}
       aria-labelledby="booking-title"
       onCancel={onClose}
+      // Escape closes a modal dialog by itself, not one opened with show().
+      onKeyDown={(e) => {
+        if (docked && e.key === "Escape") onClose();
+      }}
       onClick={(e) => {
         if (e.target === dialog.current) onClose();
       }}

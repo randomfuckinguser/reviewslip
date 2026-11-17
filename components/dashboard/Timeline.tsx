@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { shift } from "@/lib/nights";
 import type { Booking, CalendarWindow, Room, TakenNight } from "@/lib/customer";
 
@@ -95,6 +95,7 @@ export default function Timeline({
   move,
   onOpen,
   onEmpty,
+  draft = null,
 }: {
   data: CalendarWindow;
   /** Show only this room type, or every one. Display only — see below. */
@@ -114,6 +115,8 @@ export default function Timeline({
   ) => Promise<MoveResult>;
   onOpen: (booking: Booking | TakenNight) => void;
   onEmpty?: (prefill: { roomId: number; groupId: number; arrival: string }) => void;
+  /** A booking being taken in the panel: drawn where it would go, dashed. */
+  draft?: { roomId: number | null; groupId: number; arrival: string; departure: string; guestName: string } | null;
 }) {
   const { nights } = data;
 
@@ -184,6 +187,37 @@ export default function Timeline({
   }
 
   const track = useRef<HTMLDivElement | null>(null);
+
+  /*
+   * The columns fit the space they are given. A fixed day width meant that with
+   * the booking form open beside it the month ran off to the right, and the
+   * nights being booked were under the scroll. Measured, so the whole month
+   * shows whenever it reasonably can; below the narrowest readable width it
+   * scrolls as before. The room column narrows first, since rooms are names
+   * like "101".
+   */
+  const scroller = useRef<HTMLDivElement | null>(null);
+  const [fit, setFit] = useState<{ day: number; room: number } | null>(null);
+  const count = data.nights.length;
+  useEffect(() => {
+    const node = scroller.current;
+    if (!node) return;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const measure = () => {
+      const width = node.clientWidth;
+      let room = 10 * rem;
+      let day = Math.floor((width - room) / count);
+      if (day < 22) {
+        room = 6 * rem;
+        day = Math.floor((width - room) / count);
+      }
+      setFit({ day: Math.max(18, Math.min(day, count > 16 ? 48 : 64)), room });
+    };
+    measure();
+    const watch = new ResizeObserver(measure);
+    watch.observe(node);
+    return () => watch.disconnect();
+  }, [count]);
   const drag = useRef<{
     stay: Stay;
     mode: Mode;
@@ -284,9 +318,15 @@ export default function Timeline({
    * the aim is that every bar can be seen and grabbed, not the fewest possible
    * lanes.
    */
+  /*
+   * Packed from where each stay is, never from where one is being dragged.
+   * Packing from the drag made a holding row gain or lose a lane as the bar
+   * crossed it, every row below moved, the pointer was suddenly over another
+   * room, the bar went there, the lane came back — and the grid shook.
+   */
   const byRow = new Map<string, Stay[]>();
   for (const stay of stays.values()) {
-    const key = place(stay).key;
+    const key = place(stay, false).key;
     const list = byRow.get(key);
     if (list) list.push(stay);
     else byRow.set(key, [stay]);
@@ -299,11 +339,11 @@ export default function Timeline({
 
     const mine = (byRow.get(row.key) ?? [])
       .slice()
-      .sort((a, b) => place(a).arrival.localeCompare(place(b).arrival));
+      .sort((a, b) => place(a, false).arrival.localeCompare(place(b, false).arrival));
 
     const freeFrom: string[] = [];
     for (const stay of mine) {
-      const p = place(stay);
+      const p = place(stay, false);
       let lane = freeFrom.findIndex((end) => end <= p.arrival);
       if (lane === -1) {
         lane = freeFrom.length;
@@ -584,9 +624,19 @@ export default function Timeline({
     }
   }
 
-  /** Where a stay sits now — dragged, or as the server has it. */
-  function place(stay: Stay) {
-    const g = ghost?.id === stay.id ? ghost : null;
+  // The booking being taken stays in sight: when the month is wider than the
+  // space and the nights picked are off to one side, the grid scrolls to them.
+  const draftKey = draft ? `${draft.roomId}:${draft.arrival}:${draft.departure}` : "";
+  useEffect(() => {
+    if (!draftKey) return;
+    document
+      .querySelector(".tl-stay.draft")
+      ?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+  }, [draftKey]);
+
+  /** Where a stay sits now — dragged, or as the server has it (`live` false). */
+  function place(stay: Stay, live = true) {
+    const g = live && ghost?.id === stay.id ? ghost : null;
     const roomId = g ? g.roomId : stay.roomId;
     const group = g ? g.groupId : stay.groupId;
     const arrival = g ? g.arrival : stay.arrival;
@@ -613,26 +663,32 @@ export default function Timeline({
 
   return (
     <>
-      {problem ? (
-        <p className="cal-problem" role="alert">
-          {problem}
-        </p>
+      {/* Floating, not above the grid: a line appearing over the rows pushed
+          them down mid-drag, the pointer landed on the room above, the line
+          went, the rows came back up — the grid shook. Here nothing moves. */}
+      {problem || warning ? (
+        <div className="tl-notes">
+          {problem ? (
+            <p className="cal-problem" role="alert">
+              {problem}
+            </p>
+          ) : null}
+          {warning ? (
+            <p className="tl-warn" role="status">
+              {warning}
+            </p>
+          ) : null}
+        </div>
       ) : null}
 
-      {warning ? (
-        <p className="tl-warn" role="status">
-          {warning}
-        </p>
-      ) : null}
-
-      <div className="admin-scroll">
+      <div className="admin-scroll" ref={scroller}>
         <div
           className="tl"
           data-tour="cal-grid"
           style={
             {
-              "--tl-day": nights.length > 16 ? "2.1rem" : "3rem",
-              "--tl-room": "10rem",
+              "--tl-day": fit ? `${fit.day}px` : nights.length > 16 ? "2.1rem" : "3rem",
+              "--tl-room": fit ? `${fit.room}px` : "10rem",
               "--tl-cols": nights.length,
             } as React.CSSProperties
           }
@@ -765,6 +821,10 @@ export default function Timeline({
 
                 const span = Math.max(1, p.to - p.from + 1);
                 const unplaced = p.roomId === null;
+                // Its packed lane belongs to the row it came from; dragged into
+                // another row it rides on that row's first lane.
+                const lane =
+                  p.dragging && p.key !== place(stay, false).key ? 0 : (laneOf.get(stay.id) ?? 0);
 
                 return (
                   <div
@@ -775,7 +835,7 @@ export default function Timeline({
                     style={{
                       left: `calc(${p.from} * var(--tl-day))`,
                       width: `calc(${span} * var(--tl-day))`,
-                      top: `calc(${at.rows + (laneOf.get(stay.id) ?? 0)} * var(--tl-row-h) + ${at.heads} * var(--tl-group-h) + 2px)`,
+                      top: `calc(${at.rows + lane} * var(--tl-row-h) + ${at.heads} * var(--tl-group-h) + 2px)`,
                     }}
                     title={`${stay.guestName} · ${p.arrival} → ${p.departure}${
                       unplaced ? " · no room yet" : ""
@@ -817,16 +877,41 @@ export default function Timeline({
                   </div>
                 );
               })}
+
+              {/* The booking being taken, where it would go. Not a stay yet,
+                  so it takes no clicks: the nights under it still can. */}
+              {(() => {
+                if (!draft) return null;
+                const from = draft.arrival < nights[0] ? 0 : index(draft.arrival);
+                const lastNight = shift(draft.departure, -1);
+                const to = lastNight > nights[nights.length - 1] ? nights.length - 1 : index(lastNight);
+                if (from < 0 || to < 0 || to < from) return null;
+                const at = offsetOf.get(keyFor(draft.roomId, draft.groupId));
+                if (!at) return null;
+                return (
+                  <div
+                    className="tl-stay draft"
+                    aria-hidden="true"
+                    style={{
+                      left: `calc(${from} * var(--tl-day))`,
+                      width: `calc(${to - from + 1} * var(--tl-day))`,
+                      top: `calc(${at.rows} * var(--tl-row-h) + ${at.heads} * var(--tl-group-h) + 2px)`,
+                    }}
+                  >
+                    <span className="tl-who">{draft.guestName || "New booking"}</span>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
       </div>
 
       <p className="tl-hint">
-        Drag a stay up or down to put it in another room, or into{" "}
-        <b>No room yet</b> to take it out of one — the dates do not change.
-        Pull either end to make it longer or shorter. Click the name to open it
-        and change anything else, dates included.
+        Click a free night to take a booking there; with the form open, click a later night in the
+        same room to make it the last night. Drag a stay up or down to put it in another room, or
+        into <b>No room yet</b> to take it out of one. Pull either end to make it longer or
+        shorter. Click the name to open it.
       </p>
     </>
   );

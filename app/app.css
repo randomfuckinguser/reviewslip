@@ -2679,3 +2679,117 @@ body:has(.app) {
     width: 100%;
   }
 }
+
+/* `.is-side`: a narrow card beside a wide one (the Guest App's code beside
+   its links). Each keeps its own height: the small one stretched to its
+   neighbour is a tall empty box. */
+.page-body.cols.is-side {
+  grid-template-columns: minmax(17rem, 1fr) minmax(0, 2fr);
+  align-items: start;
+}
+
+.page-body.cols.is-side > * {
+  height: auto;
+}
+
+@media (max-width: 1100px) {
+  .page-body.cols.is-side {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* One-line rows with a button at the end: the text level with the button,
+   not at the top of the row it makes taller. */
+.app .admin-table.is-middle td {
+  vertical-align: middle;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Taking a booking on the calendar: the form at the side, the schedule kept  */
+/* -------------------------------------------------------------------------- */
+
+:root {
+  --side-panel-w: 28rem;
+}
+
+/* The booking form as a panel down the right, not a box over the middle. Not
+   modal, so nothing is dimmed and the calendar can still be clicked. */
+.app .editor.is-docked {
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 60;
+  width: min(var(--side-panel-w), 100vw);
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  border: 0;
+  border-left: 1px solid var(--border);
+  border-radius: 0 !important;
+  box-shadow: -12px 0 32px color-mix(in srgb, #000 12%, transparent);
+}
+
+/* The page steps aside for it, so no night is under the panel. */
+@media (min-width: 900px) {
+  body.has-side-panel .app-main {
+    padding-right: var(--side-panel-w);
+  }
+}
+
+/* Above the grid: how to start, and the button for when there is no night in
+   mind yet. */
+.app .cal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.app .cal-actions > p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+/* The booking being taken, where it would go: dashed, and see-through to
+   clicks so the nights under it can still be picked. */
+.app .tl-stay.draft {
+  pointer-events: none;
+  border: 2px dashed var(--primary);
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  color: var(--foreground);
+  z-index: 3;
+}
+
+.app .tl-stay.draft .tl-who {
+  font-weight: var(--fw6, 600);
+}
+
+/* The calendar's notes while dragging, and a refused drop: floating at the
+   foot of the screen, so the grid under the pointer never moves. */
+.app .tl-notes {
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  z-index: 70;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(40rem, calc(100vw - 2rem));
+  display: grid;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+body.has-side-panel .app .tl-notes {
+  left: calc(50% - var(--side-panel-w) / 2);
+}
+
+.app .tl-notes > p {
+  margin: 0;
+  box-shadow: 0 8px 24px color-mix(in srgb, #000 18%, transparent);
+}
+
+.app .tl-notes > .tl-warn {
+  background: color-mix(in srgb, var(--alert, #f59e0b) 16%, var(--card, #fff));
+  color: var(--foreground);
+}

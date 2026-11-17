@@ -50,7 +50,7 @@ export default function WelcomeSignups({
           {error}
         </p>
       ) : null}
-      <table className="admin-table">
+      <table className="admin-table is-middle">
         <thead>
           <tr>
             <th>Name</th>

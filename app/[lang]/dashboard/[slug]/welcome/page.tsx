@@ -109,8 +109,10 @@ export default async function WelcomePage({
         </a>
       </PageHeader>
 
-      <div className="page-body cols">
-        <p className="lede" style={{ marginBottom: "1rem" }}>
+      {/* is-side: the code is a small card beside the links, not half the row
+          stretched to the links' height. */}
+      <div className="page-body cols is-side">
+        <p className="lede">
           Your own app for guests, in your colours. They scan the code, give their name and email,
           and get your links as tiles — then put the app on their phone&apos;s home screen. No app
           store.

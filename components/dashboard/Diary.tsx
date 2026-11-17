@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 import MonthGrid from "./MonthGrid";
 import Timeline, { type MoveResult } from "./Timeline";
 import BookingPanel, {
   type CreateResult,
+  type Draft,
   type EditResult,
   type Prefill,
 } from "./BookingPanel";
@@ -64,6 +66,36 @@ export default function Diary({
 }) {
   const [open, setOpen] = useState<Booking | "new" | null>(null);
   const [prefill, setPrefill] = useState<Prefill | undefined>(undefined);
+  const [draft, setDraft] = useState<Draft | null>(null);
+  const onDraft = useCallback((d: Draft | null) => setDraft(d), []);
+
+  // The panel sits at the side while it is open, and the page makes room for
+  // it, so no part of the schedule is under it.
+  useEffect(() => {
+    document.body.classList.toggle("has-side-panel", open !== null);
+    return () => document.body.classList.remove("has-side-panel");
+  }, [open]);
+
+  /**
+   * A free night clicked. With a booking already being taken in that room
+   * from an earlier night, it is the last night: click the first night, then
+   * the last, and the stay is drawn between them. Anything else starts again
+   * from the night clicked.
+   */
+  function pick(where: { roomId: number; groupId: number; arrival: string }) {
+    if (
+      open === "new" &&
+      prefill?.roomId === where.roomId &&
+      prefill.arrival &&
+      !prefill.departure &&
+      where.arrival > prefill.arrival
+    ) {
+      setPrefill({ ...prefill, departure: nextNight(where.arrival) });
+      return;
+    }
+    setPrefill(where);
+    setOpen("new");
+  }
 
   /**
    * What the grid knows about a stay, shaped as a booking.
@@ -107,6 +139,21 @@ export default function Diary({
 
   return (
     <>
+      <div className="cal-actions">
+        <p>Click a free night to book it, or</p>
+        <button
+          type="button"
+          className="btn btn-go"
+          onClick={() => {
+            setPrefill(undefined);
+            setOpen("new");
+          }}
+        >
+          <Plus size={15} aria-hidden="true" />
+          Take a Booking
+        </button>
+      </div>
+
       {shape === "month" ? (
         <MonthGrid
           data={data}
@@ -132,10 +179,8 @@ export default function Diary({
             setPrefill(undefined);
             setOpen(toBooking(source));
           }}
-          onEmpty={(where) => {
-            setPrefill(where);
-            setOpen("new");
-          }}
+          onEmpty={pick}
+          draft={open === "new" ? draft : null}
         />
       )}
       <BookingPanel
@@ -152,7 +197,16 @@ export default function Diary({
         save={save}
         assign={assign}
         setStatus={setStatus}
+        docked
+        onDraft={onDraft}
       />
     </>
   );
+}
+
+/** The day after a night, as the stay's departure. */
+function nextNight(night: string): string {
+  const d = new Date(`${night}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
 }
