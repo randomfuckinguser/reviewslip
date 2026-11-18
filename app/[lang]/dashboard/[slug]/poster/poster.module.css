@@ -13,6 +13,29 @@
   padding-bottom: 1.5rem;
 }
 
+/* On a screen wide enough, the choices on the left and the card on the right.
+   On a narrower one, and always on paper, one under the other as before. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0 1.5rem;
+  align-items: start;
+}
+
+.layout > .sheet {
+  margin: 1.25rem 1.5rem 2rem 0;
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    display: block;
+  }
+
+  .layout > .sheet {
+    margin: 0 auto 4rem;
+  }
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -446,6 +469,14 @@
 
   .page {
     display: none;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  .layout > .sheet {
+    margin: 0;
   }
 
   .sheet {

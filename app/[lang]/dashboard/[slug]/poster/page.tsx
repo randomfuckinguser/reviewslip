@@ -142,6 +142,9 @@ export default async function PosterPage({
         sub={`${business.name} · ${TEMPLATES[template].label}`}
         back={localizedPath(lang, `/dashboard/${business.slug}`)}
       />
+      {/* The choices beside the card they make, not above it: change the
+          language and see the card change without scrolling to it. */}
+      <div className={styles.layout}>
       <section className={`page-body ${styles.page}`}>
         <div>
           <p className="lede">
@@ -306,6 +309,7 @@ export default async function PosterPage({
           )}
           <p className={styles.brand}>Reviewslip</p>
         </div>
+      </div>
       </div>
     </>
   );

@@ -232,7 +232,11 @@ export default function ThemeEditor({
   const themed = Boolean(fonts.display || fonts.ui || value.logo || background);
 
   return (
-    <div style={{ display: "grid", gap: "1.25rem" }}>
+    // The controls on the left, the preview on the right and kept in view as
+    // the controls scroll: a colour changed is seen changing, not found by
+    // scrolling to the bottom. One column on a narrow screen.
+    <div className="theme-cols">
+    <div className="theme-controls">
       {/* First, like every other tab: this is the thing to do here, and the
           swatches below are what it produced. */}
       {/*
@@ -609,13 +613,16 @@ export default function ThemeEditor({
           background colour, and a photograph behind the text would make those
           numbers meaningless. The wash over it is set strong enough that the
           text still passes over a pure white photo and a pure black one, so the
-          photo reads as texture rather than as a picture. The preview below
-          shows it exactly as a customer will see it.
+          photo reads as texture rather than as a picture. The preview shows it
+          exactly as a customer will see it.
         </span>
       </div>
 
+    </div>
+
       {/* ------------------------------------------------------- preview */}
 
+      <div className="theme-preview">
       <div>
         <span style={{ fontSize: "0.85rem", fontWeight: 500 }}>Preview</span>
         <div style={{ ...hint, margin: "0.2rem 0 0.6rem" }}>
@@ -730,6 +737,7 @@ export default function ThemeEditor({
           </span>
         </div>
       )}
+      </div>
     </div>
   );
 }

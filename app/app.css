@@ -2793,3 +2793,34 @@ body.has-side-panel .app .tl-notes {
   background: color-mix(in srgb, var(--alert, #f59e0b) 16%, var(--card, #fff));
   color: var(--foreground);
 }
+
+/* The Theme tab: the controls, with the preview beside them and kept in view
+   while they scroll. One column below a laptop's width. */
+.app .theme-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(18rem, 2fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.app .theme-controls,
+.app .theme-preview {
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.app .theme-preview {
+  position: sticky;
+  top: 1rem;
+}
+
+@media (max-width: 1100px) {
+  .app .theme-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app .theme-preview {
+    position: static;
+  }
+}

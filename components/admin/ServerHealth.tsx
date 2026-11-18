@@ -271,6 +271,34 @@ function halves<T>(list: T[]): T[][] {
   return list.length > 1 ? [list.slice(0, cut), list.slice(cut)] : [list];
 }
 
+function TableSizes({ rows, max }: { rows: { name: string; mb: number; rows?: number | null }[]; max: number }) {
+  return (
+    <table className={`${styles.table} ${styles.fixed}`}>
+      <colgroup>
+        <col className={styles.colName} />
+        <col />
+        <col className={styles.colRows} />
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Table</th>
+          <th>Size</th>
+          <th className={styles.num}>Rows</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((t) => (
+          <tr key={t.name}>
+            <td className={styles.name} title={t.name}>{t.name}</td>
+            <td><BarCell value={t.mb} max={max} text={mb(t.mb)} /></td>
+            <td className={styles.num}>{(t.rows ?? 0).toLocaleString("en-US")}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 function ProcessTable({ rows, max }: { rows: NonNullable<Readings["processes"]>; max: number }) {
   return (
     <table className={`${styles.table} ${styles.fixed}`}>
@@ -529,44 +557,63 @@ export default async function ServerHealth({ tab = "overview", base }: { tab?: s
               </Panel>
             </div>
 
-            <Panel title="Who Is Connected" note="Grouped by the application that opened them">
-              {connections && connections.byApp.length ? (
-                <table className={`${styles.table} ${styles.fixed}`}>
-                  <colgroup>
-                    <col className={styles.colWide} />
-                    <col />
-                    <col className={styles.colStat} />
-                    <col className={styles.colStat} />
-                    <col className={styles.colStat} />
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th>Application</th>
-                      <th>Connections</th>
-                      <th className={styles.num}>Running a query</th>
-                      <th className={styles.num}>Idle</th>
-                      <th className={styles.num}>Open transaction</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {connections.byApp.map((a) => (
-                      <tr key={a.app || "unnamed"}>
-                        <td>
-                          {a.label}
-                          {a.app && a.label !== a.app && <span className={styles.sub}>{a.app}</span>}
-                        </td>
-                        <td><BarCell value={a.count} max={connections.byApp[0].count} text={String(a.count)} /></td>
-                        <td className={styles.num}>{a.active}</td>
-                        <td className={styles.num}>{a.idle}</td>
-                        <td className={styles.num}>{a.idleInTransaction ? <Pill tone="warning">{a.idleInTransaction}</Pill> : 0}</td>
+            {/* Two to a row wherever one card does not need the width. */}
+            <div className={styles.grid2}>
+              <Panel title="Who Is Connected" note="Grouped by the application that opened them">
+                {connections && connections.byApp.length ? (
+                  <table className={`${styles.table} ${styles.fixed}`}>
+                    <colgroup>
+                      <col className={styles.colWide} />
+                      <col />
+                      <col className={styles.colStat} />
+                      <col className={styles.colStat} />
+                      <col className={styles.colStat} />
+                    </colgroup>
+                    <thead>
+                      <tr>
+                        <th>Application</th>
+                        <th>Connections</th>
+                        <th className={styles.num}>Running a query</th>
+                        <th className={styles.num}>Idle</th>
+                        <th className={styles.num}>Open transaction</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p className={styles.empty}>No client connections besides this check.</p>
-              )}
-            </Panel>
+                    </thead>
+                    <tbody>
+                      {connections.byApp.map((a) => (
+                        <tr key={a.app || "unnamed"}>
+                          <td>
+                            {a.label}
+                            {a.app && a.label !== a.app && <span className={styles.sub}>{a.app}</span>}
+                          </td>
+                          <td><BarCell value={a.count} max={connections.byApp[0].count} text={String(a.count)} /></td>
+                          <td className={styles.num}>{a.active}</td>
+                          <td className={styles.num}>{a.idle}</td>
+                          <td className={styles.num}>{a.idleInTransaction ? <Pill tone="warning">{a.idleInTransaction}</Pill> : 0}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p className={styles.empty}>No client connections besides this check.</p>
+                )}
+              </Panel>
+              <Panel title="Databases">
+                {databases.length ? (
+                  <table className={styles.table}>
+                    <tbody>
+                      {databases.map((d) => (
+                        <tr key={d.name}>
+                          <td>{d.name}</td>
+                          <td><BarCell value={d.mb} max={databases[0].mb} text={mb(d.mb)} /></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p className={styles.empty}>Not readable right now.</p>
+                )}
+              </Panel>
+            </div>
 
             {connections && connections.groups.length > 0 && (
               <Panel title="Where Each Connection Comes From" note="Application, database user, address and what it is doing">
@@ -606,42 +653,17 @@ export default async function ServerHealth({ tab = "overview", base }: { tab?: s
               </Panel>
             )}
 
-            <div className={styles.grid2}>
-              <Panel title="Databases">
-                {databases.length ? (
-                  <table className={styles.table}>
-                    <tbody>
-                      {databases.map((d) => (
-                        <tr key={d.name}>
-                          <td>{d.name}</td>
-                          <td><BarCell value={d.mb} max={databases[0].mb} text={mb(d.mb)} /></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  <p className={styles.empty}>Not readable right now.</p>
-                )}
-              </Panel>
-              <Panel title="Largest Tables">
-                {tables.length ? (
-                  <table className={styles.table}>
-                    <thead><tr><th>Table</th><th>Size</th><th className={styles.num}>Rows</th></tr></thead>
-                    <tbody>
-                      {tables.map((t) => (
-                        <tr key={t.name}>
-                          <td>{t.name}</td>
-                          <td><BarCell value={t.mb} max={tables[0].mb} text={mb(t.mb)} /></td>
-                          <td className={styles.num}>{(t.rows ?? 0).toLocaleString("en-US")}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  <p className={styles.empty}>Not readable right now.</p>
-                )}
-              </Panel>
-            </div>
+            <Panel title="Largest Tables" note="By size on disk, largest first">
+              {tables.length ? (
+                <div className={styles.split}>
+                  {halves(tables).map((part, i) => (
+                    <TableSizes key={i} rows={part} max={tables[0].mb} />
+                  ))}
+                </div>
+              ) : (
+                <p className={styles.empty}>Not readable right now.</p>
+              )}
+            </Panel>
           </>
         )}
 

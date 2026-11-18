@@ -345,11 +345,15 @@ a.tile:hover {
 }
 
 .colWide {
-  width: 14rem;
+  width: 10rem;
 }
 
 .colStat {
-  width: 8.5rem;
+  width: 6.5rem;
+}
+
+.colRows {
+  width: 5.5rem;
 }
 
 .fixed .barCell {

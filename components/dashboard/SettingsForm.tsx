@@ -1043,7 +1043,11 @@ export default function SettingsForm({
 
         {/* -------------------------------------------------------- topics */}
 
-        <Panel id="topics" current={tab} card>
+        {/* The topics beside how they work, rather than the list with a page of
+            reading under it. */}
+        <Panel id="topics" current={tab}>
+          <div className="cols-grid is-reviews">
+          <section className="group-box" aria-label="Review topics">
           <TopAction>
             <button
               type="button"
@@ -1188,36 +1192,6 @@ export default function SettingsForm({
               </button>
             </div>
 
-            <span style={hint}>
-              What a customer picks from, up to {settings.limits.categories}. The
-              guest page shows ten of them drawn at random with the rest behind a
-              browse button and a search, so a deep list is worth having: two
-              customers an hour apart get offered different things and lead with
-              different subjects.{" "}
-              <strong style={{ fontWeight: 500 }}>
-                Name the things you are known for
-              </strong>{" "}
-              — a signature dish, a house speciality, a flagship product. Those
-              are what customers most want to talk about, and a review may name
-              the one they picked. Generating from your website looks for them
-              first.
-            </span>
-
-            <span style={hint}>
-              <strong style={{ fontWeight: 500 }}>
-                The description is the whole of what a review may say.
-              </strong>{" "}
-              There is no other document — if something about your business is
-              not written in one of these paragraphs, no review will ever
-              mention it. Write what a customer would notice rather than what a
-              brochure would lead with, and keep each one under{" "}
-              {settings.limits.description ?? 600} characters: every topic a
-              guest picks is sent with the request, so three chosen topics cost
-              three paragraphs. No numbers and no superlatives — both are
-              refused on save, because both end up repeated in every review
-              written under that button. A topic left blank falls back to its
-              name alone, which still works.
-            </span>
 
             {/* One editor, moved between rows, rather than fifty in the
                 document. Rendered inside the form on purpose: a <dialog> is
@@ -1372,23 +1346,63 @@ export default function SettingsForm({
               )}
             </dialog>
 
-            <span style={hint}>
+          </div>
+          </section>
+
+          <section className="group-box" aria-labelledby="topics-how-h">
+            <h2 id="topics-how-h">How Topics Work</h2>
+            {/* In a box of their own: the app moves a card's first muted line
+                after its heading to the foot, and these read in order. */}
+            <div style={{ display: "grid", gap: "0.75rem" }}>
+            <p style={{ ...hint, margin: 0 }}>
+              What a customer picks from, up to {settings.limits.categories}. The
+              guest page shows ten of them drawn at random with the rest behind a
+              browse button and a search, so a deep list is worth having: two
+              customers an hour apart get offered different things and lead with
+              different subjects.{" "}
+              <strong style={{ fontWeight: 500 }}>
+                Name the things you are known for
+              </strong>{" "}
+              — a signature dish, a house speciality, a flagship product. Those
+              are what customers most want to talk about, and a review may name
+              the one they picked. Generating from your website looks for them
+              first.
+            </p>
+
+            <p style={{ ...hint, margin: 0 }}>
+              <strong style={{ fontWeight: 500 }}>
+                The description is the whole of what a review may say.
+              </strong>{" "}
+              There is no other document — if something about your business is
+              not written in one of these paragraphs, no review will ever
+              mention it. Write what a customer would notice rather than what a
+              brochure would lead with, and keep each one under{" "}
+              {settings.limits.description ?? 600} characters: every topic a
+              guest picks is sent with the request, so three chosen topics cost
+              three paragraphs. No numbers and no superlatives — both are
+              refused on save, because both end up repeated in every review
+              written under that button. A topic left blank falls back to its
+              name alone, which still works.
+            </p>
+            <p style={{ ...hint, margin: 0 }}>
               <strong style={{ fontWeight: 500 }}>The padlock</strong> keeps a
               topic through a re-generation. Generate from website replaces the
               whole set, which is what you want the first time and rarely what
               you want the second — so lock the ones you have written or edited
               and they are carried across untouched, along with anything the
               new set proposes that is not a duplicate of them.
-            </span>
+            </p>
 
-            <span style={hint}>
+            <p style={{ ...hint, margin: 0 }}>
               <strong style={{ fontWeight: 500 }}>Write</strong> fills in one
               row on its own, from the topic name and your website — useful for
               a topic you added by hand. Put a word or two in the box first and
               it builds on those instead of starting from the name, so it works
               as a keyword just as well as a blank. It only ever changes the row
               you pressed it on.
-            </span>
+            </p>
+            </div>
+          </section>
           </div>
         </Panel>
 
