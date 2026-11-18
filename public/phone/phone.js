@@ -49,7 +49,7 @@
       pushOn: 'Ringing when closed: on', pushOff: 'Ringing when closed: off', pushBlocked: 'Notifications are blocked in this browser’s settings.',
       pushIos: 'On iPhone, add this page to the Home Screen first (Share, then Add to Home Screen).',
       appNote: 'On Android? Get the Reviewslip Phone app: it rings like a call even when your phone is locked.',
-      appGet: 'Get the app', appMenu: 'Get the Android app',
+      appGet: 'Download the App', appMenu: 'Download the Android App',
       howItWorks: 'How this works', myHours: 'My hours', tabNew: 'New messages', tabAll: 'Messages', tabCalls: 'Recent calls',
       tabNewShort: 'New', tabAllShort: 'Messages', tabCallsShort: 'Calls', tabTeamShort: 'Who\u2019s on', moreRinging: '{n} more ringing',
       tabTeam: 'Who’s on', vmSub: 'Recorded when nobody on the line could take the call. Playing one marks it heard with your name, so two of you don’t ring the same person back.',
@@ -397,7 +397,9 @@
   $('m-push').addEventListener('click', function () { closeMenu(); togglePush(); });
   $('m-guide').addEventListener('click', function () { closeMenu(); openGuide(); });
   $('m-app').hidden = !ANDROID;
-  $('m-app').addEventListener('click', function () { closeMenu(); location.href = '/phone/app'; });
+  // The download page rather than the file: it says what the two warnings on
+  // the way in will look like, before anyone meets them.
+  $('m-app').addEventListener('click', function () { closeMenu(); location.href = '/app'; });
   $('help').addEventListener('click', openGuide);
   $('m-lang').addEventListener('click', function () {
     closeMenu();

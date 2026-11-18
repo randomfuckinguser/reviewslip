@@ -1533,3 +1533,33 @@ select {
     margin-top: 4vh;
   }
 }
+
+/* Android in a browser: the app, offered as a real button under the duty
+   status rather than a line of small print. */
+.app-get {
+  display: grid;
+  justify-items: center;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line, rgba(127, 127, 127, 0.25));
+  border-radius: 14px;
+  text-align: center;
+}
+
+.app-get[hidden] {
+  display: none;
+}
+
+.app-get p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.app-get .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}

@@ -47,7 +47,7 @@
           <button type="button" role="menuitem" id="m-duty"></button>
           <button type="button" role="menuitem" id="m-hours" data-t="myHours">My hours</button>
           <button type="button" role="menuitem" id="m-push" hidden></button>
-          <button type="button" role="menuitem" id="m-app" data-t="appMenu" hidden>Get the Android app</button>
+          <button type="button" role="menuitem" id="m-app" data-t="appMenu" hidden>Download the Android App</button>
           <button type="button" role="menuitem" id="m-guide" data-t="howItWorks">How this works</button>
           <button type="button" role="menuitem" id="m-lang"></button>
           <button type="button" role="menuitem" id="m-signout" data-t="signOut">Sign out</button>
@@ -120,10 +120,13 @@
             <button type="button" class="linkbtn" id="push-note-on" data-t="pushTurnOn">Turn on</button>
           </p>
           <!-- Android in a browser: the app rings through a locked phone, which a page cannot. -->
-          <p class="note" id="app-note" hidden>
-            <span data-t="appNote">On Android? Get the Reviewslip Phone app: it rings like a call even when your phone is locked.</span>
-            <a class="linkbtn" id="app-get" href="/phone/app" data-t="appGet">Get the app</a>
-          </p>
+          <div class="app-get" id="app-note" hidden>
+            <p data-t="appNote">On Android? Get the Reviewslip Phone app: it rings like a call even when your phone is locked.</p>
+            <a class="btn primary" id="app-get" href="/app">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+              <span data-t="appGet">Download the App</span>
+            </a>
+          </div>
           <p class="duty-help">
             <button type="button" class="linkbtn" id="help" data-t="howItWorks">How this works</button>
             <span class="sep" id="duty-off-sep" hidden>·</span>
