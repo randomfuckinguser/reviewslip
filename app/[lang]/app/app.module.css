@@ -1,0 +1,240 @@
+/* The phone app's download page. */
+
+.hero {
+  padding-block: clamp(2.5rem, 6vw, 4rem) clamp(1rem, 3vw, 2rem);
+  background: var(--shade);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+.copy {
+  max-width: 36rem;
+}
+
+.title {
+  font-size: clamp(2rem, 5.5vw, 3rem);
+  margin: 1rem 0 1.25rem;
+}
+
+/* The one thing on the page to press: big enough to find with a thumb. */
+.download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1.75rem;
+  min-height: 3.25rem;
+  padding: 0 1.6rem;
+  font-size: 1.05rem;
+}
+
+.meta {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: var(--cream-soft);
+}
+
+.ios {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin: 1.75rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--jade-line);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--cream-soft);
+}
+
+.ios svg {
+  flex: none;
+  margin-top: 0.2rem;
+}
+
+.ios a {
+  color: var(--jade);
+}
+
+/* The code is for a computer; a phone reading this is already the phone. */
+.qr {
+  display: none;
+  margin: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--jade-line);
+  border-radius: 14px;
+  text-align: center;
+}
+
+.qr svg {
+  display: block;
+  margin: 0 auto;
+  border-radius: 6px;
+}
+
+.qr figcaption {
+  max-width: 11rem;
+  margin: 0.85rem auto 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--cream-soft);
+}
+
+@media (min-width: 900px) and (hover: hover) {
+  .qr {
+    display: block;
+  }
+}
+
+/* ------------------------------------------------------------- the steps */
+
+.stepsSection {
+  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.stepsTitle {
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  margin: 0 0 0.6rem;
+}
+
+.stepsLede {
+  max-width: 40rem;
+  margin: 0 0 2rem;
+  color: var(--cream-soft);
+  line-height: 1.6;
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+  counter-reset: step;
+}
+
+.steps li {
+  counter-increment: step;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.25rem;
+  border: 1px solid var(--jade-line);
+  border-radius: 14px;
+}
+
+.steps h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.steps h3::before {
+  content: counter(step);
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: var(--jade);
+  color: var(--shade-deep);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.steps p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--cream-soft);
+}
+
+/* A sketch of what the phone shows at that step, and the button in it. */
+.mock {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  background: var(--shade);
+  border: 1px solid var(--jade-line);
+  font-size: 0.82rem;
+  flex-wrap: wrap;
+}
+
+/* The words take what is left and wrap as words; the button drops under them
+   when a card is too narrow for both, rather than squeezing them a letter wide. */
+.mock span {
+  flex: 1 1 7rem;
+  min-width: 7rem;
+  color: var(--cream-soft);
+}
+
+.mock b {
+  flex: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: var(--jade);
+  color: var(--shade-deep);
+  font-weight: 600;
+}
+
+.toggle {
+  flex: none;
+  position: relative;
+  width: 2.4rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: var(--jade);
+}
+
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 0.18rem;
+  right: 0.18rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: var(--shade-deep);
+}
+
+.press {
+  color: var(--cream) !important;
+}
+
+.tips {
+  margin-top: 2rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 14px;
+  background: var(--shade);
+}
+
+.tips h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+}
+
+.tips ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--cream-soft);
+}

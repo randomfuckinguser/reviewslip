@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
-import { Phone } from "lucide-react";
+import { Download, ExternalLink, Phone } from "lucide-react";
 
 import PageHeader from "@/components/app-shell/PageHeader";
 import VoiceTeam, { type VoiceTeamData } from "@/components/dashboard/VoiceTeam";
 import { call, currentUser, sessionToken, venueName } from "@/lib/customer";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { localizedPath } from "@/lib/i18n/routing";
+import { qrCode } from "@/lib/qr";
 
 export const metadata: Metadata = {
   title: "Calls",
@@ -78,6 +79,9 @@ export default async function CallsPage({ params }: PageProps<"/[lang]/dashboard
 
   const venue = await venueName(slug);
   const status = STATUS[data.status];
+  // The download page's address, as a code for a phone to scan off the screen.
+  const appCode = qrCode("https://reviewslip.com/app");
+  const appSide = appCode.count + 8;
 
   return (
     <>
@@ -102,12 +106,51 @@ export default async function CallsPage({ params }: PageProps<"/[lang]/dashboard
           <p role="status" style={{ margin: 0, color: status.tone, fontWeight: 500 }}>{status.text}</p>
           <ol style={{ margin: 0, paddingLeft: "1.2rem", display: "grid", gap: "0.35rem" }}>
             <li>Open the phone and press Go on duty. It stays on duty until you press Go off duty.</li>
-            <li>On a phone, turn on ringing so a call rings even with the page closed.</li>
+            <li>On an Android phone, install the Phone app so a call rings even when the phone is locked.</li>
             <li>Nobody free? The guest leaves a voice message, and everyone here gets an email.</li>
           </ol>
         </section>
 
-        <section className="group-box" aria-labelledby="team-title" data-tour="calls-team">
+        {/* The app, offered where calls are set up: whoever is adding staff
+            here is who sends them the link. */}
+        <section className="group-box" aria-labelledby="app-title">
+          <h2 id="app-title">Phone App for Android</h2>
+          <div style={{ display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap" }}>
+            <svg
+              viewBox={`-4 -4 ${appSide} ${appSide}`}
+              width={112}
+              height={112}
+              shapeRendering="crispEdges"
+              role="img"
+              aria-label="QR code for reviewslip.com/app"
+              style={{ borderRadius: 4, flex: "none" }}
+            >
+              <rect x={-4} y={-4} width={appSide} height={appSide} fill="#fff" />
+              <path d={appCode.path} fill="#000" />
+            </svg>
+            <div style={{ display: "grid", gap: "0.6rem", minWidth: 0, flex: "1 1 14rem" }}>
+              <p style={{ margin: 0 }}>
+                Rings like a phone call, even locked. Scan the code with the phone, or send your staff{" "}
+                <a href="/app" target="_blank" rel="noopener" style={{ color: "var(--primary)" }}>
+                  reviewslip.com/app
+                </a>
+                : it has the download and every install step.
+              </p>
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                <a className="btn btn-go" href="/phone/app" download="ReviewslipPhone.apk">
+                  <Download size={15} aria-hidden="true" />
+                  Download for Android
+                </a>
+                <a className="btn btn-quiet" href="/app" target="_blank" rel="noopener">
+                  <ExternalLink size={15} aria-hidden="true" />
+                  Install Steps
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="group-box wide" aria-labelledby="team-title" data-tour="calls-team">
           <h2 id="team-title">Who Answers</h2>
           <VoiceTeam initial={data} invite={invite} reinvite={reinvite} remove={remove} />
         </section>
