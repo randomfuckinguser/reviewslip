@@ -9,6 +9,7 @@ const tariff = require('./tariff');
 const { publicUrl } = require('./tenant');
 const mailer = require('./mailer');
 const emails = require('./emails');
+const customers = require('./customers');
 
 /**
  * The marketplace's storage and queries. The rules are in market.js.
@@ -453,13 +454,20 @@ async function book({ slug, groupId, planId, expectTotalMinor, stay, guest }) {
       today,
     });
     const parties = market.split(stay);
+    // A guest booking online who has stayed before is the same customer.
+    const customerId = await customers.attach(client, {
+      subscriberId: subscriber.id,
+      name: guest.name,
+      email: guest.email,
+      phone: guest.phone,
+    });
     for (const party of parties) {
       await client.query(
         `INSERT INTO bookings
            (subscriber_id, group_id, guest_name, guest_email, guest_phone, adults, children,
             arrival, departure, status, source, notes, rate_plan_id, total_minor,
-            reference, due_now_minor, payment_status, free_cancel_until)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'confirmed','marketplace',$10,$11,$12,$13,$14,'not_connected',$15)`,
+            reference, due_now_minor, payment_status, free_cancel_until, customer_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'confirmed','marketplace',$10,$11,$12,$13,$14,'not_connected',$15,$16)`,
         [
           subscriber.id,
           groupId,
@@ -476,6 +484,7 @@ async function book({ slug, groupId, planId, expectTotalMinor, stay, guest }) {
           reference,
           market.dueNow(price.totalMinor, payment),
           freeCancelUntil,
+          customerId,
         ]
       );
     }

@@ -99,17 +99,6 @@ async function add({ subscriberId, groupId = null, areaId = null, label }) {
   const wrong = checklist.checkLabel(label);
   if (wrong) throw fail(400, wrong);
 
-  const existing = await one(
-    'SELECT count(*)::int AS n FROM checklist_items WHERE subscriber_id = $1',
-    [subscriberId]
-  );
-  if ((existing?.n ?? 0) >= checklist.MAX_ITEMS) {
-    throw fail(
-      400,
-      `That is already ${checklist.MAX_ITEMS} things to check. A list nobody reads to the end is not a standard.`
-    );
-  }
-
   let group = null;
   if (groupId !== null && groupId !== undefined && groupId !== '') {
     const found = await one(
@@ -119,6 +108,13 @@ async function add({ subscriberId, groupId = null, areaId = null, label }) {
     if (!found) throw fail(404, 'No such room type.');
     group = found.id;
   }
+
+  // Counted against the list it lands in, not the whole venue: see MAX_ITEMS.
+  const crowded = checklist.tooMany(
+    await all('SELECT group_id AS "groupId" FROM checklist_items WHERE subscriber_id = $1', [subscriberId]),
+    group
+  );
+  if (crowded) throw fail(400, crowded);
 
   // The area, like the type, checked against this venue's own.
   let area = null;

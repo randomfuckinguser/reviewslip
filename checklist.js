@@ -18,8 +18,18 @@
  * desk reads.
  */
 
-/** Long enough to be a standard, short enough that somebody reads it. */
-const MAX_ITEMS = 24;
+/**
+ * Long enough to be a standard, short enough that somebody reads it.
+ *
+ * Counted per room: the lines for every room plus that type's own, which is
+ * the list a housekeeper actually reads. Counting the whole venue instead
+ * meant a lodge with four room types ran out of lines before each type had
+ * anything of its own.
+ */
+const MAX_ITEMS = 30;
+
+/** Every line the venue has, across all its types: only a backstop. */
+const MAX_VENUE_ITEMS = 150;
 const MAX_LABEL = 80;
 
 /**
@@ -90,6 +100,36 @@ function missingStarter(items) {
 }
 
 /**
+ * Why one more line would make a list too long, or null if it fits.
+ *
+ * A line for one type lengthens that type's list; a line for every room
+ * lengthens all of them, so it has to fit the longest.
+ *
+ * @param {object[]} items - every line the venue has, with groupId
+ * @param {number|null} groupId - the type the new line is for, null for every room
+ * @returns {string|null}
+ */
+function tooMany(items, groupId) {
+  const every = items ?? [];
+  if (every.length >= MAX_VENUE_ITEMS) {
+    return `That is already ${MAX_VENUE_ITEMS} lines across every room type.`;
+  }
+  const shared = every.filter((i) => i.groupId === null || i.groupId === undefined).length;
+  const own = new Map();
+  for (const i of every) {
+    if (i.groupId !== null && i.groupId !== undefined) own.set(i.groupId, (own.get(i.groupId) ?? 0) + 1);
+  }
+  const longest =
+    groupId === null || groupId === undefined
+      ? shared + Math.max(0, ...own.values())
+      : shared + (own.get(groupId) ?? 0);
+  if (longest < MAX_ITEMS) return null;
+  return groupId === null || groupId === undefined
+    ? `A room's list is already ${MAX_ITEMS} things to check, and a line for every room would make it longer. Add it to one room type, or take a line out first.`
+    : `That room type's list is already ${MAX_ITEMS} things to check. A list nobody reads to the end is not a standard.`;
+}
+
+/**
  * The list for one room type, in order.
  *
  * Items with no type come first and then the type's own, each block in its own
@@ -155,6 +195,7 @@ function forRoom(items, done) {
 
 module.exports = {
   MAX_ITEMS,
+  MAX_VENUE_ITEMS,
   MAX_LABEL,
   MAX_AREAS,
   MAX_AREA_NAME,
@@ -164,6 +205,7 @@ module.exports = {
   checkLabel,
   checkAreaName,
   missingStarter,
+  tooMany,
   forGroup,
   forRoom,
 };

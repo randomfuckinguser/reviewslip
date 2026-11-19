@@ -7,6 +7,7 @@ const nights = require('./nights');
 const tariff = require('./tariff');
 const tm30 = require('./tm30');
 const bookingfilter = require('./bookingfilter');
+const customers = require('./customers');
 const mailer = require('./mailer');
 const emails = require('./emails');
 
@@ -77,6 +78,11 @@ function toRecord(row) {
     // nobody had priced. Not zero: a booking we cannot price is not free, and
     // the two have to read differently on an arrivals list.
     totalMinor: row.total_minor ?? null,
+    customerId: row.customer_id ?? null,
+    // How many stays the customer has had here, this one included. Only where
+    // it was asked for (get), so the lists do not pay for a count per row.
+    customerStays: row.customer_stays === undefined ? undefined : Number(row.customer_stays),
+    paymentStatus: customers.payment(row.payment_status),
     total:
       row.total_minor === null || row.total_minor === undefined
         ? null
@@ -147,6 +153,7 @@ async function create(input) {
     source = 'direct',
     notes = null,
     ratePlanId = null,
+    customerId = null,
   } = input;
 
   const name = String(guestName ?? '').trim();
@@ -211,12 +218,22 @@ async function create(input) {
       departure,
     });
 
+    // The returning guest, found by their email or phone, or the one the desk
+    // picked from the suggestions; a new customer otherwise.
+    const customer = await customers.attach(client, {
+      subscriberId,
+      customerId,
+      name,
+      email: guestEmail,
+      phone: guestPhone,
+    });
+
     const { rows } = await client.query(
       `INSERT INTO bookings
          (subscriber_id, group_id, room_id, guest_name, guest_email, guest_phone,
           adults, children, arrival, departure, source, notes,
-          rate_plan_id, total_minor)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+          rate_plan_id, total_minor, customer_id, payment_status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'unpaid')
        RETURNING *`,
       [
         subscriberId,
@@ -233,6 +250,7 @@ async function create(input) {
         notes ? String(notes).slice(0, NOTE_MAX) : null,
         ratePlanId ?? null,
         totalMinor,
+        customer,
       ]
     );
 
@@ -458,9 +476,42 @@ async function update(input) {
       ]
     );
 
-    const next = updated.rows[0];
+    let next = updated.rows[0];
     if (next.room_id && HOLDS_INVENTORY.includes(next.status)) {
       await holdNights(client, next);
+    }
+
+    // Whose stay it is follows the guest's details: a corrected email that
+    // belongs to a returning guest joins this stay to them; otherwise the
+    // booking's own customer gains what was added. Or the desk picked one.
+    const contactMoved =
+      (next.guest_email || '') !== (current.guest_email || '') ||
+      (next.guest_phone || '') !== (current.guest_phone || '');
+    if (input.customerId || contactMoved || !next.customer_id) {
+      const customer = await customers.attach(client, {
+        subscriberId,
+        customerId: input.customerId || null,
+        fallbackId: next.customer_id,
+        name: next.guest_name,
+        email: next.guest_email,
+        phone: next.guest_phone,
+      });
+      if (customer !== next.customer_id) {
+        const was = next.customer_id;
+        next = (
+          await client.query('UPDATE bookings SET customer_id = $2 WHERE id = $1 RETURNING *', [id, customer])
+        ).rows[0];
+        // The customer this stay left, when it was their only one and nobody
+        // wrote anything about them: an empty name in the list helps no one.
+        if (was) {
+          await client.query(
+            `DELETE FROM customers
+              WHERE id = $1 AND notes IS NULL
+                AND NOT EXISTS (SELECT 1 FROM bookings WHERE customer_id = $1)`,
+            [was]
+          );
+        }
+      }
     }
 
     return toRecord(next);
@@ -934,7 +985,10 @@ async function list(input) {
 /** One booking, scoped to its venue. */
 async function get({ subscriberId, id }) {
   const row = await one(
-    `SELECT b.*, g.name AS group_name, r.name AS room_name
+    `SELECT b.*, g.name AS group_name, r.name AS room_name,
+            (SELECT count(*) FROM bookings x
+              WHERE x.customer_id = b.customer_id
+                AND x.status NOT IN ('cancelled', 'no_show')) AS customer_stays
        FROM bookings b
        JOIN room_groups g ON g.id = b.group_id
        LEFT JOIN rooms r ON r.id = b.room_id
@@ -1012,8 +1066,25 @@ async function onDate({ subscriberId, date }) {
   };
 }
 
+/**
+ * Whether the stay is paid: not paid, a deposit, paid, or refunded. Said by
+ * the desk — there is no card payment behind it yet — and kept apart from the
+ * stay's own status, because a guest can be checked out and still owe.
+ */
+async function setPayment({ subscriberId, id, status }) {
+  if (!customers.PAYMENT.includes(status)) throw fail(400, 'Not a payment status.');
+  const row = await one(
+    `UPDATE bookings SET payment_status = $3, updated_at = now()
+      WHERE id = $1 AND subscriber_id = $2 RETURNING id`,
+    [id, subscriberId, status]
+  );
+  if (!row) throw fail(404, 'No such booking.');
+  return get({ subscriberId, id });
+}
+
 module.exports = {
   HOLDS_INVENTORY,
+  setPayment,
   list,
   summary,
   create,

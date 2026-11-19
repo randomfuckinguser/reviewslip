@@ -11,6 +11,7 @@ const staff = require('./staff');
 const tickets = require('./tickets');
 const rooms = require('./rooms');
 const bookings = require('./bookings');
+const customers = require('./customers');
 const bookingfilter = require('./bookingfilter');
 const setup = require('./setup');
 const listings = require('./listings');
@@ -1696,6 +1697,7 @@ router.post(
         departure: body.departure,
         notes: body.notes,
         ratePlanId: body.ratePlanId ? Number(body.ratePlanId) : null,
+        customerId: Number(body.customerId) > 0 ? Number(body.customerId) : null,
       });
       res.status(201).json({ booking });
     } catch (err) {
@@ -1751,6 +1753,7 @@ router.patch(
         if (body[key] !== undefined) patch[key] = body[key];
       }
       if (body.groupId !== undefined) patch.groupId = Number(body.groupId);
+      if (Number(body.customerId) > 0) patch.customerId = Number(body.customerId);
       // A dragged stay sends its room with its dates, so the two land in one
       // transaction. Null unassigns; the room decides the type.
       if (body.roomId !== undefined) {
@@ -1809,6 +1812,111 @@ router.post(
         status: String(req.body?.status || ''),
       });
       res.json({ booking });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/** Paid, a deposit, not paid, refunded: the desk's say on the money. */
+router.post(
+  '/businesses/:slug/bookings/:id/payment',
+  requireAccount,
+  requireOwnVenue,
+  async (req, res, next) => {
+    try {
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id) || id <= 0) {
+        return res.status(404).json({ error: 'No such booking.' });
+      }
+      const booking = await bookings.setPayment({
+        subscriberId: req.venue.id,
+        id,
+        status: String(req.body?.status || ''),
+      });
+      res.json({ booking });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/** A returning guest's party, carried over from their last stay. */
+router.post(
+  '/businesses/:slug/bookings/:id/guests/copy',
+  requireAccount,
+  requireOwnVenue,
+  async (req, res, next) => {
+    try {
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id) || id <= 0) {
+        return res.status(404).json({ error: 'No such booking.' });
+      }
+      res.json(await guests.copyFromLastStay({ subscriberId: req.venue.id, bookingId: id }));
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/* ------------------------------------------------------------- customers */
+
+/**
+ * The venue's customers, most recent stay first. `q` searches names, email
+ * addresses and phone numbers; the booking form asks with what is being typed.
+ */
+router.get(
+  '/businesses/:slug/customers',
+  requireAccount,
+  requireOwnVenue,
+  async (req, res, next) => {
+    try {
+      res.json({
+        customers: await customers.list({
+          subscriberId: req.venue.id,
+          q: String(req.query.q || ''),
+          limit: Number(req.query.limit) || 100,
+        }),
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get(
+  '/businesses/:slug/customers/:id',
+  requireAccount,
+  requireOwnVenue,
+  async (req, res, next) => {
+    try {
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id) || id <= 0) {
+        return res.status(404).json({ error: 'No such customer.' });
+      }
+      res.json(await customers.get({ subscriberId: req.venue.id, id }));
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.patch(
+  '/businesses/:slug/customers/:id',
+  requireAccount,
+  requireOwnVenue,
+  async (req, res, next) => {
+    try {
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id) || id <= 0) {
+        return res.status(404).json({ error: 'No such customer.' });
+      }
+      const body = req.body || {};
+      const patch = { subscriberId: req.venue.id, id };
+      for (const key of ['name', 'email', 'phone', 'notes']) {
+        if (body[key] !== undefined) patch[key] = body[key];
+      }
+      res.json({ customer: await customers.update(patch) });
     } catch (err) {
       next(err);
     }

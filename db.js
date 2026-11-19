@@ -1432,6 +1432,61 @@ const MIGRATIONS = [
       CREATE INDEX room_area_photos_day ON room_area_photos (subscriber_id, on_day)
     `);
   },
+
+  /*
+   * Customers: the person behind a booking, remembered across stays.
+   *
+   * Found again by email, or by phone (phone_key: the last nine digits, so the
+   * same number written three ways is one number). One address is one customer
+   * at a venue, which the unique index holds. A name alone never matches: two
+   * John Smiths are two people until the desk says otherwise.
+   *
+   * Every booking already taken is given its customer here, oldest first, by
+   * the same rules a new booking follows (customers.attach).
+   */
+  async (c) => {
+    await c.query(`
+      CREATE TABLE customers (
+        id            integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        subscriber_id integer NOT NULL REFERENCES subscribers (id) ON DELETE CASCADE,
+        name          text NOT NULL,
+        email         text,
+        phone         text,
+        phone_key     text,
+        notes         text,
+        created_at    timestamptz NOT NULL DEFAULT now(),
+        updated_at    timestamptz NOT NULL DEFAULT now()
+      )
+    `);
+    await c.query(`
+      CREATE UNIQUE INDEX customers_email
+        ON customers (subscriber_id, lower(email)) WHERE email IS NOT NULL
+    `);
+    await c.query(`
+      CREATE INDEX customers_phone
+        ON customers (subscriber_id, phone_key) WHERE phone_key IS NOT NULL
+    `);
+    await c.query(`
+      ALTER TABLE bookings
+        ADD COLUMN customer_id integer REFERENCES customers (id) ON DELETE SET NULL
+    `);
+    await c.query('CREATE INDEX bookings_customer ON bookings (customer_id)');
+
+    // Required here, not at the top: customers.js requires this file.
+    const { attach } = require('./customers');
+    const { rows } = await c.query(
+      'SELECT id, subscriber_id, guest_name, guest_email, guest_phone FROM bookings ORDER BY created_at, id'
+    );
+    for (const b of rows) {
+      const customerId = await attach(c, {
+        subscriberId: b.subscriber_id,
+        name: b.guest_name,
+        email: b.guest_email,
+        phone: b.guest_phone,
+      });
+      await c.query('UPDATE bookings SET customer_id = $1 WHERE id = $2', [customerId, b.id]);
+    }
+  },
 ];
 
 // Any constant will do; it only has to be the same in every process.

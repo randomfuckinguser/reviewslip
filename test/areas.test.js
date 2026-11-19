@@ -51,3 +51,33 @@ test("a room's list carries each line's area", () => {
     ]
   );
 });
+
+/* The limit: counted per room's list, not across the whole venue. */
+
+test("the limit counts a room's own list, so each type can have lines of its own", () => {
+  const line = (groupId) => ({ groupId });
+  const max = checklist.MAX_ITEMS;
+  // 20 lines for every room and 9 for each of four types: 29 per room, and
+  // 56 across the venue — far past the old venue-wide count, still allowed.
+  const venue = [
+    ...Array.from({ length: 20 }, () => line(null)),
+    ...[1, 2, 3, 4].flatMap((g) => Array.from({ length: 9 }, () => line(g))),
+  ];
+  assert.equal(20 + 9, max - 1);
+  assert.equal(checklist.tooMany(venue, 1), null);
+  assert.equal(checklist.tooMany(venue, null), null);
+
+  // One more for type 1 fills its list; type 2 still has room.
+  const full = venue.concat(line(1));
+  assert.match(checklist.tooMany(full, 1), /room type's list is already/);
+  assert.equal(checklist.tooMany(full, 2), null);
+  // A line for every room would push type 1 over, so it is refused.
+  assert.match(checklist.tooMany(full, null), /line for every room would make it longer/);
+  // A type with no lines of its own yet is counted as the shared lines.
+  assert.equal(checklist.tooMany(venue, 99), null);
+});
+
+test('the venue as a whole has a backstop', () => {
+  const lots = Array.from({ length: checklist.MAX_VENUE_ITEMS }, (_, i) => ({ groupId: i }));
+  assert.match(checklist.tooMany(lots, 1), /across every room type/);
+});

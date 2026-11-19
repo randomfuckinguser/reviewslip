@@ -416,7 +416,58 @@ async function forgetPassports({ subscriberId, days = 365 }) {
   return { forgotten: result.rowCount ?? 0 };
 }
 
+/**
+ * A returning guest's party, carried from their last stay into this one.
+ *
+ * The same people coming back with the same passports: copied rather than
+ * typed again, encrypted number and all. What belongs to the old trip stays
+ * behind — when they entered Thailand, and whether Immigration was told — so
+ * the copy is a new arrival to report, which it is.
+ *
+ * From the customer's most recent other stay that has anybody on it. Returns
+ * how many were copied; nothing to copy is not an error.
+ */
+async function copyFromLastStay({ subscriberId, bookingId }) {
+  const booking = await one(
+    'SELECT id, customer_id FROM bookings WHERE id = $1 AND subscriber_id = $2',
+    [bookingId, subscriberId]
+  );
+  if (!booking) throw fail(404, 'No such booking.');
+  if (!booking.customer_id) return { copied: 0, from: null };
+
+  const source = await one(
+    `SELECT b.id, b.arrival
+       FROM bookings b
+      WHERE b.customer_id = $1 AND b.subscriber_id = $2 AND b.id <> $3
+        AND EXISTS (SELECT 1 FROM booking_guests g WHERE g.booking_id = b.id)
+      ORDER BY b.arrival DESC, b.id DESC
+      LIMIT 1`,
+    [booking.customer_id, subscriberId, bookingId]
+  );
+  if (!source) return { copied: 0, from: null };
+
+  const rows = await all(
+    `INSERT INTO booking_guests
+       (subscriber_id, booking_id, family_name, first_name, middle_name,
+        nationality, date_of_birth, phone, passport_enc, passport_tail)
+     SELECT subscriber_id, $3, family_name, first_name, middle_name,
+            nationality, date_of_birth, phone, passport_enc, passport_tail
+       FROM booking_guests g
+      WHERE g.booking_id = $1 AND g.subscriber_id = $2
+        AND NOT EXISTS (
+          SELECT 1 FROM booking_guests here
+           WHERE here.booking_id = $3
+             AND lower(here.family_name) = lower(g.family_name)
+             AND lower(here.first_name) = lower(g.first_name))
+      ORDER BY g.id
+     RETURNING id`,
+    [source.id, subscriberId, bookingId]
+  );
+  return { copied: rows.length, from: source.arrival };
+}
+
 module.exports = {
+  copyFromLastStay,
   add,
   update,
   remove,
