@@ -222,6 +222,13 @@ export default function Timeline({
     stay: Stay;
     mode: Mode;
     x: number;
+    y: number;
+    /**
+     * Whether the pointer has gone anywhere yet. A press that never moves is
+     * a click, and a click on a stay opens it: the bar captures the pointer to
+     * drag, so the name inside it would otherwise never hear the click.
+     */
+    moved: boolean;
     /**
      * Where the stay was when the drag began, not where the server has it.
      *
@@ -493,6 +500,8 @@ export default function Timeline({
       stay,
       mode,
       x: e.clientX,
+      y: e.clientY,
+      moved: false,
       origin: {
         roomId: from.roomId,
         groupId: stay.groupId,
@@ -514,6 +523,11 @@ export default function Timeline({
   function during(e: React.PointerEvent) {
     const d = drag.current;
     if (!d || !track.current) return;
+    // A few pixels of wobble in a click is not a drag.
+    if (!d.moved) {
+      if (Math.abs(e.clientX - d.x) < 5 && Math.abs(e.clientY - d.y) < 5) return;
+      d.moved = true;
+    }
 
     const width = track.current.getBoundingClientRect().width / nights.length;
     const days = Math.round((e.clientX - d.x) / width);
@@ -564,6 +578,24 @@ export default function Timeline({
     const g = ghostRef.current;
     drag.current = null;
     if (!d || !g) return;
+
+    // Pressed and let go without moving: open it.
+    if (!d.moved) {
+      setGhost(null);
+      setWarning("");
+      const p = place(d.stay, false);
+      onOpen({
+        roomId: d.stay.roomId as number,
+        night: p.arrival,
+        bookingId: d.stay.id,
+        guestName: d.stay.guestName,
+        status: d.stay.status as TakenNight["status"],
+        arrival: p.arrival,
+        departure: p.departure,
+        source: d.stay.source,
+      });
+      return;
+    }
 
     const unchanged =
       g.roomId === d.origin.roomId &&
@@ -852,7 +884,10 @@ export default function Timeline({
                     <button
                       type="button"
                       className="tl-who"
-                      onClick={() =>
+                      // From the keyboard (Enter or Space: detail 0). A pointer's
+                      // click is the press-and-release finish() opens on.
+                      onClick={(e) =>
+                        e.detail === 0 &&
                         onOpen({
                           roomId: stay.roomId as number,
                           night: p.arrival,

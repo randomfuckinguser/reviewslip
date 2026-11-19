@@ -3,9 +3,10 @@
 import FormTourButton from "@/components/help/FormTourButton";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import GuestList from "./GuestList";
 import { nightCount } from "@/lib/nights";
-import type { Booking, BookingGuest, RatePlan, Room } from "@/lib/customer";
+import type { Booking, BookingGuest, Customer, PaymentStatus, RatePlan, Room } from "@/lib/customer";
 
 export interface EditResult {
   error?: string;
@@ -51,13 +52,39 @@ const label: React.CSSProperties = {
   color: "var(--cream)",
 };
 
-const STATUS: { id: Booking["status"]; label: string }[] = [
-  { id: "confirmed", label: "Confirmed" },
-  { id: "in_house", label: "Checked In" },
-  { id: "checked_out", label: "Checked Out" },
-  { id: "no_show", label: "No Show" },
-  { id: "cancelled", label: "Cancelled" },
+/** The stay's own state, in the order a stay goes through them. */
+const STATUS: { id: Booking["status"]; label: string; tone: string }[] = [
+  { id: "confirmed", label: "Confirmed", tone: "info" },
+  { id: "in_house", label: "Checked In", tone: "good" },
+  { id: "checked_out", label: "Checked Out", tone: "muted" },
+  { id: "no_show", label: "No Show", tone: "warn" },
+  { id: "cancelled", label: "Cancelled", tone: "bad" },
 ];
+
+/** Whether it is paid. Apart from the stay's state: a guest can be out and still owe. */
+const PAYMENT: { id: PaymentStatus; label: string; tone: string }[] = [
+  { id: "unpaid", label: "Not Paid", tone: "bad" },
+  { id: "deposit", label: "Deposit Paid", tone: "warn" },
+  { id: "paid", label: "Paid", tone: "good" },
+  { id: "refunded", label: "Refunded", tone: "muted" },
+];
+
+/** "27 Sep 2027" from "2027-09-27". */
+function shortDay(date: string): string {
+  return new Date(`${date}T12:00:00Z`).toLocaleDateString("en-GB", {
+    timeZone: "UTC",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+/** "3rd", for "3rd stay". */
+function ordinal(n: number): string {
+  const tens = n % 100;
+  if (tens >= 11 && tens <= 13) return `${n}th`;
+  return `${n}${["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+}
 
 /** Blank fields, for a booking that does not exist yet. */
 const EMPTY = {
@@ -72,6 +99,8 @@ const EMPTY = {
   adults: "2",
   children: "0",
   notes: "",
+  /** A returning guest picked from the suggestions, or "" for whoever the details match. */
+  customerId: "",
 };
 
 type Fields = typeof EMPTY;
@@ -108,7 +137,7 @@ export default function BookingPanel({
   save,
   assign,
   setStatus,
-  docked = false,
+  docked = true,
   onDraft,
 }: {
   /** A booking to correct, the string "new" to take one, or nothing. */
@@ -145,8 +174,18 @@ export default function BookingPanel({
   onDraft?: (draft: Draft | null) => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [form, setForm] = useState<Fields>(EMPTY);
+  // The status bar's two answers, kept here so a change shows at once and the
+  // panel stays open on it rather than closing to say so.
+  const [stay, setStay] = useState<Booking["status"]>("confirmed");
+  const [paid, setPaid] = useState<PaymentStatus>("unpaid");
+  // A returning guest: who the details being typed might be, and who was picked.
+  const [matches, setMatches] = useState<Customer[]>([]);
+  const [picked, setPicked] = useState<Customer | null>(null);
+  const [copying, setCopying] = useState(false);
   const [problem, setProblem] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -182,6 +221,8 @@ export default function BookingPanel({
       const data = await res.json();
       if (data.booking) {
         setFull(data.booking);
+        setStay(data.booking.status);
+        setPaid(data.booking.paymentStatus ?? "unpaid");
         // Only the fields the partial record could not carry. Re-seeding the
         // ones already on screen would throw away anything typed in the second
         // it took this to arrive.
@@ -225,6 +266,13 @@ export default function BookingPanel({
     setProblem("");
     setGuests([]);
     setFull(null);
+
+    setMatches([]);
+    setPicked(null);
+    if (booking && booking !== "new") {
+      setStay(booking.status);
+      setPaid(booking.paymentStatus ?? "unpaid");
+    }
 
     if (booking === "new") {
       setForm({
@@ -290,6 +338,41 @@ export default function BookingPanel({
     if (!opened && node.open) node.close();
   }, [opened, docked]);
 
+  // Docked, the page steps aside for the panel so nothing is underneath it.
+  useEffect(() => {
+    if (!docked) return;
+    document.body.classList.toggle("has-side-panel", opened);
+    return () => document.body.classList.remove("has-side-panel");
+  }, [docked, opened]);
+
+  // A returning guest, offered while their details are typed: by the email if
+  // one is going in, else the phone, else the name. Only while taking a
+  // booking and nobody has been picked; a quarter-second after the last key.
+  const lookFor = (() => {
+    if (booking !== "new" || picked) return "";
+    if (form.guestEmail.includes("@")) return form.guestEmail.trim();
+    if (form.guestPhone.replace(/\D/g, "").length >= 6) return form.guestPhone.trim();
+    return form.guestName.trim().length >= 2 ? form.guestName.trim() : "";
+  })();
+  useEffect(() => {
+    if (!lookFor) return;
+    let gone = false;
+    const timer = window.setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/customers/${slug}?q=${encodeURIComponent(lookFor)}`, { cache: "no-store" });
+        const data = res.ok ? await res.json() : null;
+        if (!gone) setMatches(Array.isArray(data?.customers) ? data.customers : []);
+      } catch {
+        // No suggestions is fine: the booking still takes.
+      }
+    }, 250);
+    return () => {
+      gone = true;
+      window.clearTimeout(timer);
+    };
+  }, [lookFor, slug]);
+  const offered = lookFor ? matches : [];
+
   // The booking being taken, for the calendar to draw where it would go.
   const draftRoom = form.roomId;
   const draftGroup = form.groupId;
@@ -349,6 +432,7 @@ export default function BookingPanel({
         adults: Number(form.adults) || 1,
         children: Number(form.children) || 0,
         notes: form.notes.trim() || null,
+        customerId: form.customerId ? Number(form.customerId) : null,
       });
 
       if (result.error) {
@@ -406,15 +490,39 @@ export default function BookingPanel({
     }
   }
 
-  async function mark(status: string) {
-    if (busy || !current) return;
+  /** The stay's state, from the status bar: changed in place, the panel stays open. */
+  async function changeStay(next: Booking["status"]) {
+    if (busy || !current || next === stay) return;
     setBusy(true);
     setProblem("");
     try {
-      const result = await setStatus(current.id, status);
+      const result = await setStatus(current.id, next);
       if (result.error) setProblem(result.error);
+      else setStay(next);
+    } catch {
+      setProblem("Could not reach the server. Reload the page and try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /** Whether it is paid, from the status bar. */
+  async function changePaid(next: PaymentStatus) {
+    if (busy || !current || next === paid) return;
+    setBusy(true);
+    setProblem("");
+    try {
+      const res = await fetch(`/api/booking/${slug}/${current.id}/payment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: next }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) setProblem(data.error ?? "Could not change that.");
       else {
-          onClose();
+        setPaid(next);
+        // The lists behind the panel say whether a stay is paid too.
+        router.refresh();
       }
     } catch {
       setProblem("Could not reach the server. Reload the page and try again.");
@@ -422,6 +530,41 @@ export default function BookingPanel({
       setBusy(false);
     }
   }
+
+  /** A returning guest's party, carried over from their last stay. */
+  async function copyGuests() {
+    if (!current || copying) return;
+    setCopying(true);
+    setProblem("");
+    try {
+      const res = await fetch(`/api/guests/${slug}/${current.id}/copy`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) setProblem(data.error ?? "Could not copy the guests.");
+      else if (!data.copied) setProblem("Nobody to copy: their last stay has no guests on it, or they are already here.");
+      await reloadGuests(current.id);
+    } finally {
+      setCopying(false);
+    }
+  }
+
+  /** Fill the guest's details from a returning customer. */
+  function pick(customer: Customer) {
+    setPicked(customer);
+    setMatches([]);
+    setForm((was) => ({
+      ...was,
+      customerId: String(customer.id),
+      guestName: customer.name,
+      guestEmail: customer.email ?? was.guestEmail,
+      guestPhone: customer.phone ?? was.guestPhone,
+    }));
+  }
+
+  // The customer's own page, beside this venue's other screens.
+  const at = pathname.indexOf(`/dashboard/${slug}`);
+  const customersBase = at >= 0 ? `${pathname.slice(0, at)}/dashboard/${slug}/customers` : "";
+  const stays = full?.customerStays ?? 0;
+  const customerId = full?.customerId ?? current?.customerId ?? null;
 
   async function addGuest(guest: Record<string, string>) {
     if (!current) return { error: "Save the booking first." };
@@ -501,6 +644,17 @@ export default function BookingPanel({
             >
               {taking ? "Take a Booking" : form.guestName || current?.guestName}
             </h2>
+            {!taking && stays > 1 ? (
+              <span className="bp-returning">
+                Returning guest · {ordinal(stays)} stay
+                {customersBase && customerId ? (
+                  <>
+                    {" · "}
+                    <Link href={`${customersBase}/${customerId}`}>See their stays</Link>
+                  </>
+                ) : null}
+              </span>
+            ) : null}
             <span style={{ fontSize: "0.85rem", color: "var(--admin-muted)" }}>
               {taking
                 ? "Leave the room blank and it sits unassigned until you pick one."
@@ -517,6 +671,47 @@ export default function BookingPanel({
             </button>
           </div>
         </div>
+
+        {/* The status bar: where the stay is and whether it is paid, each one
+            press to change. Only once there is a booking to say it about. */}
+        {!taking && current ? (
+          <div className="bp-status" data-tour="bf-status">
+            <div className="bp-status-row">
+              <span className="bp-status-label">Stay</span>
+              <div className="bp-seg" role="group" aria-label="Stay status" style={{ "--cols": 3 } as React.CSSProperties}>
+                {STATUS.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    data-tone={s.tone}
+                    aria-pressed={stay === s.id}
+                    disabled={busy}
+                    onClick={() => void changeStay(s.id)}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="bp-status-row">
+              <span className="bp-status-label">Payment</span>
+              <div className="bp-seg" role="group" aria-label="Payment status" style={{ "--cols": 4 } as React.CSSProperties}>
+                {PAYMENT.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    data-tone={s.tone}
+                    aria-pressed={paid === s.id}
+                    disabled={busy}
+                    onClick={() => void changePaid(s.id)}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {problem ? (
           <p className="cal-problem" role="alert">
@@ -540,9 +735,49 @@ export default function BookingPanel({
               value={form.guestName}
               disabled={busy}
               maxLength={120}
-              onChange={(e) => set("guestName", e.target.value)}
+              autoComplete="off"
+              onChange={(e) => {
+                set("guestName", e.target.value);
+                // Typing a different name after picking someone is somebody else.
+                if (picked) {
+                  setPicked(null);
+                  set("customerId", "");
+                }
+              }}
               style={field}
             />
+            {picked ? (
+              <p className="bp-returning">
+                Returning guest · {picked.stays ?? 0} stay{picked.stays === 1 ? "" : "s"} before
+                {picked.lastArrival ? `, last ${shortDay(picked.lastArrival)}` : ""}
+                {" · "}
+                <button
+                  type="button"
+                  className="linklike"
+                  onClick={() => {
+                    setPicked(null);
+                    set("customerId", "");
+                  }}
+                >
+                  Not them
+                </button>
+              </p>
+            ) : offered.length ? (
+              <div className="bp-matches" role="listbox" aria-label="Returning guests">
+                <span className="bp-matches-h">Stayed before?</span>
+                {offered.map((c) => (
+                  <button key={c.id} type="button" role="option" aria-selected={false} onClick={() => pick(c)}>
+                    <strong>{c.name}</strong>
+                    <span>
+                      {[c.email, c.phone].filter(Boolean).join(" · ") || "no email or phone"}
+                      {" · "}
+                      {c.stays ?? 0} stay{c.stays === 1 ? "" : "s"}
+                      {c.lastArrival ? `, last ${shortDay(c.lastArrival)}` : ""}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <div>
@@ -774,17 +1009,17 @@ export default function BookingPanel({
                 </Link>
               ) : null}
 
-              {STATUS.filter((s) => s.id !== current?.status).map((s) => (
+              {stays > 1 ? (
                 <button
-                  key={s.id}
                   type="button"
                   className="btn btn-quiet"
-                  disabled={busy}
-                  onClick={() => void mark(s.id)}
+                  disabled={busy || copying}
+                  onClick={() => void copyGuests()}
+                  data-tip="Their party from the last stay: names, nationality, birth dates and passports. The date they entered Thailand stays with the old trip."
                 >
-                  {s.label}
+                  {copying ? "Copying…" : "Guests From Last Stay"}
                 </button>
-              ))}
+              ) : null}
             </>
           )}
         </div>

@@ -90,6 +90,7 @@ export function customerNav(
           items: [
             { title: "Today", href: at("/bookings"), icon: CalendarCheck, exact: true },
             { title: "Calendar", href: at("/bookings/calendar"), icon: CalendarDays, also: at("/bookings/list") },
+            { title: "Customers", href: at("/customers"), icon: Users },
             { title: "TM30", href: at("/bookings/tm30"), icon: Stamp },
           ],
         },

@@ -2824,3 +2824,265 @@ body.has-side-panel .app .tl-notes {
     position: static;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* The booking panel's status bar, returning guests, and the Customers pages  */
+/* -------------------------------------------------------------------------- */
+
+/* Tones the status pills share: each status is a colour as well as a word. */
+.app :is(.bp-seg button, .bp-pill)[data-tone="info"] { --tone: #2563eb; }
+.app :is(.bp-seg button, .bp-pill)[data-tone="good"] { --tone: #15803d; }
+.app :is(.bp-seg button, .bp-pill)[data-tone="warn"] { --tone: #b45309; }
+.app :is(.bp-seg button, .bp-pill)[data-tone="bad"] { --tone: #b42318; }
+.app :is(.bp-seg button, .bp-pill)[data-tone="muted"] { --tone: #6b7280; }
+
+/* Where the stay is and whether it is paid, at the top of the panel. */
+.app .bp-status {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--muted-foreground) 5%, transparent);
+}
+
+/* The label over its choices, so the choices have the panel's whole width. */
+.app .bp-status-row {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.app .bp-status-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Equal cells, so the choices line up in rows: three for the stay, four for
+   the payment (set on each group as --cols). */
+.app .bp-seg {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+  gap: 0.3rem;
+}
+
+.app .bp-seg button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-width: 0;
+  white-space: nowrap;
+  height: 26px;
+  padding: 0 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+/* The chosen one carries its colour's dot; the rest are words, so a row of
+   five fits the panel's width. */
+.app .bp-seg button[aria-pressed="true"]::before,
+.app .bp-pill::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--tone);
+}
+
+.app .bp-seg button[aria-pressed="true"] {
+  border-color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.app .bp-seg button:disabled {
+  cursor: progress;
+}
+
+/* A status shown, not changed: the customer's stays. */
+.app .bp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* "Returning guest · 3rd stay", under the name. */
+.app .bp-returning {
+  display: block;
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: #15803d;
+}
+
+.app .bp-returning a,
+.app .linklike {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Who the guest being typed might be. */
+.app .bp-matches {
+  display: grid;
+  margin-top: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.app .bp-matches-h {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  background: color-mix(in srgb, var(--muted-foreground) 6%, transparent);
+}
+
+.app .bp-matches button {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.5rem 0.7rem;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.app .bp-matches button:hover,
+.app .bp-matches button:focus-visible {
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.app .bp-matches strong {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.app .bp-matches span {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* The Customers list. */
+.app .cu-returning {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, #15803d 12%, transparent);
+  color: #15803d;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* One customer: their details, and their stays. */
+.app .cu-form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.app .cu-form label {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.app .cu-form label > span {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.app .cu-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.app .cu-save {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app .cu-said {
+  font-size: 0.85rem;
+  color: #15803d;
+}
+
+.app .cu-said.is-error {
+  color: #b42318;
+}
+
+.app .cu-owed {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #b45309;
+}
+
+.app .cu-stays {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.app .cu-stays li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.app .cu-stays li:last-child {
+  border-bottom: 0;
+}
+
+.app .cu-stay-main {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.app .cu-stay-main strong {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.app .cu-stay-main span {
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}
+
+.app .cu-stay-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+@media (max-width: 600px) {
+  .app .cu-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

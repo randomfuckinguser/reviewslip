@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Plus } from "lucide-react";
 import MonthGrid from "./MonthGrid";
 import Timeline, { type MoveResult } from "./Timeline";
@@ -69,12 +69,6 @@ export default function Diary({
   const [draft, setDraft] = useState<Draft | null>(null);
   const onDraft = useCallback((d: Draft | null) => setDraft(d), []);
 
-  // The panel sits at the side while it is open, and the page makes room for
-  // it, so no part of the schedule is under it.
-  useEffect(() => {
-    document.body.classList.toggle("has-side-panel", open !== null);
-    return () => document.body.classList.remove("has-side-panel");
-  }, [open]);
 
   /**
    * A free night clicked. With a booking already being taken in that room

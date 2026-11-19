@@ -69,13 +69,13 @@ export const TOURS: TourDef[] = [
   },
   {
     id: "booking-form",
-    version: 1,
+    version: 2,
     title: "The Booking Form",
     summary: "The fields a booking needs, from the guest to the room.",
     screen: null,
     from: "Take a Booking on Today, then Take the Tour in the form",
     steps: [
-      { id: "bf-guest", title: "Guest", body: "The name the booking is under. Email and phone are optional, but a phone number helps on the day." },
+      { id: "bf-guest", title: "Guest", body: "The name the booking is under. Someone who has stayed before is offered as you type their name, email or phone: pick them and their details fill in." },
       { id: "bf-dates", title: "Arrival and Departure", body: "The nights are counted from the two dates. Departure has to be after arrival." },
       { id: "bf-room", title: "Room Type and Room", body: "The type is what is sold. Leave Room empty to give them one later on the calendar." },
       { id: "bf-take", title: "Take the Booking", body: "Confirms the booking at once and holds the room. The rate's price is fixed at this point." },
@@ -209,6 +209,18 @@ export const TOURS: TourDef[] = [
   },
 ];
 
+TOURS.push({
+  id: "customers",
+  version: 1,
+  title: "Customers",
+  summary: "Every guest once, however many times they have stayed.",
+  screen: "/customers",
+  steps: [
+    { id: "cu-search", title: "Find a Customer", body: "Search by name, email or phone. A booking finds a returning guest the same way when it is taken." },
+    { id: "cu-list", title: "Everyone Who Has Stayed", body: "Each guest once, with their stays, the last one and what they spent. A row opens their details, a note for next time, and every stay." },
+  ],
+});
+
 export const tourById = (id: string) => TOURS.find((t) => t.id === id) ?? null;
 
 /** The screens the one tour visits, in the sidebar's order. */
@@ -218,6 +230,7 @@ const GRAND_ORDER = [
   "today",
   "calendar",
   "bookings-list",
+  "customers",
   "tm30",
   "reviews",
   "calls",

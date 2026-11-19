@@ -371,6 +371,39 @@ export interface Booking {
   totalMinor: number | null;
   total: string | null;
   createdAt: string;
+  /** The customer this stay belongs to: the same person across stays. */
+  customerId?: number | null;
+  /** Their stays here, this one included. Only on a booking fetched in full. */
+  customerStays?: number;
+  /** Whether it is paid, as the desk says. */
+  paymentStatus?: PaymentStatus;
+}
+
+export type PaymentStatus = "unpaid" | "deposit" | "paid" | "refunded";
+
+/** A guest across stays, as the customers list and the booking form see them. */
+export interface Customer {
+  id: number;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  notes: string | null;
+  stays?: number;
+  lastArrival: string | null;
+  spentMinor: number | null;
+  spent: string | null;
+  createdAt: string;
+}
+
+export interface CustomerStay {
+  id: number;
+  arrival: string;
+  departure: string;
+  status: BookingStatus;
+  groupName: string;
+  roomName: string | null;
+  total: string | null;
+  paymentStatus: PaymentStatus;
 }
 
 /** One room-night that is spoken for. */
