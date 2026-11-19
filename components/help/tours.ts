@@ -69,7 +69,7 @@ export const TOURS: TourDef[] = [
   },
   {
     id: "booking-form",
-    version: 2,
+    version: 3,
     title: "The Booking Form",
     summary: "The fields a booking needs, from the guest to the room.",
     screen: null,
@@ -78,7 +78,7 @@ export const TOURS: TourDef[] = [
       { id: "bf-guest", title: "Guest", body: "The name the booking is under. Someone who has stayed before is offered as you type their name, email or phone: pick them and their details fill in." },
       { id: "bf-dates", title: "Arrival and Departure", body: "The nights are counted from the two dates. Departure has to be after arrival." },
       { id: "bf-room", title: "Room Type and Room", body: "The type is what is sold. Leave Room empty to give them one later on the calendar." },
-      { id: "bf-take", title: "Take the Booking", body: "Confirms the booking at once and holds the room. The rate's price is fixed at this point." },
+      { id: "bf-take", title: "Save", body: "Takes the booking and holds the room, and the panel stays open for the guests' passports. Done does the same and closes it. The rate's price is fixed at this point." },
     ],
   },
   {

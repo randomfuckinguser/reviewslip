@@ -2709,7 +2709,7 @@ body:has(.app) {
 /* -------------------------------------------------------------------------- */
 
 :root {
-  --side-panel-w: 28rem;
+  --side-panel-w: 32rem;
 }
 
 /* The booking form as a panel down the right, not a box over the middle. Not
@@ -3085,4 +3085,321 @@ body.has-side-panel .app .tl-notes {
   .app .cu-pair {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* -------------------------------------------------------------------------- */
+/* The booking panel as an edit screen: toolbar, status band, label beside    */
+/* its field, and the stay's items with what is outstanding                   */
+/* -------------------------------------------------------------------------- */
+
+.app .bp .bp-body {
+  display: grid;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+/* Back, the title, then Save and Done on the right. */
+.app .bp-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.app .bp-back {
+  border: 0;
+  background: none;
+  padding: 0.2rem 0.3rem;
+  color: var(--primary);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.app .bp-title {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app .bp-tools {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.app .bp-tools .btn {
+  min-width: 4.5rem;
+}
+
+/* The status band: the stay's state in its own colour across the top, the
+   payment at the other end, like an invoice's status and payment due. */
+.app .bp-band[data-tone="info"],
+.app .bp-pick[data-tone="info"] { --tone: #2563eb; }
+.app .bp-band[data-tone="good"],
+.app .bp-pick[data-tone="good"] { --tone: #15803d; }
+.app .bp-band[data-tone="warn"],
+.app .bp-pick[data-tone="warn"] { --tone: #b45309; }
+.app .bp-band[data-tone="bad"],
+.app .bp-pick[data-tone="bad"] { --tone: #b42318; }
+.app .bp-band[data-tone="muted"],
+.app .bp-pick[data-tone="muted"] { --tone: #6b7280; }
+
+.app .bp-band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.35rem;
+  border-radius: 8px;
+  border-left: 6px solid var(--tone);
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+}
+
+.app .bp-band-new {
+  padding: 0.3rem 0.5rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.app .bp-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.app .bp-band-label {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+/* A dropdown that wears its status: the colour's dot, the colour's tint. */
+.app .bp-pick select {
+  height: 32px;
+  min-width: 9rem;
+  padding: 0 1.8rem 0 1.6rem;
+  border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
+  border-radius: 6px;
+  background-color: var(--card);
+  background-image:
+    radial-gradient(circle at 0.8rem 50%, var(--tone) 0.3rem, transparent 0.32rem);
+  background-repeat: no-repeat;
+  color: var(--foreground);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.app .bp-pick-pay select {
+  min-width: 8.5rem;
+}
+
+/* Label beside its field, two to a row; the wide ones take the row. */
+.app .bp-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem 0.75rem;
+}
+
+.app .bp-f {
+  display: grid;
+  grid-template-columns: 4.6rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.app .bp-f.bp-wide {
+  grid-column: 1 / -1;
+}
+
+.app .bp-f.bp-top {
+  align-items: start;
+}
+
+.app .bp-f.bp-top .bp-l {
+  padding-top: 0.4rem;
+}
+
+.app .bp-l {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+.app .bp-v {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.app .bp-f :is(input, select, textarea) {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  padding: 0 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.app .bp-f textarea {
+  height: auto;
+  padding: 0.4rem 0.55rem;
+  resize: vertical;
+}
+
+.app .bp-f input[readonly] {
+  background: color-mix(in srgb, var(--muted-foreground) 8%, transparent);
+  color: var(--muted-foreground);
+}
+
+.app .bp-f :is(input, select, textarea):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+}
+
+/* A narrow phone: one to a row. */
+@media (max-width: 420px) {
+  .app .bp-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The stay as an invoice's items: header with what is outstanding, a table,
+   and the total under it. */
+.app .bp-items {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.app .bp-items-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  background: color-mix(in srgb, var(--muted-foreground) 6%, transparent);
+}
+
+.app .bp-items-head h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.app .bp-owed {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+.app .bp-owed output {
+  min-width: 6.5rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--foreground);
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.app .bp-items table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.app .bp-items th {
+  padding: 0.35rem 0.6rem;
+  text-align: left;
+  font-weight: 500;
+  color: var(--primary);
+  border-bottom: 1px solid var(--border);
+}
+
+.app .bp-items td {
+  padding: 0.45rem 0.6rem;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+.app .bp-items .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.app .bp-items tfoot td {
+  border-bottom: 0;
+  font-weight: 600;
+}
+
+.app .bp-items tfoot td:first-child {
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+}
+
+.app .bp-sub {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.app .bp-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.app .bp-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+/* The panel body scrolls as a column: nothing in it is squeezed to fit. */
+.app .bp .bp-body > * {
+  flex-shrink: 0;
+}
+
+/* The app's own label style is a heading over its field; here a label sits
+   beside it, quiet, and the status pickers keep their label in line. */
+.app .bp label.bp-l,
+.app .bp span.bp-l {
+  display: block;
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+.app .bp label.bp-pick {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Rows as tall as what is in them: the body is a fixed-height grid that
+   scrolls, and a clipped box (the items) would otherwise be squeezed to
+   nothing to make the rest fit. */
+.app .bp .bp-body {
+  grid-template-rows: none;
+  grid-auto-rows: max-content;
+  align-content: start;
 }
