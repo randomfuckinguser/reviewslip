@@ -532,6 +532,21 @@ const de: Dictionary = {
       privacyLink: "Datenschutzerklärung",
       end: " zu.",
     },
+    // Signing in with a code from the email, in place of a password.
+    code: {
+      send: "Code per E-Mail senden",
+      sending: "Wird gesendet…",
+      sentLogin: "Wenn {email} ein Reviewslip-Konto hat, ist ein 6-stelliger Code unterwegs. Er gilt 15 Minuten.",
+      sentSignup: "Wir haben einen 6-stelligen Code an {email} gesendet. Er gilt 15 Minuten.",
+      label: "Code aus der E-Mail",
+      resend: "Neuen Code senden",
+      resent: "Ein neuer Code ist unterwegs.",
+      otherEmail: "Andere E-Mail verwenden",
+      usePassword: "Stattdessen mit Passwort anmelden",
+      useCode: "Stattdessen Code senden",
+      errCode: "Gib die 6 Ziffern aus der E-Mail ein.",
+      stay: "Kein Passwort nötig. Du bleibst auf diesem Gerät angemeldet.",
+    },
     errors: {
       passwordShort: "Bitte verwenden Sie mindestens 10 Zeichen.",
       passwordMatch: "Die beiden Passwörter stimmen nicht überein.",

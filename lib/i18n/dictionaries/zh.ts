@@ -528,6 +528,21 @@ const zh: Dictionary = {
       privacyLink: "隐私政策",
       end: "。",
     },
+    // Signing in with a code from the email, in place of a password.
+    code: {
+      send: "发送验证码",
+      sending: "正在发送…",
+      sentLogin: "如果 {email} 有 Reviewslip 账户，6 位验证码正在发送，15 分钟内有效。",
+      sentSignup: "我们已向 {email} 发送 6 位验证码，15 分钟内有效。",
+      label: "邮件中的验证码",
+      resend: "重新发送验证码",
+      resent: "新的验证码正在发送。",
+      otherEmail: "使用其他邮箱",
+      usePassword: "改用密码登录",
+      useCode: "改用邮件验证码",
+      errCode: "请输入邮件中的 6 位数字。",
+      stay: "无需密码，此设备将保持登录。",
+    },
     errors: {
       passwordShort: "请使用至少 10 个字符。",
       passwordMatch: "两次输入的密码不一致。",

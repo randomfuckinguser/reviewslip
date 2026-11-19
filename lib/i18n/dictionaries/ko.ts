@@ -530,6 +530,21 @@ const ko: Dictionary = {
       privacyLink: "개인정보 처리방침",
       end: "에 동의합니다.",
     },
+    // Signing in with a code from the email, in place of a password.
+    code: {
+      send: "코드 이메일로 받기",
+      sending: "보내는 중…",
+      sentLogin: "{email}에 Reviewslip 계정이 있다면 6자리 코드를 보냈습니다. 15분 동안 유효합니다.",
+      sentSignup: "{email}(으)로 6자리 코드를 보냈습니다. 15분 동안 유효합니다.",
+      label: "이메일로 받은 코드",
+      resend: "새 코드 보내기",
+      resent: "새 코드를 보냈습니다.",
+      otherEmail: "다른 이메일 사용",
+      usePassword: "비밀번호로 로그인",
+      useCode: "코드 이메일로 받기",
+      errCode: "이메일에 있는 6자리 숫자를 입력하세요.",
+      stay: "비밀번호가 필요 없습니다. 이 기기에서 로그인 상태가 유지됩니다.",
+    },
     errors: {
       passwordShort: "10자 이상 입력해 주세요.",
       passwordMatch: "두 비밀번호가 일치하지 않습니다.",

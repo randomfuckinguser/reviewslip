@@ -19,6 +19,8 @@ export interface VoiceTeamData {
   opened: boolean;
   people: VoicePerson[];
   link?: string | null;
+  /** The invite's code, when there is no mail to send it in. */
+  code?: string | null;
 }
 
 type Result = { team?: VoiceTeamData; error?: string };
@@ -35,10 +37,11 @@ function state(p: VoicePerson): { text: string; tone: string } {
 /**
  * Who answers this venue's calls: the owner, and the staff they invite.
  *
- * Staff get an email with a link to choose a password: that makes them a
- * Reviewslip account that opens only the phone, signed in like anyone else. They
- * answer this venue only and never see the dashboard. Without email set up on
- * the server, the link comes back here to send by hand.
+ * Staff get an email with a link and a six-digit code: they press the link, or
+ * open the app, enter the code, and are signed in — no password — as a
+ * Reviewslip account that opens only the phone. They answer this venue only and
+ * never see the dashboard. Without email set up on the server, the link and the
+ * code come back here to send by hand.
  */
 export default function VoiceTeam({
   initial,
@@ -53,7 +56,7 @@ export default function VoiceTeam({
 }) {
   const [team, setTeam] = useState(initial);
   const [error, setError] = useState("");
-  const [link, setLink] = useState<{ name: string; url: string } | null>(null);
+  const [link, setLink] = useState<{ name: string; url: string; code: string } | null>(null);
   const [pending, start] = useTransition();
   const form = useRef<HTMLFormElement>(null);
 
@@ -74,7 +77,7 @@ export default function VoiceTeam({
     const email = String(data.get("email") ?? "");
     run(() => invite(name, email), (r) => {
       form.current?.reset();
-      setLink(r.team?.link ? { name, url: r.team.link } : null);
+      setLink(r.team?.link ? { name, url: r.team.link, code: r.team.code ?? "" } : null);
     });
   }
 
@@ -132,7 +135,7 @@ export default function VoiceTeam({
                         disabled={pending}
                         onClick={() =>
                           run(() => reinvite(p.id), (r) =>
-                            setLink(r.team?.link ? { name: p.name, url: r.team.link } : null)
+                            setLink(r.team?.link ? { name: p.name, url: r.team.link, code: r.team.code ?? "" } : null)
                           )
                         }
                       >
@@ -162,8 +165,14 @@ export default function VoiceTeam({
       {link ? (
         <div className="group-box" role="status" style={{ margin: 0 }}>
           <p style={{ margin: 0 }}>
-            Send this link to {link.name}. It lets them choose a password for Reviewslip and works for 14 days.
+            Send {link.name} this link and code. They open the link, or the Reviewslip app, and enter the
+            code: no password, and they stay signed in. Both work for 14 days.
           </p>
+          {link.code ? (
+            <p style={{ margin: "0.5rem 0 0", fontSize: "1.4rem", fontWeight: 700, letterSpacing: "0.2em" }} aria-label="Invite code">
+              {link.code}
+            </p>
+          ) : null}
           <input
             readOnly
             value={link.url}
@@ -191,8 +200,8 @@ export default function VoiceTeam({
           disabled={pending}
           data-tip={
             team.canEmail
-              ? "We email them a link to choose a password. They sign in to Reviewslip like you do, see only the Phone, and answer this venue's calls."
-              : "You will get a link to send them yourself. They sign in to Reviewslip like you do, see only the Phone, and answer this venue's calls."
+              ? "We email them a link and a code. They enter the code, no password, and stay signed in. They see only the Phone and answer this venue's calls."
+              : "You will get a link and a code to send them yourself. They enter the code, no password, and stay signed in. They see only the Phone and answer this venue's calls."
           }
         >
           Add Person

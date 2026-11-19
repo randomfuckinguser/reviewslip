@@ -183,6 +183,24 @@
   font-size: 0.85rem;
 }
 
+/* A link's look on a button that stays on the page: send a new code, use a
+   different email, use a password instead. */
+.linkButton {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  justify-self: start;
+  align-self: flex-start;
+}
+
+.linkButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .submit {
   width: 100%;
   margin-top: 0.25rem;

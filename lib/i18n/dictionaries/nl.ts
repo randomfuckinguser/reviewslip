@@ -532,6 +532,21 @@ const nl: Dictionary = {
       privacyLink: "Privacyverklaring",
       end: ".",
     },
+    // Signing in with a code from the email, in place of a password.
+    code: {
+      send: "Stuur mij een code",
+      sending: "Versturen…",
+      sentLogin: "Als {email} een Reviewslip-account heeft, is er een 6-cijferige code onderweg. Die is 15 minuten geldig.",
+      sentSignup: "We hebben een 6-cijferige code naar {email} gestuurd. Die is 15 minuten geldig.",
+      label: "Code uit de e-mail",
+      resend: "Stuur een nieuwe code",
+      resent: "Er is een nieuwe code onderweg.",
+      otherEmail: "Ander e-mailadres gebruiken",
+      usePassword: "Inloggen met een wachtwoord",
+      useCode: "Stuur mij een code",
+      errCode: "Vul de 6 cijfers uit de e-mail in.",
+      stay: "Geen wachtwoord nodig. Je blijft ingelogd op dit apparaat.",
+    },
     errors: {
       passwordShort: "Gebruik minimaal 10 tekens.",
       passwordMatch: "De twee wachtwoorden komen niet overeen.",

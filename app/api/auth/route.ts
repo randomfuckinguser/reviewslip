@@ -11,13 +11,16 @@ import { localizedPath } from "@/lib/i18n/routing";
 /**
  * Sign in and sign up, for the auth form to post to.
  *
- * A route handler rather than a Server Action because AuthForm is a client
- * component that already posts JSON to a single endpoint — this fills the seam
- * it was built with instead of rewriting it.
+ *   code    email a six-digit code (create: on the sign-up page)
+ *   verify  the code typed back: signed in, or signed up and signed in
+ *   login   a password, for an account that has one
  *
- * The password reaches this handler and goes no further than the review app.
- * The session token it returns is put straight into an httpOnly cookie and is
- * never sent to the browser in the response body.
+ * A route handler rather than a Server Action because AuthForm is a client
+ * component that already posts JSON to a single endpoint.
+ *
+ * A code or a password reaches this handler and goes no further than the review
+ * app. The session token it returns is put straight into an httpOnly cookie and
+ * is never sent to the browser in the response body.
  */
 export async function POST(request: Request) {
   let body: Record<string, unknown>;
@@ -27,30 +30,35 @@ export async function POST(request: Request) {
     return Response.json({ error: "Bad request." }, { status: 400 });
   }
 
-  const mode = body.mode === "signup" ? "signup" : "login";
+  const mode = body.mode === "code" || body.mode === "verify" ? body.mode : "login";
   const email = String(body.email ?? "").trim();
   const password = String(body.password ?? "");
+  const code = String(body.code ?? "").slice(0, 12);
+  const create = body.create === true;
   const asked = typeof body.lang === "string" ? body.lang : "";
   const lang = isLocale(asked) ? asked : DEFAULT_LOCALE;
   const referralCode = String(body.referralCode ?? "").trim().slice(0, 32);
 
   try {
-    const session = await call<Session>(`/${mode}`, {
-      method: "POST",
-      body:
-        mode === "signup"
-          ? // No username field on the form; the review app derives one from
-            // the email. `name` is the person, not the account, so it is not
-            // sent as a username.
-            //
-            // The referral code rides along unvalidated on purpose. The review
-            // app is the only place that knows which codes exist, and a code it
-            // rejects must never stop an account being created — so there is
-            // nothing useful to check here, and checking would only add a way
-            // to fail.
-            { email, password, referralCode }
-          : { identifier: email, password },
-    });
+    if (mode === "code") {
+      // Nothing to sign in yet: the code goes to the email, not to here.
+      await call("/code", { method: "POST", body: { email, create } });
+      return Response.json({ sent: true });
+    }
+
+    const session = await call<Session>(
+      mode === "verify" ? "/code/verify" : "/login",
+      {
+        method: "POST",
+        body:
+          mode === "verify"
+            ? // The referral code rides along unvalidated on purpose. The
+              // review app is the only place that knows which codes exist, and
+              // a code it rejects must never stop an account being created.
+              { email, code, create, referralCode }
+            : { identifier: email, password },
+      }
+    );
 
     await setSessionCookie(session.token);
 
@@ -71,8 +79,9 @@ export async function POST(request: Request) {
         error:
           err instanceof Error ? err.message : "Something went wrong.",
       },
-      // 401 and 409 are the caller's to fix — a wrong password, an email
-      // already registered — and the form shows the message as-is.
+      // 401, 404 and 429 are the caller's to fix — a wrong code, no account
+      // with that email, too many codes — and the form shows the message
+      // as-is.
       { status }
     );
   }

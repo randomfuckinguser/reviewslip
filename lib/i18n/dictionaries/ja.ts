@@ -532,6 +532,21 @@ const ja: Dictionary = {
       privacyLink: "プライバシーポリシー",
       end: "に同意します。",
     },
+    // Signing in with a code from the email, in place of a password.
+    code: {
+      send: "コードをメールで受け取る",
+      sending: "送信中…",
+      sentLogin: "{email} に Reviewslip のアカウントがあれば、6 桁のコードを送信しました。15 分間有効です。",
+      sentSignup: "{email} に 6 桁のコードを送信しました。15 分間有効です。",
+      label: "メールに届いたコード",
+      resend: "新しいコードを送る",
+      resent: "新しいコードを送信しました。",
+      otherEmail: "別のメールアドレスを使う",
+      usePassword: "パスワードでログイン",
+      useCode: "コードをメールで受け取る",
+      errCode: "メールに届いた 6 桁の数字を入力してください。",
+      stay: "パスワードは不要です。この端末ではログインしたままになります。",
+    },
     errors: {
       passwordShort: "10文字以上でご入力ください。",
       passwordMatch: "2つのパスワードが一致しません。",

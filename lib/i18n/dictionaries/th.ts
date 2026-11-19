@@ -532,6 +532,21 @@ const th: Dictionary = {
       privacyLink: "นโยบายความเป็นส่วนตัว",
       end: "",
     },
+    // Signing in with a code from the email, in place of a password.
+    code: {
+      send: "ส่งรหัสทางอีเมล",
+      sending: "กำลังส่ง…",
+      sentLogin: "ถ้า {email} มีบัญชี Reviewslip รหัส 6 หลักกำลังส่งไป ใช้ได้ 15 นาที",
+      sentSignup: "เราส่งรหัส 6 หลักไปที่ {email} แล้ว ใช้ได้ 15 นาที",
+      label: "รหัสจากอีเมล",
+      resend: "ส่งรหัสใหม่",
+      resent: "กำลังส่งรหัสใหม่",
+      otherEmail: "ใช้อีเมลอื่น",
+      usePassword: "เข้าสู่ระบบด้วยรหัสผ่านแทน",
+      useCode: "ส่งรหัสทางอีเมลแทน",
+      errCode: "ใส่ตัวเลข 6 หลักจากอีเมล",
+      stay: "ไม่ต้องใช้รหัสผ่าน และจะอยู่ในระบบต่อไปบนอุปกรณ์นี้",
+    },
     errors: {
       passwordShort: "โปรดใช้อย่างน้อย 10 ตัวอักษร",
       passwordMatch: "รหัสผ่านทั้งสองไม่ตรงกัน",

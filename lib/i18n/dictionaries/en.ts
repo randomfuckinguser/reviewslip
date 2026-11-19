@@ -538,6 +538,21 @@ const en = {
       privacyLink: "Privacy Policy",
       end: ".",
     },
+    // Signing in with a code from the email, in place of a password.
+    code: {
+      send: "Email Me a Code",
+      sending: "Sending…",
+      sentLogin: "If {email} has a Reviewslip account, a 6-digit code is on its way. It works for 15 minutes.",
+      sentSignup: "We sent a 6-digit code to {email}. It works for 15 minutes.",
+      label: "Code from the email",
+      resend: "Send a new code",
+      resent: "A new code is on its way.",
+      otherEmail: "Use a different email",
+      usePassword: "Sign in with a password instead",
+      useCode: "Email me a code instead",
+      errCode: "Enter the 6 digits from the email.",
+      stay: "No password needed. You stay signed in on this device.",
+    },
     errors: {
       passwordShort: "Please use at least 10 characters.",
       passwordMatch: "The two passwords don't match.",
