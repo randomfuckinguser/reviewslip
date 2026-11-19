@@ -176,6 +176,8 @@ function forRoom(items, done) {
     // words cannot — but it is fetched from its own route, so a roomful of
     // them is not one download. See checklists.js.
     hasPhoto: Boolean(item.hasPhoto),
+    // Ticked by taking a photograph of it, not by a tap.
+    needsPhoto: Boolean(item.needsPhoto),
     done: ticked.has(item.id),
   }));
 

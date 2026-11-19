@@ -818,6 +818,73 @@ app.get(
   }
 );
 
+/**
+ * The photograph that ticks a line which needs one, or null to take it (and
+ * the tick) back. A retake replaces it.
+ */
+app.put(
+  '/api/housekeeping/rooms/:id/checklist/:itemId/photo',
+  requireTenant,
+  requireShift,
+  async (req, res, next) => {
+    try {
+      const id = Number(req.params.id);
+      const itemId = Number(req.params.itemId);
+      if (!Number.isSafeInteger(id) || !Number.isSafeInteger(itemId)) {
+        return res.status(404).json({ error: 'No such item.' });
+      }
+      const value = req.body?.photo ?? null;
+      if (value !== null && !assets.isStoredPhoto(value)) {
+        return res.status(400).json({ error: 'That photo could not be used. Take it again.' });
+      }
+      const date =
+        nights.parse(String(req.body?.date || '')) ||
+        nights.todayAt(req.subscriber.timezone || 'Asia/Bangkok');
+      res.json(
+        await checklists.setItemPhoto({
+          subscriberId: req.subscriber.id,
+          roomId: id,
+          itemId,
+          day: date,
+          photo: value,
+        })
+      );
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/** That photograph, so the housekeeper can see what they sent. */
+app.get(
+  '/api/housekeeping/rooms/:id/checklist/:itemId/photo',
+  requireTenant,
+  requireShift,
+  async (req, res, next) => {
+    try {
+      const id = Number(req.params.id);
+      const itemId = Number(req.params.itemId);
+      if (!Number.isSafeInteger(id) || !Number.isSafeInteger(itemId)) {
+        return res.status(404).json({ error: 'No such photo.' });
+      }
+      const date =
+        nights.parse(String(req.query.date || '')) ||
+        nights.todayAt(req.subscriber.timezone || 'Asia/Bangkok');
+      const stored = await checklists.itemResultPhoto({
+        subscriberId: req.subscriber.id,
+        roomId: id,
+        itemId,
+        day: date,
+      });
+      const image = stored && assets.decodeStoredImage(stored);
+      if (!image) return res.status(404).json({ error: 'No such photo.' });
+      res.set({ ...assets.photoHeaders(image), 'Cache-Control': 'private, no-store' }).end(image.buffer);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 /** Tick one line, or untick it. */
 app.post(
   '/api/housekeeping/rooms/:id/checklist/:itemId',

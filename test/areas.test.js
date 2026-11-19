@@ -81,3 +81,19 @@ test('the venue as a whole has a backstop', () => {
   const lots = Array.from({ length: checklist.MAX_VENUE_ITEMS }, (_, i) => ({ groupId: i }));
   assert.match(checklist.tooMany(lots, 1), /across every room type/);
 });
+
+test('a line can be ticked by a photo instead of a tap, and the board is told so', () => {
+  const list = checklist.forGroup(
+    [
+      { id: 1, groupId: null, areaId: 1, label: 'Beds made', sort: 1 },
+      { id: 2, groupId: null, areaId: 2, label: '4 towels in the room', sort: 1, needsPhoto: true },
+    ],
+    null
+  );
+  const room = checklist.forRoom(list, [1]);
+  assert.deepEqual(room.items.map((i) => [i.label, i.needsPhoto, i.done]), [
+    ['Beds made', false, true],
+    ['4 towels in the room', true, false],
+  ]);
+  assert.equal(room.all, false);
+});

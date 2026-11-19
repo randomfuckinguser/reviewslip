@@ -192,10 +192,15 @@ h1 {
   gap: 0.75rem;
 }
 
-/* Done recedes. It is still there to be undone, and no longer competing. */
+/* Done recedes. It is still there to be undone, and no longer competing —
+   but only the room's own line: a list opened under it is being read, and
+   greyed-out words and photographs are hard to read in a corridor. */
 .hk-job.done {
-  opacity: 0.55;
   background: rgba(255, 255, 255, 0.02);
+}
+
+.hk-job.done > .hk-row {
+  opacity: 0.6;
 }
 
 .hk-main {
@@ -278,8 +283,8 @@ h1 {
   margin-top: 0.6rem;
   padding-top: 0.6rem;
   border-top: 1px solid var(--jade-line, rgba(130, 180, 155, 0.18));
-  font-size: 0.85rem;
-  color: var(--ink-soft, #b9b2a2);
+  font-size: 0.95rem;
+  color: var(--ink, #f3ecdc);
 }
 
 .hk-items {
@@ -287,7 +292,7 @@ h1 {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.2rem;
+  gap: 0.4rem;
 }
 
 /*
@@ -299,31 +304,63 @@ h1 {
  */
 .hk-item {
   font: inherit;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  line-height: 1.35;
   text-align: left;
   width: 100%;
-  min-height: 2.75rem;
+  min-height: 3.25rem;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.3rem 0.4rem;
+  gap: 0.75rem;
+  padding: 0.55rem 0.7rem;
   cursor: pointer;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
+  border: 1px solid var(--jade-line, rgba(130, 180, 155, 0.22));
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
   color: var(--ink, #f3ecdc);
 }
 
+.hk-item[disabled] { opacity: 0.6; }
+
 .hk-box {
   flex: 0 0 auto;
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 1.75rem;
+  height: 1.75rem;
   display: grid;
   place-items: center;
-  font-size: 0.85rem;
+  font-size: 1rem;
   line-height: 1;
-  border-radius: 6px;
-  border: 1.5px solid var(--jade-line, rgba(130, 180, 155, 0.35));
+  border-radius: 8px;
+  border: 2px solid var(--jade, #82b49b);
+}
+
+.hk-words {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+/* Under a line that needs a photo: what to do, then what was done. */
+.hk-tag {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--marigold, #e9a03b);
+}
+
+/* A camera where the box would be: this one is ticked by taking the photo. */
+.hk-item.needs .hk-box {
+  border-style: dashed;
+  border-color: var(--marigold, #e9a03b);
+  font-size: 0.95rem;
+}
+
+.hk-item.needs:not(.done) {
+  border-color: var(--marigold, #e9a03b);
+}
+
+.hk-item.done.needs .hk-tag {
+  color: var(--jade, #82b49b);
+  text-decoration: none;
 }
 
 /*
@@ -332,6 +369,11 @@ h1 {
  */
 .hk-item.done {
   color: var(--ink-soft, #b9b2a2);
+  background: var(--jade-tint, rgba(130, 180, 155, 0.1));
+  border-color: transparent;
+}
+
+.hk-item.done .hk-label {
   text-decoration: line-through;
   text-decoration-thickness: 1px;
 }
@@ -380,7 +422,14 @@ h1 {
 .hk-line {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
+}
+
+/* The owner's picture, and the housekeeper's once taken, side by side. */
+.hk-pics {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 0.35rem;
 }
 
 .hk-line .hk-item {
@@ -395,9 +444,10 @@ h1 {
  * something, and a thumbnail small enough to be tidy is small enough to miss.
  */
 .hk-shot {
+  position: relative;
   flex: 0 0 auto;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 3.25rem;
+  height: 3.25rem;
   padding: 0;
   border: 1px solid var(--line, rgba(243, 236, 220, 0.18));
   border-radius: 8px;
@@ -411,6 +461,11 @@ h1 {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* The housekeeper's own photo: ringed, so it is not mistaken for the standard. */
+.hk-mine {
+  border: 2px solid var(--jade, #82b49b);
 }
 
 /* Nothing is struck through here. A line being done does not make the picture
@@ -447,12 +502,46 @@ h1 {
   max-height: calc(100vh - 7rem);
   object-fit: contain;
   border-radius: 10px;
+  cursor: zoom-in;
 }
 
 .hk-shot-figure figcaption {
   font-size: 0.95rem;
   text-align: center;
   color: var(--ink, #f3ecdc);
+}
+
+.hk-shot-figure figcaption::after {
+  content: attr(data-hint);
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft, #b9b2a2);
+}
+
+/* Zoomed: the picture at two and a half times the screen, dragged with a finger. */
+.hk-shot-view.zoomed .hk-shot-figure {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 6rem);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hk-shot-view.zoomed .hk-shot-figure img {
+  max-width: none;
+  max-height: none;
+  width: 250%;
+  height: auto;
+  border-radius: 0;
+  cursor: zoom-out;
+}
+
+.hk-shot-view.zoomed .hk-shot-figure figcaption {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0.75rem;
 }
 
 .hk-shot-close {
@@ -475,9 +564,11 @@ h1 {
 /* One part of the room: its name and the picture of how it should look, its
    lines, and the button that photographs it when it is done. */
 .hk-area {
-  margin-top: 0.8rem;
-  padding-top: 0.6rem;
+  margin-top: 1rem;
+  padding-top: 0.9rem;
   border-top: 1px solid var(--jade-line, rgba(130, 180, 155, 0.18));
+  display: grid;
+  gap: 0.6rem;
 }
 
 .hk-area:first-child {
@@ -491,20 +582,51 @@ h1 {
   align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
-  margin-bottom: 0.35rem;
 }
 
 .hk-area-head h3 {
   margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
   color: var(--ink, #f3ecdc);
 }
 
-/* The owner's picture of the area: wider than a line's, it is a whole room. */
-.hk-look {
-  width: 4.5rem;
-  height: 3.2rem;
+.hk-area-count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink-soft, #b9b2a2);
+}
+
+.hk-area-count.all {
+  background: var(--jade, #82b49b);
+  color: var(--shade, #0c1f19);
+}
+
+/* The owner's picture of the area, the width of the screen: it is the
+   standard, and a whole bathroom the size of a stamp shows nothing. */
+.hk-shot.hk-look {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  max-height: 14rem;
+  border-radius: 12px;
+}
+
+.hk-look-chip {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  pointer-events: none;
 }
 
 .hk-result {

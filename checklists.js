@@ -32,6 +32,15 @@ function toItem(row) {
      * instead, so the browser fetches each one once and caches it.
      */
     hasPhoto: Boolean(row.has_photo),
+    /*
+     * Done only with a photograph of it.
+     *
+     * A tick says somebody says it is done; a picture of four towels on the
+     * rail shows it. For the lines a guest notices first, the owner can ask
+     * for the picture instead of the tick — the board then opens the camera
+     * where the box would be, and the photo is the tick.
+     */
+    needsPhoto: Boolean(row.needs_photo),
   };
 }
 
@@ -40,7 +49,7 @@ async function items(subscriberId) {
   const rows = await all(
     // Named columns rather than c.*, so the photograph is not read out of the
     // database on every listing only to be thrown away.
-    `SELECT c.id, c.group_id, c.area_id, c.label, c.sort,
+    `SELECT c.id, c.group_id, c.area_id, c.label, c.sort, c.needs_photo,
             (c.photo IS NOT NULL) AS has_photo,
             g.name AS group_name,
             a.name AS area_name
@@ -95,7 +104,7 @@ async function setPhoto({ subscriberId, id, photo: value }) {
  * `groupId` null means every room. The type is checked against this venue's
  * own groups rather than trusted, because the id arrives from a form.
  */
-async function add({ subscriberId, groupId = null, areaId = null, label }) {
+async function add({ subscriberId, groupId = null, areaId = null, label, needsPhoto = false }) {
   const wrong = checklist.checkLabel(label);
   if (wrong) throw fail(400, wrong);
 
@@ -136,12 +145,24 @@ async function add({ subscriberId, groupId = null, areaId = null, label }) {
   );
 
   const row = await one(
-    `INSERT INTO checklist_items (subscriber_id, group_id, area_id, label, sort)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO checklist_items (subscriber_id, group_id, area_id, label, sort, needs_photo)
+     VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING *`,
-    [subscriberId, group, area, checklist.clean(label), Number(last?.n ?? 0) + 1]
+    [subscriberId, group, area, checklist.clean(label), Number(last?.n ?? 0) + 1, needsPhoto === true]
   );
   return toItem(row);
+}
+
+/** Whether a line is ticked by a photograph rather than a tap. */
+async function setNeedsPhoto({ subscriberId, id, needsPhoto }) {
+  const row = await one(
+    `UPDATE checklist_items SET needs_photo = $3
+      WHERE id = $1 AND subscriber_id = $2
+      RETURNING id, needs_photo`,
+    [id, subscriberId, needsPhoto === true]
+  );
+  if (!row) throw fail(404, 'No such item.');
+  return { id: row.id, needsPhoto: row.needs_photo };
 }
 
 /** Take a line out. Its ticks go with it — see the migration. */
@@ -160,7 +181,7 @@ async function remove({ subscriberId, id }) {
  * @returns {Promise<{items: object[], done: number, total: number, all: boolean}>}
  */
 async function forRoom({ subscriberId, roomId, groupId, day }) {
-  const [every, ticks, venueAreas, taken] = await Promise.all([
+  const [every, ticks, venueAreas, taken, shots] = await Promise.all([
     items(subscriberId),
     all(
       'SELECT item_id FROM room_checks WHERE subscriber_id = $1 AND room_id = $2 AND on_day = $3',
@@ -172,11 +193,20 @@ async function forRoom({ subscriberId, roomId, groupId, day }) {
         WHERE subscriber_id = $1 AND room_id = $2 AND on_day = $3`,
       [subscriberId, roomId, day]
     ),
+    all(
+      `SELECT item_id, taken_at FROM room_item_photos
+        WHERE subscriber_id = $1 AND room_id = $2 AND on_day = $3`,
+      [subscriberId, roomId, day]
+    ),
   ]);
 
   const takenAt = new Map(taken.map((t) => [t.area_id, t.taken_at]));
+  const shotAt = new Map(shots.map((s) => [s.item_id, s.taken_at]));
+  const list = checklist.forRoom(checklist.forGroup(every, groupId), ticks.map((t) => t.item_id));
   return {
-    ...checklist.forRoom(checklist.forGroup(every, groupId), ticks.map((t) => t.item_id)),
+    ...list,
+    // When the housekeeper photographed a line, for the lines that need one.
+    items: list.items.map((i) => ({ ...i, photoTakenAt: shotAt.get(i.id) ?? null })),
     /*
      * Every area, with whether it has been photographed today. All of them
      * rather than only those with lines for this type: an area with no lines
@@ -234,10 +264,19 @@ async function setChecked({ subscriberId, roomId, itemId, day, done }) {
   if (!room) throw fail(404, 'No such room.');
 
   const item = await one(
-    'SELECT id FROM checklist_items WHERE id = $1 AND subscriber_id = $2',
+    'SELECT id, needs_photo FROM checklist_items WHERE id = $1 AND subscriber_id = $2',
     [itemId, subscriberId]
   );
   if (!item) throw fail(404, 'No such item.');
+
+  // A line that is done with a photograph is ticked by the photograph.
+  if (done && item.needs_photo) {
+    const shot = await one(
+      'SELECT 1 FROM room_item_photos WHERE room_id = $1 AND item_id = $2 AND on_day = $3',
+      [roomId, itemId, day]
+    );
+    if (!shot) throw fail(400, 'This one is ticked with a photo. Tap the camera and take it.');
+  }
 
   if (done) {
     await query(
@@ -249,6 +288,11 @@ async function setChecked({ subscriberId, roomId, itemId, day, done }) {
   } else {
     await query(
       'DELETE FROM room_checks WHERE room_id = $1 AND item_id = $2 AND on_day = $3',
+      [roomId, itemId, day]
+    );
+    // Unticked, so its photo no longer says it was done.
+    await query(
+      'DELETE FROM room_item_photos WHERE room_id = $1 AND item_id = $2 AND on_day = $3',
       [roomId, itemId, day]
     );
   }
@@ -271,6 +315,10 @@ async function clearRoom({ subscriberId, roomId, day }) {
   // The photographs too: they show a room that is not in that state any more.
   await query(
     'DELETE FROM room_area_photos WHERE subscriber_id = $1 AND room_id = $2 AND on_day = $3',
+    [subscriberId, roomId, day]
+  );
+  await query(
+    'DELETE FROM room_item_photos WHERE subscriber_id = $1 AND room_id = $2 AND on_day = $3',
     [subscriberId, roomId, day]
   );
 }
@@ -437,6 +485,61 @@ async function setResult({ subscriberId, roomId, areaId, day, photo: value }) {
   return { areaId, takenAt: row.taken_at };
 }
 
+/**
+ * The housekeeper's photograph of one line — the four towels — which is also
+ * its tick. Null takes both back.
+ */
+async function setItemPhoto({ subscriberId, roomId, itemId, day, photo: value }) {
+  const room = await one(
+    'SELECT id FROM rooms WHERE id = $1 AND subscriber_id = $2',
+    [roomId, subscriberId]
+  );
+  if (!room) throw fail(404, 'No such room.');
+  const item = await one(
+    'SELECT id FROM checklist_items WHERE id = $1 AND subscriber_id = $2',
+    [itemId, subscriberId]
+  );
+  if (!item) throw fail(404, 'No such item.');
+
+  if (value === null || value === undefined) {
+    await query('DELETE FROM room_item_photos WHERE room_id = $1 AND item_id = $2 AND on_day = $3', [roomId, itemId, day]);
+    await query('DELETE FROM room_checks WHERE room_id = $1 AND item_id = $2 AND on_day = $3', [roomId, itemId, day]);
+    return { itemId, done: false, takenAt: null };
+  }
+
+  const row = await one(
+    `INSERT INTO room_item_photos (subscriber_id, room_id, item_id, on_day, photo)
+     VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (room_id, item_id, on_day)
+       DO UPDATE SET photo = EXCLUDED.photo, taken_at = now()
+     RETURNING taken_at`,
+    [subscriberId, roomId, itemId, day, value]
+  );
+  await query(
+    `INSERT INTO room_checks (subscriber_id, room_id, item_id, on_day)
+     VALUES ($1, $2, $3, $4)
+     ON CONFLICT (room_id, item_id, on_day) DO NOTHING`,
+    [subscriberId, roomId, itemId, day]
+  );
+  // Kept as long as the area photographs, and dropped on the way in the same way.
+  await query(
+    `DELETE FROM room_item_photos
+      WHERE subscriber_id = $1 AND on_day < $2::date - $3::int`,
+    [subscriberId, day, checklist.KEEP_RESULTS_DAYS]
+  );
+  return { itemId, done: true, takenAt: row.taken_at };
+}
+
+/** One line's photograph, as a data URI. */
+async function itemResultPhoto({ subscriberId, roomId, itemId, day }) {
+  const row = await one(
+    `SELECT photo FROM room_item_photos
+      WHERE subscriber_id = $1 AND room_id = $2 AND item_id = $3 AND on_day = $4`,
+    [subscriberId, roomId, itemId, day]
+  );
+  return row?.photo ?? null;
+}
+
 /** One housekeeper's photograph, as a data URI. */
 async function resultPhoto({ subscriberId, roomId, areaId, day }) {
   const row = await one(
@@ -464,14 +567,34 @@ async function results({ subscriberId, day }) {
     [subscriberId, day]
   );
 
+  // The lines photographed as their tick, beside the areas.
+  const lines = await all(
+    `SELECT p.room_id, r.name AS room, g.name AS type, r.sort AS room_sort,
+            p.item_id, c.label, a.name AS area, p.taken_at
+       FROM room_item_photos p
+       JOIN rooms r ON r.id = p.room_id
+       LEFT JOIN room_groups g ON g.id = r.group_id
+       JOIN checklist_items c ON c.id = p.item_id
+       LEFT JOIN cleaning_areas a ON a.id = c.area_id
+      WHERE p.subscriber_id = $1 AND p.on_day = $2
+      ORDER BY r.sort, r.id, a.sort NULLS FIRST, c.sort, c.id`,
+    [subscriberId, day]
+  );
+
   const byRoom = new Map();
-  for (const r of rows) {
+  const roomFor = (r) => {
     let room = byRoom.get(r.room_id);
     if (!room) {
-      room = { roomId: r.room_id, room: r.room, type: r.type ?? null, areas: [] };
+      room = { roomId: r.room_id, room: r.room, type: r.type ?? null, areas: [], lines: [] };
       byRoom.set(r.room_id, room);
     }
-    room.areas.push({ areaId: r.area_id, area: r.area, takenAt: r.taken_at });
+    return room;
+  };
+  for (const r of rows) {
+    roomFor(r).areas.push({ areaId: r.area_id, area: r.area, takenAt: r.taken_at });
+  }
+  for (const r of lines) {
+    roomFor(r).lines.push({ itemId: r.item_id, label: r.label, area: r.area ?? null, takenAt: r.taken_at });
   }
   return [...byRoom.values()];
 }
@@ -479,6 +602,7 @@ async function results({ subscriberId, day }) {
 module.exports = {
   items,
   add,
+  setNeedsPhoto,
   remove,
   photo,
   setPhoto,
@@ -494,5 +618,7 @@ module.exports = {
   starter,
   setResult,
   resultPhoto,
+  setItemPhoto,
+  itemResultPhoto,
   results,
 };

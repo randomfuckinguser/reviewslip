@@ -296,22 +296,51 @@ function openShot(button) {
   el.shotImage.src = button.dataset.shot;
   el.shotImage.alt = button.dataset.label || '';
   el.shotCaption.textContent = button.dataset.label || '';
+  zoom(false);
   el.shotView.hidden = false;
+}
+
+/**
+ * Tap the picture to look closer, tap again to see all of it.
+ *
+ * Twice the size, centred where it was tapped, and then dragged around with a
+ * finger like any page: "is the plug in the bath" is a detail, and a phone
+ * screen shows a whole bathroom at the size of a stamp.
+ */
+function zoom(on, at) {
+  const view = el.shotView;
+  view.classList.toggle('zoomed', on);
+  el.shotCaption.dataset.hint = on ? 'Tap to see all of it' : 'Tap the photo to zoom in';
+  if (!on || !at) return;
+  const img = el.shotImage;
+  requestAnimationFrame(() => {
+    const box = view.querySelector('.hk-shot-figure');
+    box.scrollLeft = at.x * img.clientWidth - box.clientWidth / 2;
+    box.scrollTop = at.y * img.clientHeight - box.clientHeight / 2;
+  });
 }
 
 function closeShot() {
   el.shotView.hidden = true;
+  zoom(false);
   // Left in place rather than cleared: the object URL is still ours and still
   // in the map, and blanking it makes reopening the same picture flicker.
 }
 
-/** One line of the list: the tick, and its picture beside it. */
+/**
+ * One line of the list: the tick, and its picture beside it.
+ *
+ * A line that needs a photo has a camera where the box would be. Tapping it
+ * opens the camera, and the photo is the tick: there is no way to mark it
+ * done without one. Their photo then sits beside the owner's, so both can be
+ * compared at a glance.
+ */
 function lineFor(item, roomId) {
   const li = document.createElement('li');
 
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = `hk-item${item.done ? ' done' : ''}`;
+  button.className = `hk-item${item.done ? ' done' : ''}${item.needsPhoto ? ' needs' : ''}`;
   button.dataset.item = String(item.id);
   button.dataset.room = roomId;
   button.setAttribute('aria-pressed', String(item.done));
@@ -319,31 +348,111 @@ function lineFor(item, roomId) {
   const box = document.createElement('span');
   box.className = 'hk-box';
   box.setAttribute('aria-hidden', 'true');
-  box.textContent = item.done ? '✓' : '';
+  box.textContent = item.done ? '✓' : item.needsPhoto ? '📷' : '';
 
+  const words = document.createElement('span');
+  words.className = 'hk-words';
   const label = document.createElement('span');
+  label.className = 'hk-label';
   label.textContent = item.label;
+  words.append(label);
 
-  button.append(box, label);
+  if (item.needsPhoto) {
+    const tag = document.createElement('span');
+    tag.className = 'hk-tag';
+    tag.textContent = item.done ? 'Photo taken · tap to retake' : 'Tap to take the photo';
+    words.append(tag);
+  }
+
+  button.append(box, words);
 
   const row = document.createElement('div');
   row.className = 'hk-line';
   row.append(button);
 
   /*
-   * The picture beside the line, never inside it.
+   * The pictures beside the line, never inside it.
    *
    * Everything in the tick button is a tap that marks the line done, so a
    * thumbnail in there would mean that looking at the photograph ticks the
    * job off — and the room gets reported clean by somebody who was trying
    * to find out what clean meant.
    */
-  if (item.hasPhoto) {
-    row.append(thumb(`i${item.id}`, `/api/housekeeping/checklist/${item.id}/photo`, item.label));
+  const pics = document.createElement('div');
+  pics.className = 'hk-pics';
+  if (item.needsPhoto) {
+    const picker = document.createElement('input');
+    picker.type = 'file';
+    picker.accept = 'image/*';
+    picker.setAttribute('capture', 'environment');
+    picker.hidden = true;
+    picker.className = 'hk-picker';
+    picker.addEventListener('change', () => void sendLinePhoto(button, picker));
+    row.append(picker);
+
+    const mine = document.createElement('button');
+    mine.type = 'button';
+    mine.className = 'hk-shot hk-mine';
+    mine.dataset.label = `${item.label}: your photo`;
+    mine.setAttribute('aria-label', `Your photo: ${item.label}`);
+    mine.hidden = true;
+    mine.append(document.createElement('img'));
+    pics.append(mine);
+    if (item.photoTakenAt) void showLinePhoto(button);
   }
+  if (item.hasPhoto) {
+    pics.append(thumb(`i${item.id}`, `/api/housekeeping/checklist/${item.id}/photo`, `${item.label}: how it should look`));
+  }
+  if (pics.childElementCount) row.append(pics);
 
   li.append(row);
   return li;
+}
+
+/** The housekeeper's own photo of a line, beside the owner's. */
+async function showLinePhoto(button) {
+  const row = button.closest('.hk-line');
+  const mine = row?.querySelector('.hk-mine');
+  if (!mine) return;
+  const url = await fetchShot(`/api/housekeeping/rooms/${button.dataset.room}/checklist/${button.dataset.item}/photo`);
+  if (!url) return;
+  if (mine.dataset.shot) URL.revokeObjectURL(mine.dataset.shot);
+  mine.querySelector('img').src = url;
+  mine.dataset.shot = url;
+  mine.hidden = false;
+}
+
+/** The photo taken for a line: sent, and the line ticked by it. */
+async function sendLinePhoto(button, picker) {
+  const file = picker.files && picker.files[0];
+  picker.value = '';
+  if (!file) return;
+
+  const tag = button.querySelector('.hk-tag');
+  button.disabled = true;
+  if (tag) tag.textContent = 'Sending…';
+  try {
+    const photo = await shrinkPhoto(file);
+    await call(`/api/housekeeping/rooms/${button.dataset.room}/checklist/${button.dataset.item}/photo`, {
+      method: 'PUT',
+      body: JSON.stringify({ photo }),
+    });
+    button.classList.add('done');
+    button.setAttribute('aria-pressed', 'true');
+    button.querySelector('.hk-box').textContent = '✓';
+    if (tag) tag.textContent = 'Photo taken · tap to retake';
+    retally(button.dataset.room);
+    await showLinePhoto(button);
+    el.note.textContent = '';
+  } catch (err) {
+    if (err.signedOut || err.status === 401) {
+      remember(null);
+      return showGate('That shift has ended. Enter the PIN again.');
+    }
+    if (tag) tag.textContent = err.message || 'That photo could not be sent. Try again.';
+  } finally {
+    button.disabled = false;
+  }
 }
 
 /** A reference picture as a small button that opens it full screen. */
@@ -392,6 +501,7 @@ function drawChecks(panel, data) {
   }
 
   for (const area of areas) {
+    const mine = data.items.filter((i) => i.areaId === area.id);
     const section = document.createElement('section');
     section.className = 'hk-area';
     section.dataset.area = String(area.id);
@@ -401,14 +511,28 @@ function drawChecks(panel, data) {
     const name = document.createElement('h3');
     name.textContent = area.name;
     head.append(name);
-    if (area.hasPhoto) {
-      const look = thumb(`a${area.id}`, `/api/housekeeping/areas/${area.id}/photo`, `How ${area.name} should look`);
-      look.classList.add('hk-look');
-      head.append(look);
+    if (mine.length) {
+      const count = document.createElement('span');
+      count.className = 'hk-area-count';
+      head.append(count);
     }
     section.append(head);
 
-    const mine = data.items.filter((i) => i.areaId === area.id);
+    /*
+     * The owner's picture of the area, big: it is the standard, and a stamp-
+     * sized thumbnail of a whole bathroom shows nothing. Tap to open it full
+     * screen, and tap again there to zoom in.
+     */
+    if (area.hasPhoto) {
+      const look = thumb(`a${area.id}`, `/api/housekeeping/areas/${area.id}/photo`, `How ${area.name} should look`);
+      look.classList.add('hk-look');
+      const chip = document.createElement('span');
+      chip.className = 'hk-look-chip';
+      chip.textContent = 'How it should look · tap to zoom';
+      look.append(chip);
+      section.append(look);
+    }
+
     if (mine.length) {
       const list = document.createElement('ul');
       list.className = 'hk-items';
@@ -419,6 +543,7 @@ function drawChecks(panel, data) {
     section.append(resultRow(roomId, area));
     panel.append(section);
   }
+  retally(roomId);
 }
 
 /**
@@ -535,13 +660,22 @@ async function shrinkPhoto(file) {
   throw new Error('That photo is too large to send. Take it again.');
 }
 
-/** The counter on the room's own row, kept in step without a reload. */
+/** The counters — the room's, and each area's — kept in step without a reload. */
 function retally(roomId) {
   const panel = el.list.querySelector(`.hk-checks[data-for="${roomId}"]`);
-  const li = panel?.closest('.hk-job');
-  const tally = li?.querySelector('.hk-progress');
-  if (!panel || !tally) return;
+  if (!panel) return;
 
+  for (const section of panel.querySelectorAll('.hk-area')) {
+    const count = section.querySelector('.hk-area-count');
+    if (!count) continue;
+    const lines = [...section.querySelectorAll('.hk-item')];
+    const done = lines.filter((i) => i.classList.contains('done')).length;
+    count.textContent = `${done}/${lines.length}`;
+    count.classList.toggle('all', lines.length > 0 && done === lines.length);
+  }
+
+  const tally = panel.closest('.hk-job')?.querySelector('.hk-progress');
+  if (!tally) return;
   const items = [...panel.querySelectorAll('.hk-item')];
   const done = items.filter((i) => i.classList.contains('done')).length;
   tally.textContent = `${done}/${items.length}`;
@@ -610,6 +744,10 @@ el.list.addEventListener('click', (e) => {
   if (shot?.dataset.shot) return openShot(shot);
 
   const item = e.target.closest('.hk-item');
+  // A line done with a photo opens the camera; the photo is its tick.
+  if (item?.classList.contains('needs')) {
+    return void item.closest('.hk-line')?.querySelector('.hk-picker')?.click();
+  }
   if (item) return void tick(item);
 
   const open = e.target.closest('.hk-open');
@@ -656,9 +794,18 @@ el.form.addEventListener('submit', async (e) => {
   }
 });
 
-/* Anywhere, because somebody holding a stack of linen should not have to find
-   a button. Escape as well, for whoever is doing this on a desk. */
-el.shotView.addEventListener('click', closeShot);
+/* The picture zooms; anywhere else closes, because somebody holding a stack of
+   linen should not have to find a button. Escape as well, on a desk. */
+el.shotView.addEventListener('click', (e) => {
+  if (e.target === el.shotImage) {
+    const r = el.shotImage.getBoundingClientRect();
+    return zoom(!el.shotView.classList.contains('zoomed'), {
+      x: (e.clientX - r.left) / r.width,
+      y: (e.clientY - r.top) / r.height,
+    });
+  }
+  closeShot();
+});
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && !el.shotView.hidden) closeShot();
 });

@@ -1504,6 +1504,24 @@ const MIGRATIONS = [
     `);
     await c.query('CREATE INDEX sign_in_codes_email ON sign_in_codes (email)');
   },
+
+  // Lines that are ticked by a photograph, not a tap: "4 towels in the room"
+  // is done when there is a picture of four towels. See checklists.js.
+  async (c) => {
+    await c.query('ALTER TABLE checklist_items ADD COLUMN needs_photo boolean NOT NULL DEFAULT false');
+    await c.query(`
+      CREATE TABLE room_item_photos (
+        subscriber_id integer NOT NULL REFERENCES subscribers (id) ON DELETE CASCADE,
+        room_id       integer NOT NULL REFERENCES rooms (id) ON DELETE CASCADE,
+        item_id       integer NOT NULL REFERENCES checklist_items (id) ON DELETE CASCADE,
+        on_day        date NOT NULL,
+        photo         text NOT NULL,
+        taken_at      timestamptz NOT NULL DEFAULT now(),
+        PRIMARY KEY (room_id, item_id, on_day)
+      )
+    `);
+    await c.query('CREATE INDEX room_item_photos_day ON room_item_photos (subscriber_id, on_day)');
+  },
 ];
 
 // Any constant will do; it only has to be the same in every process.

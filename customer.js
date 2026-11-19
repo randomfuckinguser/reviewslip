@@ -724,6 +724,7 @@ router.post(
         groupId: req.body?.groupId ?? null,
         areaId: req.body?.areaId ?? null,
         label: req.body?.label,
+        needsPhoto: req.body?.needsPhoto === true,
       });
       res.status(201).json({ item });
     } catch (err) {
@@ -940,6 +941,56 @@ router.get(
         keepDays: checklist.KEEP_RESULTS_DAYS,
         rooms: await checklists.results({ subscriberId: req.venue.id, day: date }),
       });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/** Whether a line is ticked by a photograph instead of a tap. */
+router.patch(
+  '/businesses/:slug/checklist/:id',
+  requireAccount,
+  requireOwnVenue,
+  async (req, res, next) => {
+    try {
+      const id = Number(req.params.id);
+      if (!Number.isSafeInteger(id)) return res.status(404).json({ error: 'No such item.' });
+      res.json(
+        await checklists.setNeedsPhoto({
+          subscriberId: req.venue.id,
+          id,
+          needsPhoto: req.body?.needsPhoto === true,
+        })
+      );
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/** A line's photograph, taken as its tick. */
+router.get(
+  '/businesses/:slug/checklist/results/:roomId/items/:itemId/photo',
+  requireAccount,
+  requireOwnVenue,
+  async (req, res, next) => {
+    try {
+      const roomId = Number(req.params.roomId);
+      const itemId = Number(req.params.itemId);
+      const date = nights.parse(String(req.query.date || ''));
+      if (!Number.isSafeInteger(roomId) || !Number.isSafeInteger(itemId) || !date) {
+        return res.status(404).json({ error: 'No such photo.' });
+      }
+      const stored = await checklists.itemResultPhoto({
+        subscriberId: req.venue.id,
+        roomId,
+        itemId,
+        day: date,
+      });
+      const image = stored && assets.decodeStoredImage(stored);
+      if (!image) return res.status(404).json({ error: 'No such photo.' });
+      res.set(assets.photoHeaders(image)).end(image.buffer);
     } catch (err) {
       next(err);
     }
