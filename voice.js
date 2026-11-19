@@ -4,6 +4,7 @@ const crypto = require('crypto');
 
 const { query, one, all } = require('./db');
 const accounts = require('./accounts');
+const codes = require('./codes');
 const rules = require('./voicerules');
 
 /**
@@ -323,42 +324,62 @@ async function inviteFor(token) {
 }
 
 /**
- * Accepting an invite. The token was emailed to the address, so holding it is
- * holding the address:
+ * Accepting an invite: the link from the email, and the code that came with
+ * it. No password — the code proves the address the invite was sent to.
  *
- *   a new address    becomes a Reviewslip account that opens only the phone,
- *                    with the password chosen here, and is signed in
- *   an account       the invite joins it, and they sign in as they always do
+ *   a new address    becomes a Reviewslip account that opens only the phone
+ *   an account       the invite joins it
  *
- * @returns {Promise<{session: {token: string, expiresAt: string}|null}>}
+ * and either way they are signed in, and stay signed in.
+ *
+ * @returns {Promise<{session: {token: string, expiresAt: string}}>}
  */
-async function acceptInvite(token, password) {
+async function acceptInvite(token, code) {
   const row = await one(
     'SELECT * FROM voice_agents WHERE invite_hash = $1 AND invite_expires > now()',
     [hashToken(token)]
   );
   if (!row) throw fail(404, 'That invite has expired or was used. Ask for a new one.');
 
-  const existing = await one('SELECT id FROM accounts WHERE lower(email) = lower($1)', [row.email]);
+  await codes.redeem({ email: row.email, code });
+  return { session: await joinInvite(row) };
+}
+
+/** The invite waiting for this address, if there is one. */
+async function pendingInvite(email) {
+  return one(
+    `SELECT * FROM voice_agents
+      WHERE lower(email) = lower($1) AND account_id IS NULL
+        AND owner_account_id IS NOT NULL AND invite_expires > now()`,
+    [email]
+  );
+}
+
+/**
+ * The invited person, now proven to hold the address, joined to their
+ * account — or given one, which opens only the phone — and signed in.
+ */
+async function joinInvite(row) {
+  const existing = await accounts.byEmail(row.email);
   if (existing) {
     const taken = await one(`SELECT id FROM voice_agents WHERE account_id = $1 AND scope = 'venues'`, [existing.id]);
-    if (taken) {
+    if (taken && taken.id !== row.id) {
       throw fail(409, 'This email already answers calls on Reviewslip. Ask for the invite to go to a different address.');
     }
     await query(
       'UPDATE voice_agents SET account_id = $2, invite_hash = NULL, invite_expires = NULL WHERE id = $1',
       [row.id, existing.id]
     );
-    return { session: null };
+    return (await accounts.signInAs(existing));
   }
 
-  const account = await accounts.create({ email: row.email, password });
+  const account = await accounts.create({ email: row.email, passwordless: true });
   await query('UPDATE accounts SET phone_only = true WHERE id = $1', [account.id]);
   await query(
     'UPDATE voice_agents SET account_id = $2, password_hash = NULL, invite_hash = NULL, invite_expires = NULL WHERE id = $1',
     [row.id, account.id]
   );
-  return { session: await accounts.startSession(account.id) };
+  return accounts.signInAs(await accounts.byId(account.id));
 }
 
 /** The people an owner invited to answer this venue. */
@@ -635,6 +656,8 @@ module.exports = {
   reinvite,
   inviteFor,
   acceptInvite,
+  pendingInvite,
+  joinInvite,
   staffFor,
   removeStaff,
   APP_PREFIX,

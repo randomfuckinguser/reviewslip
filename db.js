@@ -1487,6 +1487,23 @@ const MIGRATIONS = [
       await c.query('UPDATE bookings SET customer_id = $1 WHERE id = $2', [customerId, b.id]);
     }
   },
+
+  // Sign-in codes: six digits emailed instead of a password. See codes.js.
+  // An account made from one has no password, so the column may be empty.
+  async (c) => {
+    await c.query('ALTER TABLE accounts ALTER COLUMN password_hash DROP NOT NULL');
+    await c.query(`
+      CREATE TABLE sign_in_codes (
+        id          serial PRIMARY KEY,
+        email       text NOT NULL,
+        code_hash   text NOT NULL,
+        attempts    integer NOT NULL DEFAULT 0,
+        expires_at  timestamptz NOT NULL,
+        created_at  timestamptz NOT NULL DEFAULT now()
+      )
+    `);
+    await c.query('CREATE INDEX sign_in_codes_email ON sign_in_codes (email)');
+  },
 ];
 
 // Any constant will do; it only has to be the same in every process.

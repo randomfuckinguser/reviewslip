@@ -144,23 +144,27 @@ async function verifyPassword(password, stored) {
 const SESSION_PREFIX = 'rvs_';
 
 /**
- * How long a signed-in session lasts.
+ * How long a signed-in session lasts: SESSION_DAYS from when it was last used.
  *
- * A day, not the month it was. A dashboard session can read and change every
- * business on the account — the review links a QR code sends people to, and the
- * OpenRouter key that is billed — so a token left behind on a shared or lost
- * device is worth something for as long as it lives. A month of that is a long
- * time to be wrong about who has the laptop.
+ * Signed in and kept signed in. It was a day, which meant a code every morning
+ * on the phone that rings for calls and on the desk's laptop; nobody signs in
+ * to answer a guest. Now a session that is being used keeps renewing itself,
+ * and one left on a device nobody opens runs out after SESSION_DAYS.
  *
- * The cost is signing in again each day, which is the ordinary price of this
- * being an admin surface rather than a reader.
+ * The other half of that is Sign Out, which ends the session here and not only
+ * in the browser, and the code: a lost phone's session ends when the owner
+ * signs out everywhere (changing the password does it), and signing back in
+ * needs the email, not something written on a note by the till.
  *
- * The browser cookie is set to match in the website repo. Both have to move
- * together: a cookie outliving its row means a token sent on every request that
- * the server has already forgotten, and a row outliving its cookie means a
- * session nobody can reach still sitting in the table.
+ * Renewed at most once every RENEW_AFTER_DAYS, so a busy dashboard is not
+ * writing to the sessions table on every request.
+ *
+ * The browser cookie is long-lived (see the website's MAX_AGE_SECONDS); this
+ * row is the authority on whether it still opens anything.
  */
-const SESSION_HOURS = 24;
+const SESSION_DAYS = 90;
+const RENEW_AFTER_DAYS = 7;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 function newSessionToken() {
   return SESSION_PREFIX + crypto.randomBytes(32).toString('base64url');
@@ -193,6 +197,9 @@ function toRecord(row) {
     isAdmin: row.is_admin === true,
     // Staff a venue invited to answer its calls: the phone, and nothing else.
     phoneOnly: row.phone_only === true,
+    // Signed up with an emailed code and never chose one. Setting a password
+    // then needs no current one: there is none to ask for.
+    hasPassword: Boolean(row.password_hash),
     createdAt: row.created_at,
   };
 }
@@ -228,7 +235,11 @@ async function create(input = {}) {
   const username =
     String(input.username || '').trim() || deriveUsername(email);
 
-  for (const check of [checkEmail(email), checkPassword(input.password)]) {
+  // An account made from an emailed code has no password, and does not need
+  // one: the code proved the address, and the next sign-in is another code.
+  const passwordless = input.passwordless === true;
+  const checks = passwordless ? [checkEmail(email)] : [checkEmail(email), checkPassword(input.password)];
+  for (const check of checks) {
     if (!check.ok) throw fail(400, check.error);
   }
 
@@ -250,7 +261,7 @@ async function create(input = {}) {
       `INSERT INTO accounts (email, username, password_hash, plan, created_at, updated_at)
        VALUES ($1, $2, $3, $4, $5, $5)
        RETURNING *`,
-      [email, username, await hashPassword(input.password), plan, stamp]
+      [email, username, passwordless ? null : await hashPassword(input.password), plan, stamp]
     );
   } catch (err) {
     if (err?.code === '23505') {
@@ -297,6 +308,22 @@ async function login(identifier, password) {
     : await verifyPassword(password, `scrypt$${'00'.repeat(SALT_BYTES)}$${'00'.repeat(SCRYPT_KEYLEN)}`);
 
   if (!row || !ok) throw fail(401, 'Wrong email, username, or password.');
+  return signInAs(row);
+}
+
+/** By email, for a sign-in that proved the address another way. */
+async function byEmail(email) {
+  const value = String(email || '').trim().toLowerCase();
+  if (!value) return null;
+  return one('SELECT * FROM accounts WHERE lower(email) = $1', [value]);
+}
+
+/**
+ * Signed in, however it was proved — a password or an emailed code.
+ *
+ * @returns {Promise<{account: object, token: string, expiresAt: string}>}
+ */
+async function signInAs(row) {
   if (row.status !== 'active') throw fail(403, 'This account is not active.');
 
   // A referral comes good the first time its account signs in. Signing up signs
@@ -315,9 +342,7 @@ async function login(identifier, password) {
 
 async function startSession(accountId) {
   const token = newSessionToken();
-  const expiresAt = new Date(
-    Date.now() + SESSION_HOURS * 60 * 60 * 1000
-  ).toISOString();
+  const expiresAt = new Date(Date.now() + SESSION_DAYS * DAY_MS).toISOString();
 
   await query(
     'INSERT INTO sessions (token_hash, account_id, expires_at) VALUES ($1, $2, $3)',
@@ -331,15 +356,27 @@ async function startSession(accountId) {
 async function fromSession(token) {
   if (typeof token !== 'string' || !token) return null;
 
+  const hash = hashToken(token);
   const row = await one(
-    `SELECT a.*
+    `SELECT a.*, s.expires_at AS session_expires
        FROM sessions s
        JOIN accounts a ON a.id = s.account_id
       WHERE s.token_hash = $1 AND s.expires_at > now()`,
-    [hashToken(token)]
+    [hash]
   );
+  if (!row || row.status !== 'active') return null;
 
-  return row && row.status === 'active' ? row : null;
+  // In use, so it stays: pushed out again once a week rather than on every
+  // request. See SESSION_DAYS.
+  const left = new Date(row.session_expires).getTime() - Date.now();
+  if (left < (SESSION_DAYS - RENEW_AFTER_DAYS) * DAY_MS) {
+    await query('UPDATE sessions SET expires_at = $2 WHERE token_hash = $1', [
+      hash,
+      new Date(Date.now() + SESSION_DAYS * DAY_MS).toISOString(),
+    ]);
+  }
+  delete row.session_expires;
+  return row;
 }
 
 async function endSession(token) {
@@ -382,6 +419,7 @@ async function setPlan(accountId, planId) {
 
 module.exports = {
   USERNAME_LENGTH,
+  SESSION_DAYS,
   PASSWORD_MIN,
   checkUsername,
   checkPassword,
@@ -391,8 +429,10 @@ module.exports = {
   toRecord,
   byId,
   byLogin,
+  byEmail,
   create,
   login,
+  signInAs,
   startSession,
   fromSession,
   endSession,

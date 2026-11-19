@@ -51,8 +51,15 @@ function cookieOf(req, name = voice.SESSION_COOKIE) {
  * (lib/customer.ts setSessionCookie): the session, and the readable "someone
  * is signed in" flag the site's nav reads.
  */
+/**
+ * The cookie lives as long as a browser allows; the session row decides
+ * whether it still opens anything, and renews itself while it is used. See
+ * SESSION_DAYS in accounts.js.
+ */
+const COOKIE_MAX_AGE_MS = 400 * 24 * 60 * 60 * 1000;
+
 function signIn(res, session) {
-  const maxAge = Math.max(0, new Date(session.expiresAt).getTime() - Date.now());
+  const maxAge = COOKIE_MAX_AGE_MS;
   const base = { secure: secureCookies, sameSite: 'lax', path: '/', maxAge };
   res.cookie(voice.SESSION_COOKIE, session.token, { ...base, httpOnly: true });
   res.cookie('rs_signed_in', '1', { ...base, httpOnly: false });
@@ -176,11 +183,12 @@ router.post('/invite', async (req, res) => {
     return res.status(429).json({ error: 'Too many tries. Wait a minute.' });
   }
   try {
-    const { session } = await voice.acceptInvite(String(req.body?.token || ''), req.body?.password);
-    // A new account is signed in here; an existing one signs in as it always does.
-    if (session) signIn(res, session);
+    // The link's token and the code from the same email: signed in either way,
+    // a new account or one they already had.
+    const { session } = await voice.acceptInvite(String(req.body?.token || ''), req.body?.code);
+    signIn(res, session);
     hub.changed();
-    res.json({ ok: true, signedIn: Boolean(session) });
+    res.json({ ok: true, signedIn: true });
   } catch (err) {
     sendError(res, err);
   }

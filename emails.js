@@ -451,21 +451,71 @@ function voicemailEmail({ line, caller, contact, seconds, url }) {
   return { subject, text, html };
 }
 
-/** A customer added someone to answer their venue's calls. */
-function voiceInviteEmail({ name, venue, by, url }) {
+/** The six digits, large, for an email someone reads on a phone. */
+function codeBlock(code) {
+  return `<p style="font-size:2em;font-weight:700;letter-spacing:0.25em;margin:0.6em 0;color:#1b2a23">${escapeHtml(code)}</p>`;
+}
+
+/**
+ * A customer added someone to answer their venue's calls.
+ *
+ * The code is in the email itself: they press the link, or open the app, and
+ * type it. No password to make up.
+ */
+function voiceInviteEmail({ name, venue, by, url, code }) {
   const who = clean(name, 60);
   const place = clean(venue, 120);
   const subject = `Answer calls for ${place}`;
   const body = [
     `${clean(by, 120) || place} added you to answer calls for ${place} on Reviewslip.`,
-    'Guests press Call on the venue’s pages and your phone or computer rings. Set a password to start; the link works for 14 days.',
+    'Guests press Call on the venue’s pages and your phone or computer rings.',
   ];
-  const text = [who ? `Hello ${who},` : 'Hello,', '', ...body, '', url, '', '— Reviewslip'].join('\n');
+  const how = 'Press the link, or open the Reviewslip app and sign in with this email, then enter the code. You stay signed in. The code works for 14 days.';
+  const text = [
+    who ? `Hello ${who},` : 'Hello,',
+    '',
+    ...body,
+    '',
+    `Your code: ${code}`,
+    '',
+    how,
+    '',
+    url,
+    '',
+    '— Reviewslip',
+  ].join('\n');
   const html = [
     '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:16px;line-height:1.6;color:#1b2a23;max-width:34rem">',
     `<p>${who ? `Hello ${escapeHtml(who)},` : 'Hello,'}</p>`,
     ...body.map((l) => `<p>${escapeHtml(l)}</p>`),
-    `<p><a href="${escapeHtml(url)}" style="color:#2f5f4c">Set your password</a></p>`,
+    '<p>Your code:</p>',
+    codeBlock(code),
+    `<p>${escapeHtml(how)}</p>`,
+    `<p><a href="${escapeHtml(url)}" style="color:#2f5f4c">Start answering calls</a></p>`,
+    '<p style="font-size:0.9em;color:#5a6b63">— Reviewslip</p>',
+    '</div>',
+  ].join('');
+  return { subject, text, html };
+}
+
+/**
+ * A sign-in code, asked for on the sign-in or sign-up page.
+ *
+ * The code in the subject too, so it can be read off the notification without
+ * opening anything.
+ */
+function codeEmail({ code, minutes }) {
+  const subject = `${code} is your Reviewslip code`;
+  const lines = [
+    `Enter this code to sign in to Reviewslip. It works for ${minutes} minutes.`,
+    'If you did not ask for it, ignore this email: nobody can sign in without the code.',
+  ];
+  const text = [`Your code: ${code}`, '', ...lines, '', '— Reviewslip'].join('\n');
+  const html = [
+    '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:16px;line-height:1.6;color:#1b2a23;max-width:34rem">',
+    '<p>Your code:</p>',
+    codeBlock(code),
+    ...lines.map((l) => `<p>${escapeHtml(l)}</p>`),
     '<p style="font-size:0.9em;color:#5a6b63">— Reviewslip</p>',
     '</div>',
   ].join('');
@@ -475,6 +525,7 @@ function voiceInviteEmail({ name, venue, by, url }) {
 module.exports = {
   voicemailEmail,
   voiceInviteEmail,
+  codeEmail,
   bookingEmail,
   bookingAlertEmail,
   bookingCancelledEmail,

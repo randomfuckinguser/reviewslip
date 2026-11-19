@@ -34,9 +34,9 @@
       signInNote: 'The phone uses your Reviewslip sign-in. Sign in, and you come straight back here.',
       rsTitle: 'Sales & Support phone', rsNote: 'For Reviewslip admins. Sign in with your Reviewslip account and you come straight back here.',
       openDashboard: 'Sign in to Reviewslip', email: 'Email', password: 'Password', signIn: 'Sign in',
-      newPassword: 'Choose a password', start: 'Start answering calls', inviteTitle: 'Hello {name}',
-      inviteNote: 'Choose a password to answer calls for {venues}. It is your Reviewslip sign-in from now on.',
-      inviteHasAccount: 'You already have a Reviewslip account with this email. Accept, then sign in as you always do.',
+      inviteCode: 'Code from the email', start: 'Start answering calls', inviteTitle: 'Hello {name}',
+      inviteNote: 'Enter the 6-digit code from your invite email to answer calls for {venues}. No password, and you stay signed in.',
+      inviteHasAccount: 'You already have a Reviewslip account with this email. Enter the 6-digit code from your invite email and these calls are added to it.',
       inviteAccept: 'Accept and sign in', expired: 'Your sign-in has ended. Sign in again.',
       tapForSound: 'Tap to turn the ringtone on', mute: 'Mute', unmute: 'Unmute', hangUp: 'Hang up', inCall: 'In a call',
       goOn: 'Go on duty', goOff: 'Go off duty', offDuty: 'Off duty', onDuty: 'On duty', connecting: 'Connecting…',
@@ -83,9 +83,9 @@
       signInNote: 'โทรศัพท์ใช้บัญชี Reviewslip ของคุณ เข้าสู่ระบบแล้วจะกลับมาที่นี่ทันที',
       rsTitle: 'โทรศัพท์ฝ่ายขายและบริการลูกค้า', rsNote: 'สำหรับผู้ดูแล Reviewslip เข้าสู่ระบบด้วยบัญชี Reviewslip แล้วจะกลับมาที่นี่ทันที',
       openDashboard: 'เข้าสู่ระบบ Reviewslip', email: 'อีเมล', password: 'รหัสผ่าน', signIn: 'เข้าสู่ระบบ',
-      newPassword: 'ตั้งรหัสผ่าน', start: 'เริ่มรับสาย', inviteTitle: 'สวัสดี {name}',
-      inviteNote: 'ตั้งรหัสผ่านเพื่อรับสายของ {venues} ใช้เป็นรหัสเข้าสู่ระบบ Reviewslip ของคุณต่อจากนี้',
-      inviteHasAccount: 'อีเมลนี้มีบัญชี Reviewslip อยู่แล้ว กดยอมรับ แล้วเข้าสู่ระบบตามปกติ',
+      inviteCode: 'รหัสจากอีเมล', start: 'เริ่มรับสาย', inviteTitle: 'สวัสดี {name}',
+      inviteNote: 'ใส่รหัส 6 หลักจากอีเมลคำเชิญเพื่อรับสายของ {venues} ไม่ต้องตั้งรหัสผ่าน และจะอยู่ในระบบต่อไป',
+      inviteHasAccount: 'อีเมลนี้มีบัญชี Reviewslip อยู่แล้ว ใส่รหัส 6 หลักจากอีเมลคำเชิญ แล้วสายเหล่านี้จะเพิ่มเข้าบัญชีของคุณ',
       inviteAccept: 'ยอมรับและเข้าสู่ระบบ', expired: 'หมดเวลาเข้าสู่ระบบ โปรดเข้าสู่ระบบอีกครั้ง',
       tapForSound: 'แตะเพื่อเปิดเสียงเรียกเข้า', mute: 'ปิดไมค์', unmute: 'เปิดไมค์', hangUp: 'วางสาย', inCall: 'กำลังสนทนา',
       goOn: 'เริ่มเข้ากะ', goOff: 'ออกจากกะ', offDuty: 'ไม่อยู่ในกะ', onDuty: 'อยู่ในกะ', connecting: 'กำลังเชื่อมต่อ…',
@@ -370,8 +370,8 @@
     e.preventDefault();
     var err = $('invite-error');
     err.hidden = true;
-    api('/invite', { method: 'POST', body: { token: inviteToken, password: e.target.password.value } })
-      .then(function (d) { return d.signedIn ? load() : showLogin(); })
+    api('/invite', { method: 'POST', body: { token: inviteToken, code: e.target.code.value } })
+      .then(function () { return load(); })
       .catch(function (x) { err.textContent = x.message; err.hidden = false; });
   });
 
@@ -1246,11 +1246,8 @@
             $('invite-title').textContent = t('inviteTitle', { name: inv.name });
             $('invite-note').textContent = inv.hasAccount ? t('inviteHasAccount') : t('inviteNote', { venues: inv.venues || '' });
             $('invite-email').value = inv.email;
-            // An existing account keeps its password; there is nothing to choose.
-            var pw = $('invite-form').password;
-            pw.closest('label').hidden = inv.hasAccount;
-            pw.required = !inv.hasAccount;
             $('invite-submit').textContent = inv.hasAccount ? t('inviteAccept') : t('start');
+            $('invite-form').code.focus();
           })
           .catch(function (x) { showLogin(x.message); });
       } else {

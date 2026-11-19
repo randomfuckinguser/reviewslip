@@ -51,6 +51,8 @@ const sitefacts = require('./sitefacts');
 const themenote = require('./themenote');
 const { PLATFORMS } = require('./platforms');
 const voice = require('./voice');
+const codes = require('./codes');
+const voicerules = require('./voicerules');
 const voicehub = require('./voicehub');
 
 // The website: the phone lives beside its dashboard, at /phone/.
@@ -159,6 +161,77 @@ router.post('/login', async (req, res, next) => {
   }
 });
 
+/* ------------------------------------------------- signing in with a code */
+
+/**
+ * Emails a sign-in code.
+ *
+ * Sent when the address has an account, or an invitation waiting, or when
+ * this is sign-up (`create`). Otherwise nothing is sent and the answer is the
+ * same, so the page cannot be used to find out who has an account here.
+ *
+ * Without mail set up on the server the code goes to the server log instead,
+ * so a box with no mail can still be signed in to by whoever runs it.
+ */
+router.post('/code', async (req, res, next) => {
+  try {
+    const email = String(req.body?.email || '').trim();
+    const create = req.body?.create === true;
+    const checked = accounts.checkEmail(email);
+    if (!checked.ok) return res.status(400).json({ error: checked.error });
+
+    const known = (await accounts.byEmail(email)) || (await voice.pendingInvite(email));
+    if (known || create) {
+      const { code } = await codes.issue({ email });
+      if (mailer.configured) {
+        await mailer.send({ to: email, ...emails.codeEmail({ code, minutes: codes.CODE_MINUTES }) });
+      } else {
+        console.log('Sign-in code for %s: %s (mail is not set up, so it was not emailed)', email, code);
+      }
+    }
+    res.json({ sent: true, minutes: codes.CODE_MINUTES });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * The code typed back: signed in, and kept signed in.
+ *
+ *   an account                signed in to it (and any invite waiting joins it)
+ *   an invitation, no account  given an account that opens only the phone
+ *   neither, on sign-up       a new account, with no password
+ *   neither, on sign-in       told there is no account, to sign up instead
+ */
+router.post('/code/verify', async (req, res, next) => {
+  try {
+    const body = req.body || {};
+    const email = String(body.email || '').trim();
+    await codes.redeem({ email, code: body.code });
+
+    const invite = await voice.pendingInvite(email);
+    if (invite) return res.json(await voice.joinInvite(invite));
+
+    const existing = await accounts.byEmail(email);
+    if (existing) return res.json(await accounts.signInAs(existing));
+
+    if (body.create !== true) {
+      return res
+        .status(404)
+        .json({ error: 'There is no Reviewslip account with that email. Create one instead.' });
+    }
+    const account = await accounts.create({
+      email,
+      passwordless: true,
+      referralCode: body.referralCode,
+      plan: body.plan,
+    });
+    res.status(201).json(await accounts.signInAs(await accounts.byId(account.id)));
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post('/logout', async (req, res, next) => {
   try {
     await accounts.endSession(bearer(req));
@@ -212,10 +285,10 @@ router.post('/password', requireAccount, async (req, res, next) => {
   try {
     const { currentPassword, password } = req.body || {};
 
-    const ok = await accounts.verifyPassword(
-      currentPassword,
-      req.account.password_hash
-    );
+    // An account made from an emailed code has no password to confirm.
+    const ok =
+      !req.account.password_hash ||
+      (await accounts.verifyPassword(currentPassword, req.account.password_hash));
     if (!ok) return res.status(403).json({ error: 'That is not your current password.' });
 
     await accounts.setPassword(req.account.id, password);
@@ -3133,15 +3206,18 @@ router.get('/businesses/:slug/voice', requireAccount, requireOwnVenue, async (re
 });
 
 /**
- * Emails the invite. Without mail configured the link comes back instead, so
- * the owner can send it themselves.
+ * Emails the invite, with its code. Without mail configured the link and the
+ * code come back instead, so the owner can pass them on themselves.
+ *
+ * @returns {Promise<{link: string, code: string}|null>}
  */
 async function sendVoiceInvite(req, agent, token) {
   const url = `${SITE_URL}/phone/#invite=${token}`;
-  if (!mailer.configured) return url;
+  const { code } = await codes.issue({ email: agent.email, days: voicerules.INVITE_DAYS });
+  if (!mailer.configured) return { link: url, code };
   await mailer.send({
     to: agent.email,
-    ...emails.voiceInviteEmail({ name: agent.name, venue: req.venue.name, by: req.account.email, url }),
+    ...emails.voiceInviteEmail({ name: agent.name, venue: req.venue.name, by: req.account.email, url, code }),
   });
   return null;
 }
@@ -3149,8 +3225,8 @@ async function sendVoiceInvite(req, agent, token) {
 router.post('/businesses/:slug/voice/staff', requireAccount, requireOwnVenue, async (req, res, next) => {
   try {
     const { agent, token } = await voice.invite(req.account.id, req.venue.id, req.body || {});
-    const link = token ? await sendVoiceInvite(req, agent, token) : null;
-    res.status(201).json({ ...(await voiceTeam(req)), link });
+    const handed = token ? await sendVoiceInvite(req, agent, token) : null;
+    res.status(201).json({ ...(await voiceTeam(req)), link: handed?.link ?? null, code: handed?.code ?? null });
   } catch (err) {
     next(err);
   }
@@ -3163,8 +3239,8 @@ router.post(
   async (req, res, next) => {
     try {
       const { agent, token } = await voice.reinvite(req.account.id, Number(req.params.id));
-      const link = await sendVoiceInvite(req, agent, token);
-      res.json({ ...(await voiceTeam(req)), link });
+      const handed = await sendVoiceInvite(req, agent, token);
+      res.json({ ...(await voiceTeam(req)), link: handed?.link ?? null, code: handed?.code ?? null });
     } catch (err) {
       next(err);
     }
