@@ -21,6 +21,8 @@ export interface ChecklistItem {
    * /api/checklist-photo instead, one request each, cached by the browser.
    */
   hasPhoto: boolean;
+  /** Ticked by the housekeeper taking a photo of it, not by a tap. */
+  needsPhoto?: boolean;
 }
 
 /** A part of a room the list is grouped into, with its own photograph. */
@@ -64,6 +66,7 @@ export default function CleaningStandard({
   slug,
   addItem,
   removeItem,
+  setNeedsPhoto,
   setPhoto,
   addArea,
   removeArea,
@@ -75,8 +78,9 @@ export default function CleaningStandard({
   areas: CleaningArea[];
   groups: { id: number; name: string }[];
   starter: StarterLine[];
-  addItem: (label: string, groupId: number | null, areaId: number | null) => Promise<Result>;
+  addItem: (label: string, groupId: number | null, areaId: number | null, needsPhoto?: boolean) => Promise<Result>;
   removeItem: (id: number) => Promise<Result>;
+  setNeedsPhoto: (id: number, needsPhoto: boolean) => Promise<Result>;
   /** A data URI to attach one, or null to take it off. */
   setPhoto: (id: number, dataUri: string | null) => Promise<Result>;
   addArea: (name: string) => Promise<Result>;
@@ -113,15 +117,16 @@ export default function CleaningStandard({
     groups,
     busy: pending,
     // Says whether it saved, so the box keeps what was typed when it did not.
-    onAdd: async (label: string, groupId: number | null, areaId: number | null) => {
+    onAdd: async (label: string, groupId: number | null, areaId: number | null, needsPhoto: boolean) => {
       setProblem("");
-      const result = await addItem(label, groupId, areaId).catch(
+      const result = await addItem(label, groupId, areaId, needsPhoto).catch(
         (): Result => ({ ok: false })
       );
       if (!result.ok) setProblem(result.error ?? "That could not be saved.");
       return result.ok;
     },
     onDrop: (id: number) => run(() => removeItem(id), "That could not be removed."),
+    onNeedsPhoto: (id: number, on: boolean) => setNeedsPhoto(id, on),
     onPhoto: setPhoto,
   };
 
@@ -218,6 +223,7 @@ function AreaCard({
   busy,
   onAdd,
   onDrop,
+  onNeedsPhoto,
   onPhoto,
   onRemove,
   onAreaPhoto,
@@ -227,21 +233,26 @@ function AreaCard({
   slug: string;
   groups: { id: number; name: string }[];
   busy: boolean;
-  onAdd: (label: string, groupId: number | null, areaId: number | null) => Promise<boolean>;
+  onAdd: (label: string, groupId: number | null, areaId: number | null, needsPhoto: boolean) => Promise<boolean>;
   onDrop: (id: number) => void;
+  onNeedsPhoto: (id: number, on: boolean) => Promise<Result>;
   onPhoto: (id: number, dataUri: string | null) => Promise<Result>;
   onRemove?: () => void;
   onAreaPhoto?: (dataUri: string | null) => Promise<Result>;
 }) {
   const [label, setLabel] = useState("");
   const [group, setGroup] = useState("");
+  const [needsPhoto, setNeedsPhotoNew] = useState(false);
   const name = area?.name ?? "Whole Room";
 
   async function add(event: React.FormEvent) {
     event.preventDefault();
     if (!label.trim()) return;
-    const saved = await onAdd(label.trim(), group === "" ? null : Number(group), area?.id ?? null);
-    if (saved) setLabel("");
+    const saved = await onAdd(label.trim(), group === "" ? null : Number(group), area?.id ?? null, needsPhoto);
+    if (saved) {
+      setLabel("");
+      setNeedsPhotoNew(false);
+    }
   }
 
   return (
@@ -299,6 +310,11 @@ function AreaCard({
                   <span style={typeTag}>{item.groupName} only</span>
                 )}
               </span>
+              <NeedsPhoto
+                initial={Boolean(item.needsPhoto)}
+                busy={busy}
+                onChange={(on) => onNeedsPhoto(item.id, on)}
+              />
               <button
                 type="button"
                 className="btn btn-quiet"
@@ -337,11 +353,73 @@ function AreaCard({
             ))}
           </select>
         )}
+        <label style={needsBox} data-tip="The housekeeper ticks this line by taking a photo of it, not by a tap.">
+          <input
+            type="checkbox"
+            checked={needsPhoto}
+            onChange={(e) => setNeedsPhotoNew(e.target.checked)}
+          />
+          Needs a photo
+        </label>
         <button type="submit" className="btn btn-quiet" disabled={busy || !label.trim()}>
           Add
         </button>
       </form>
     </div>
+  );
+}
+
+/**
+ * Whether a line is ticked by a photo: one press, saved straight away, and
+ * put back if the save fails.
+ *
+ * Its own state rather than a page reload, as the photos are: turning it on
+ * for half a dozen lines in a row should not re-render the Rooms page six
+ * times.
+ */
+function NeedsPhoto({
+  initial,
+  busy,
+  onChange,
+}: {
+  initial: boolean;
+  busy: boolean;
+  onChange: (on: boolean) => Promise<Result>;
+}) {
+  const [on, setOn] = useState(initial);
+  const [saving, setSaving] = useState(false);
+
+  async function toggle() {
+    const next = !on;
+    setOn(next);
+    setSaving(true);
+    const saved = await onChange(next).catch((): Result => ({ ok: false }));
+    setSaving(false);
+    if (!saved.ok) setOn(!next);
+  }
+
+  return (
+    <button
+      type="button"
+      className="btn btn-quiet"
+      aria-pressed={on}
+      disabled={busy || saving}
+      onClick={toggle}
+      data-tip={
+        on
+          ? "Ticked by a photo: the housekeeper has to take one. Press to let a tap tick it."
+          : "Ticked by a tap. Press so the housekeeper has to take a photo instead."
+      }
+      style={{
+        ...tiny,
+        whiteSpace: "nowrap",
+        ...(on
+          ? { background: "color-mix(in srgb, var(--warning) 18%, transparent)", color: "var(--ink)" }
+          : {}),
+      }}
+    >
+      {on ? "📷 Photo to tick" : "Tap to tick"}
+    </button>
   );
 }
 
@@ -588,6 +666,15 @@ const areaTitle: React.CSSProperties = {
   fontSize: "0.95rem",
   fontWeight: 600,
   margin: 0,
+};
+
+const needsBox: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "0.35rem",
+  fontSize: "0.8rem",
+  whiteSpace: "nowrap",
+  color: "var(--ink-soft)",
 };
 
 const typeTag: React.CSSProperties = {

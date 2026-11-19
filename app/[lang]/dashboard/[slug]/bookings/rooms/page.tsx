@@ -40,7 +40,7 @@ async function attempt(
   slug: string,
   here: string,
   path: string,
-  method: "POST" | "PUT" | "DELETE",
+  method: "POST" | "PUT" | "PATCH" | "DELETE",
   body: unknown,
   fallback: string,
   refresh = true
@@ -225,7 +225,12 @@ export default async function RoomsPage({
    * A line of the standard. No room type means every room; no area means the
    * whole room.
    */
-  async function addItem(label: string, groupId: number | null, areaId: number | null) {
+  async function addItem(
+    label: string,
+    groupId: number | null,
+    areaId: number | null,
+    needsPhoto = false
+  ) {
     "use server";
 
     const current = await sessionToken();
@@ -234,7 +239,7 @@ export default async function RoomsPage({
     try {
       await call(`/businesses/${slug}/checklist`, {
         method: "POST",
-        body: { label, groupId, areaId },
+        body: { label, groupId, areaId, needsPhoto: needsPhoto === true },
         token: current,
       });
       revalidatePath(here);
@@ -245,6 +250,21 @@ export default async function RoomsPage({
         error: err instanceof Error ? err.message : "That could not be saved.",
       };
     }
+  }
+
+  /** Whether a line is ticked by a photo instead of a tap. */
+  async function setNeedsPhoto(id: number, needsPhoto: boolean) {
+    "use server";
+    if (!Number.isSafeInteger(id)) return { ok: false };
+    return attempt(
+      slug,
+      here,
+      `/checklist/${id}`,
+      "PATCH",
+      { needsPhoto: needsPhoto === true },
+      "That could not be changed.",
+      false
+    );
   }
 
   /** Take a line out. Its ticks go with it. */
@@ -438,6 +458,7 @@ export default async function RoomsPage({
         groups={data.groups.map((g) => ({ id: g.id, name: g.name }))}
         addItem={addItem}
         removeItem={removeItem}
+        setNeedsPhoto={setNeedsPhoto}
         addArea={addArea}
         removeArea={removeArea}
         setAreaPhoto={setAreaPhoto}

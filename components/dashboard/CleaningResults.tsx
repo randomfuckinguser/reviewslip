@@ -7,6 +7,8 @@ export interface ResultRoom {
   room: string;
   type: string | null;
   areas: { areaId: number; area: string; takenAt: string }[];
+  /** Lines ticked by a photo: the towels, the bath plug. */
+  lines?: { itemId: number; label: string; area: string | null; takenAt: string }[];
 }
 
 export interface Results {
@@ -55,6 +57,8 @@ export default function CleaningResults({
 
   const src = (roomId: number, areaId: number) =>
     `/api/checklist-photo/${encodeURIComponent(slug)}/result/${roomId}/${areaId}?date=${data.date}`;
+  const lineSrc = (roomId: number, itemId: number) =>
+    `/api/checklist-photo/${encodeURIComponent(slug)}/result-line/${roomId}/${itemId}?date=${data.date}`;
 
   return (
     <section style={card} data-tour="rooms-results">
@@ -71,7 +75,8 @@ export default function CleaningResults({
         />
       </div>
       <p style={lede}>
-        Each area of each room as the housekeeper left it. Kept for{" "}
+        Each area of each room as the housekeeper left it, and the lines ticked
+        with a photo. Kept for{" "}
         {initial.keepDays} days.
       </p>
 
@@ -113,6 +118,26 @@ export default function CleaningResults({
                     <img src={src(room.roomId, a.areaId)} alt="" style={thumbImg} loading="lazy" />
                     <span style={thumbLabel}>
                       {a.area} · {time(a.takenAt, timezone)}
+                    </span>
+                  </button>
+                ))}
+                {(room.lines ?? []).map((l) => (
+                  <button
+                    key={`i${l.itemId}`}
+                    type="button"
+                    style={thumb}
+                    onClick={() =>
+                      setOpen({
+                        src: lineSrc(room.roomId, l.itemId),
+                        caption: `${room.room} · ${l.label} · ${time(l.takenAt, timezone)}`,
+                      })
+                    }
+                    aria-label={`${l.label} in ${room.room}, taken ${time(l.takenAt, timezone)}`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={lineSrc(room.roomId, l.itemId)} alt="" style={thumbImg} loading="lazy" />
+                    <span style={thumbLabel}>
+                      📷 {l.label} · {time(l.takenAt, timezone)}
                     </span>
                   </button>
                 ))}
