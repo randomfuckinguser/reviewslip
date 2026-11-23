@@ -2,8 +2,28 @@
 
 Built 2026-10-15; under the dashboard's own sign-in since 2026-10-20. Guests press **Call** and talk
 to a venue's desk in the browser; customers press **Call Sales** or **Call Support** and talk to
-Reviewslip. When nobody is free the caller leaves a voice message. No phone numbers, no SIP, no
+Reviewslip. When nobody is free the caller writes instead (below). No phone numbers, no SIP, no
 per-minute cost: audio goes browser to browser over WebRTC, and the review app only rings.
+
+## Messages instead of voicemail (2026-11-23)
+
+A call nobody can take — the line is in the **voicemail** state, or the call rang out — opens a
+message form in the same panel: name, optional email, message. That is a conversation on the line
+(`chats.js`, tables `line_chats` and `line_chat_messages`), a ticket: **open** until someone on the
+line answers, **answered** until the guest writes again, **closed** when either side closes it.
+
+- The venue answers in the dashboard (**Messages**, `/dashboard/<slug>/messages`) or on the phone
+  (the New messages and Messages tabs). Reviewslip's line is answered on the Sales & Support phone.
+- The guest reads answers in the panel (it checks every 8 seconds while open, and the browser keeps
+  the conversation's key, so pressing the button again opens it). With an email they also get each
+  answer by email when they have not had the panel open for two minutes; the link is the page they
+  wrote from with `#rs-chat=<key>` — the key never reaches a server log.
+- The key is made from a stored nonce with `SECRET_KEY` (`chatrules.tokenFor`); only its hash is
+  looked up.
+- Everyone on the line gets an email for a new conversation, and when one comes back to them.
+
+The voicemail recording is gone from the call button and the phone. The old voicemail table and
+routes are left for recordings already left; nothing new is written there.
 
 **One sign-in.** The phone is part of the dashboard: **Phone** in the sidebar, at `reviewslip.com/phone/`.
 It uses the same Reviewslip account and session as the dashboard, so there is nothing else to log in to.

@@ -133,9 +133,13 @@ async function linesFor(agentId) {
       { subscriberId: null, team: 'support', name: 'Reviewslip Support', slug: null },
     ].map(mark);
   }
-  // The venues the account owns, and the ones it was invited to answer.
+  // The venues the account owns, the ones shared with it, and the ones it
+  // was invited to answer.
   const venues = await all(
     `SELECT id, slug, name FROM subscribers WHERE account_id = $1 AND status = 'active'
+     UNION
+     SELECT s.id, s.slug, s.name FROM venue_members m JOIN subscribers s ON s.id = m.subscriber_id
+      WHERE m.account_id = $1 AND s.status = 'active'
      UNION
      SELECT s.id, s.slug, s.name FROM voice_agent_venues v JOIN subscribers s ON s.id = v.subscriber_id
       WHERE v.agent_id = $2 AND s.status = 'active'
@@ -193,6 +197,10 @@ async function agentsOn(line) {
     ? await all(
         `SELECT a.* FROM voice_agents a
            JOIN subscribers s ON s.id = $1 AND s.account_id = a.account_id
+          WHERE a.scope = 'venues'
+         UNION
+         SELECT a.* FROM voice_agents a
+           JOIN venue_members m ON m.subscriber_id = $1 AND m.account_id = a.account_id
           WHERE a.scope = 'venues'
          UNION
          SELECT a.* FROM voice_agents a
@@ -611,11 +619,16 @@ async function markHeard(id, lines, agent, heard = true) {
   await query(sql, heard ? [...f.params, Number(id), agent.id, agent.name] : [...f.params, Number(id)]);
 }
 
-/** Who to email about a voicemail: everyone on the line, taking it or not. */
+/**
+ * Who to email about a message: everyone on the line, taking it or not —
+ * the owner, the people the venue is shared with, its phone staff.
+ */
 async function emailsFor(line) {
   if (!line.subscriberId) return [];
   const rows = await all(
     `SELECT acc.email FROM subscribers s JOIN accounts acc ON acc.id = s.account_id WHERE s.id = $1
+     UNION
+     SELECT acc.email FROM venue_members m JOIN accounts acc ON acc.id = m.account_id WHERE m.subscriber_id = $1
      UNION
      SELECT a.email FROM voice_agent_venues v JOIN voice_agents a ON a.id = v.agent_id
       WHERE v.subscriber_id = $1 AND a.account_id IS NOT NULL`,

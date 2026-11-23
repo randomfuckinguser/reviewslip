@@ -52,7 +52,9 @@
       appGet: 'Download the App', appMenu: 'Download the Android App',
       howItWorks: 'How this works', myHours: 'My hours', tabNew: 'New messages', tabAll: 'Messages', tabCalls: 'Recent calls',
       tabNewShort: 'New', tabAllShort: 'Messages', tabCallsShort: 'Calls', tabTeamShort: 'Who\u2019s on', moreRinging: '{n} more ringing',
-      tabTeam: 'Who’s on', vmSub: 'Recorded when nobody on the line could take the call. Playing one marks it heard with your name, so two of you don’t ring the same person back.',
+      tabTeam: 'Who’s on', vmSub: 'Written by guests when nobody could take their call. Answer here: they read it where they wrote, and by email if they left one.',
+      stWaiting: 'Waiting', stAnswered: 'Answered', stClosedChat: 'Closed', youWrote: 'You:', noEmail: 'no email left',
+      closeChat: 'Close', reopenChat: 'Reopen', send: 'Send', replyPh: 'Write an answer',
       teamSub: 'Everyone on the lines you answer, line by line, and whether a call would reach them right now. Check it before you step away.',
       groupBy: 'Group by', byTime: 'Time', byLine: 'Line', line: 'Line', allLines: 'All lines',
       noNew: 'No new messages.', none: 'Nothing yet.', noCallsLine: 'No calls on this line yet.', loading: 'Loading…',
@@ -62,8 +64,7 @@
       incoming: 'Incoming call', aGuest: 'A guest', answer: 'Answer', decline: 'Decline',
       reservations: 'Reservations', frontDesk: 'Front desk', sales: 'Sales', support: 'Support', fromPage: 'From {page}',
       gone: 'Someone else answered first.', micBlocked: 'The microphone is blocked. Allow it for this page to answer.',
-      callFailed: 'The call could not connect.', isNew: 'New', heardBy: 'Heard by {name} · {when}', heardByYou: 'Heard by you · {when}',
-      heard: 'Heard · {when}', markHeard: 'Mark heard', markUnheard: 'Mark unheard', noContact: 'No number or email left',
+      callFailed: 'The call could not connect.',
       answered: 'Answered', missed: 'Missed', abandoned: 'Hung up', leftMessage: 'Voicemail', live: 'In progress',
       answeredBy: 'by {name}', confirmSignOut: 'Signing out ends the call. Sign out?',
       days: 'Mon,Tue,Wed,Thu,Fri,Sat,Sun', lang: 'ภาษาไทย', you: 'you',
@@ -101,7 +102,9 @@
       appGet: 'ดาวน์โหลดแอป', appMenu: 'ดาวน์โหลดแอป Android',
       howItWorks: 'วิธีใช้งาน', myHours: 'เวลาทำงาน', tabNew: 'ข้อความใหม่', tabAll: 'ข้อความ', tabCalls: 'สายล่าสุด',
       tabNewShort: 'ใหม่', tabAllShort: 'ข้อความ', tabCallsShort: 'สาย', tabTeamShort: 'ใครอยู่', moreRinging: 'อีก {n} สายกำลังดัง',
-      tabTeam: 'ใครอยู่', vmSub: 'บันทึกไว้เมื่อไม่มีใครรับสายได้ เมื่อเปิดฟังจะขึ้นชื่อคุณ เพื่อไม่ให้โทรกลับคนเดียวกันซ้ำ',
+      tabTeam: 'ใครอยู่', vmSub: 'แขกเขียนไว้เมื่อไม่มีใครรับสายได้ ตอบที่นี่ แขกจะเห็นคำตอบในหน้าที่เขียนมา และทางอีเมลหากให้ไว้',
+      stWaiting: 'รอตอบ', stAnswered: 'ตอบแล้ว', stClosedChat: 'ปิดแล้ว', youWrote: 'คุณ:', noEmail: 'ไม่ได้ให้อีเมล',
+      closeChat: 'ปิด', reopenChat: 'เปิดอีกครั้ง', send: 'ส่ง', replyPh: 'เขียนคำตอบ',
       teamSub: 'ทุกคนในสายที่คุณรับ แยกตามสาย และสายจะถึงเขาได้ตอนนี้หรือไม่ ตรวจดูก่อนออกจากกะ',
       groupBy: 'จัดกลุ่มตาม', byTime: 'เวลา', byLine: 'สาย', line: 'สาย', allLines: 'ทุกสาย',
       noNew: 'ไม่มีข้อความใหม่', none: 'ยังไม่มี', noCallsLine: 'ยังไม่มีสายในสายนี้', loading: 'กำลังโหลด…',
@@ -111,8 +114,7 @@
       incoming: 'สายเรียกเข้า', aGuest: 'แขก', answer: 'รับสาย', decline: 'ปฏิเสธ',
       reservations: 'ฝ่ายจองห้องพัก', frontDesk: 'แผนกต้อนรับ', sales: 'ฝ่ายขาย', support: 'ฝ่ายบริการลูกค้า', fromPage: 'จาก {page}',
       gone: 'มีคนรับสายไปก่อนแล้ว', micBlocked: 'ไมโครโฟนถูกบล็อก โปรดอนุญาตให้หน้านี้ใช้ไมโครโฟน',
-      callFailed: 'ไม่สามารถเชื่อมต่อสายได้', isNew: 'ใหม่', heardBy: '{name} ฟังแล้ว · {when}', heardByYou: 'คุณฟังแล้ว · {when}',
-      heard: 'ฟังแล้ว · {when}', markHeard: 'ทำเป็นฟังแล้ว', markUnheard: 'ทำเป็นยังไม่ฟัง', noContact: 'ไม่ได้ฝากเบอร์หรืออีเมล',
+      callFailed: 'ไม่สามารถเชื่อมต่อสายได้',
       answered: 'รับสาย', missed: 'ไม่ได้รับ', abandoned: 'วางสาย', leftMessage: 'ข้อความเสียง', live: 'กำลังสนทนา',
       answeredBy: 'โดย {name}', confirmSignOut: 'การออกจากระบบจะวางสาย ต้องการออกจากระบบหรือไม่',
       days: 'จ.,อ.,พ.,พฤ.,ศ.,ส.,อา.', lang: 'English', you: 'คุณ',
@@ -276,7 +278,7 @@
   var ice = [];
   var rings = {};
   var active = null;
-  var vmRows = [];
+  var chatRows = [];
   var callRows = [];
   var tab = 'new';
   var worker = null;
@@ -461,6 +463,9 @@
     Array.prototype.forEach.call(document.querySelectorAll('[data-t]'), function (node) {
       node.textContent = t(node.getAttribute('data-t'));
     });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-t-placeholder]'), function (node) {
+      node.placeholder = t(node.getAttribute('data-t-placeholder'));
+    });
     $('m-lang').textContent = t('lang');
   }
 
@@ -474,7 +479,7 @@
       $('me-email').textContent = me.agent.email;
       $('avatar').textContent = (me.agent.name || '?').trim().charAt(0).toUpperCase();
       paintAll();
-      loadVoicemail();
+      loadChats();
       if (me.agent.onDuty) startSocket();
       registerWorker();
     });
@@ -494,7 +499,7 @@
     paintDuty();
     paintPick();
     paintPush();
-    paintVoicemail();
+    paintChats();
     if (tab === 'calls') loadCalls();
     if (tab === 'team') loadTeam();
   }
@@ -630,7 +635,7 @@
     if (APP) paintRings();
     if (document.visibilityState === 'visible' && me) {
       refreshMe();
-      loadVoicemail();
+      loadChats();
     }
   });
 
@@ -647,7 +652,7 @@
       notify(msg.call);
     } else if (msg.t === 'cancelled' || msg.t === 'taken') {
       dropRing(msg.callId);
-      if (msg.t === 'cancelled') setTimeout(loadVoicemail, 4000);
+      if (msg.t === 'cancelled') setTimeout(loadChats, 4000);
     } else if (msg.t === 'gone') {
       dropRing(msg.callId);
       if (active && active.id === msg.callId) endCall(false, t('gone'));
@@ -957,8 +962,8 @@
     $('panel-calls').hidden = name !== 'calls';
     $('panel-team').hidden = name !== 'team';
     if (name === 'new' || name === 'all') {
-      paintVoicemail();
-      loadVoicemail();
+      paintChats();
+      loadChats();
     }
     if (name === 'calls') loadCalls();
     if (name === 'team') loadTeam();
@@ -1019,70 +1024,121 @@
 
   /* ----------------------------------------------------------- messages */
 
-  function loadVoicemail() {
+  // Conversations guests started when nobody could take their call: waiting
+  // on the line (open), waiting on the guest (answered), or closed.
+  var STATUS_TAG = { open: ['new', 'stWaiting'], answered: ['answered', 'stAnswered'], closed: ['', 'stClosedChat'] };
+  var openChatId = null;
+
+  function loadChats() {
     if (!me) return Promise.resolve();
-    return api('/voicemails').then(function (d) {
-      vmRows = d.voicemails;
-      paintVoicemail();
+    return api('/chats').then(function (d) {
+      chatRows = d.chats;
+      paintChats();
+      if (openChatId && !$('chat').hidden) refreshChat();
     }).catch(function () {});
   }
 
-  function heardTag(v) {
-    if (!v.heard) return el('span', { class: 'tag new', text: t('isNew') });
-    var at = when(v.heardAt || v.at);
-    if (v.heardBy && me && v.heardBy === me.agent.name) return el('span', { class: 'tag', text: t('heardByYou', { when: at }) });
-    return el('span', { class: 'tag', text: v.heardBy ? t('heardBy', { name: v.heardBy, when: at }) : t('heard', { when: at }) });
+  function statusTag(status) {
+    var tag = STATUS_TAG[status] || STATUS_TAG.open;
+    return el('span', { class: 'tag ' + tag[0], text: t(tag[1]) });
   }
 
-  function setHeard(v, heard) {
-    api('/voicemails/' + v.id + '/heard', { method: 'POST', body: { heard: heard } })
-      .then(function (d) { vmRows = d.voicemails; paintVoicemail(); })
-      .catch(function (x) { flash(x.message); });
-  }
-
-  function contactLink(value) {
-    var digits = value.replace(/[^\d+]/g, '');
-    if (/\S+@\S+\.\S+/.test(value)) return el('a', { href: 'mailto:' + value.trim(), text: value });
-    if (digits.length >= 6) return el('a', { href: 'tel:' + digits, text: value });
-    return el('span', { text: value });
-  }
-
-  function vmRow(v) {
-    var audio = el('audio', { controls: '', preload: 'none', src: withPhone('/api/voice/voicemails/' + v.id + '/audio') });
-    audio.addEventListener('play', function () { if (!v.heard) setHeard(v, true); }, { once: true });
-    return el('div', { class: 'hist-row item' + (v.heard ? '' : ' is-new') }, [
+  function chatRow(c) {
+    return el('button', { type: 'button', class: 'hist-row item chat-row' + (c.status === 'open' ? ' is-new' : ''), onclick: function () { openChat(c.id); } }, [
       el('div', { class: 'item-top' }, [
-        el('span', { class: 'who', text: v.caller || t('aGuest') }),
-        el('span', { class: 'when', text: when(v.at) }),
+        el('span', { class: 'who', text: c.name || t('aGuest') }),
+        el('span', { class: 'when', text: when(c.updatedAt) }),
       ]),
-      el('div', { class: 'item-meta' }, [el('span', { class: 'muted', text: lineLabel(v) + ' · ' + clock(v.seconds) }), heardTag(v)]),
-      audio,
-      el('div', { class: 'item-actions' }, [
-        v.contact ? contactLink(v.contact) : el('span', { class: 'muted small', text: t('noContact') }),
-        el('button', { type: 'button', class: 'btn small', text: v.heard ? t('markUnheard') : t('markHeard'), onclick: function () { setHeard(v, !v.heard); } }),
-      ]),
+      el('div', { class: 'item-meta' }, [el('span', { class: 'muted', text: c.line }), statusTag(c.status)]),
+      el('p', { class: 'chat-preview', text: (c.lastFromGuest ? '' : t('youWrote') + ' ') + c.preview }),
     ]);
   }
 
-  function paintVoicemail() {
-    var fresh = vmRows.filter(function (v) { return !v.heard; });
+  function paintChats() {
+    var fresh = chatRows.filter(function (c) { return c.status === 'open'; });
     $('vm-count').hidden = !fresh.length;
     $('vm-count').textContent = String(fresh.length);
     if (tab !== 'new' && tab !== 'all') return;
-    var source = tab === 'new' ? fresh : vmRows;
-    var view = listBar('vm', vmRows, $('vm-bar'), $('vm-line'), paintVoicemail);
-    var rows = view.rows.filter(function (v) { return source.indexOf(v) !== -1; });
+    var source = tab === 'new' ? fresh : chatRows;
+    var view = listBar('vm', chatRows, $('vm-bar'), $('vm-line'), paintChats);
+    var rows = view.rows.filter(function (c) { return source.indexOf(c) !== -1; });
     var box = $('vm-list');
     if (!rows.length) {
       box.innerHTML = '';
       box.appendChild(el('p', { class: 'empty', text: tab === 'new' ? t('noNew') : t('none') }));
       return;
     }
-    fill(box, rows, view.byLine, vmRow, function (name, group) {
-      var n = group.filter(function (v) { return !v.heard; }).length;
-      return n ? name + ' · ' + n + ' ' + t('isNew').toLowerCase() : name;
+    fill(box, rows, view.byLine, chatRow, function (name, group) {
+      var n = group.filter(function (c) { return c.status === 'open'; }).length;
+      return n ? name + ' · ' + n + ' ' + t('stWaiting').toLowerCase() : name;
     });
   }
+
+  function contactLink(value) {
+    return el('a', { href: 'mailto:' + value.trim(), text: value });
+  }
+
+  /** One conversation, in the sheet: what was said, and the answer box. */
+  function openChat(id) {
+    openChatId = id;
+    $('chat-msgs').innerHTML = '';
+    $('chat-reply').value = '';
+    $('chat-err').hidden = true;
+    openOverlay('chat');
+    refreshChat(true);
+  }
+
+  function refreshChat(focus) {
+    var id = openChatId;
+    api('/chats/' + id).then(function (d) {
+      if (openChatId !== id) return;
+      paintChat(d);
+      if (focus) $('chat-reply').focus();
+    }).catch(function (x) { flash(x.message); });
+  }
+
+  function paintChat(d) {
+    var c = d.chat;
+    $('chat-title').textContent = c.name || t('aGuest');
+    var sub = $('chat-sub');
+    sub.innerHTML = '';
+    sub.appendChild(document.createTextNode(c.line + ' · '));
+    sub.appendChild(c.email ? contactLink(c.email) : el('span', { text: t('noEmail') }));
+    var box = $('chat-msgs');
+    var seen = box.childElementCount;
+    box.innerHTML = '';
+    d.messages.forEach(function (m) {
+      box.appendChild(el('div', { class: 'chat-msg' + (m.fromGuest ? '' : ' ours') }, [
+        el('span', { class: 'chat-who', text: (m.fromGuest ? c.name || t('aGuest') : m.name) + ' · ' + when(m.at) }),
+        el('span', { class: 'chat-said', text: m.body }),
+      ]));
+    });
+    if (d.messages.length !== seen) box.scrollTop = box.scrollHeight;
+    var status = $('chat-status');
+    status.textContent = c.status === 'closed' ? t('reopenChat') : t('closeChat');
+    status.onclick = function () {
+      api('/chats/' + c.id + '/status', { method: 'POST', body: { status: c.status === 'closed' ? 'open' : 'closed' } })
+        .then(function (r) { paintChat(r); loadChats(); })
+        .catch(function (x) { flash(x.message); });
+    };
+  }
+
+  $('chat-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var text = $('chat-reply').value;
+    if (!text.trim() || !openChatId) return;
+    var btn = $('chat-send');
+    btn.disabled = true;
+    $('chat-err').hidden = true;
+    api('/chats/' + openChatId + '/reply', { method: 'POST', body: { body: text } })
+      .then(function (d) {
+        $('chat-reply').value = '';
+        paintChat(d);
+        loadChats();
+      })
+      .catch(function (x) { $('chat-err').textContent = x.message; $('chat-err').hidden = false; })
+      .then(function () { btn.disabled = false; });
+  });
 
   /* -------------------------------------------------------------- calls */
 
@@ -1255,12 +1311,13 @@
       }
     });
 
-  // Every minute, quietly: hours starting or ending, and a message left while
-  // the page sat open.
+  // Every minute, quietly: hours starting or ending.
   setInterval(function () {
-    if (me && document.visibilityState === 'visible') {
-      refreshMe();
-      loadVoicemail();
-    }
+    if (me && document.visibilityState === 'visible') refreshMe();
   }, 60000);
+
+  // Messages more often: a guest who wrote may be waiting on the page.
+  setInterval(function () {
+    if (me && document.visibilityState === 'visible') loadChats();
+  }, 20000);
 })();

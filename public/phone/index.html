@@ -157,7 +157,7 @@
         </nav>
 
         <section class="hist" id="panel-vm" role="tabpanel">
-          <p class="muted small" data-t="vmSub">Recorded when nobody on the line could take the call. Playing one marks it heard with your name, so two of you don't ring the same person back.</p>
+          <p class="muted small" data-t="vmSub">Written by guests when nobody could take their call. Answer here: they read it where they wrote, and by email if they left one.</p>
           <div class="q-bar" id="vm-bar" hidden>
             <div class="seg" role="group" aria-labelledby="vm-by-h">
               <span class="muted small" id="vm-by-h" data-t="groupBy">Group by</span>
@@ -209,6 +209,28 @@
     </div>
 
     <!-- How this works: written into the page, so it can be read mid-shift without leaving it. -->
+    <!-- One guest's conversation -->
+    <div class="overlay" id="chat" hidden>
+      <div class="sheet card chat-sheet" role="dialog" aria-modal="true" aria-labelledby="chat-title">
+        <div class="sheet-head">
+          <div>
+            <h2 id="chat-title"></h2>
+            <p class="muted small" id="chat-sub"></p>
+          </div>
+          <button type="button" class="icon-btn" data-close aria-label="Close">×</button>
+        </div>
+        <div class="chat-msgs" id="chat-msgs" role="log"></div>
+        <form id="chat-form" class="chat-form">
+          <textarea id="chat-reply" rows="3" maxlength="2000" data-t-placeholder="replyPh" placeholder="Write an answer" aria-label="Answer"></textarea>
+          <p class="err" id="chat-err" role="alert" hidden></p>
+          <div class="chat-actions">
+            <button type="button" class="btn" id="chat-status" data-t="closeChat">Close</button>
+            <button type="submit" class="btn primary" id="chat-send" data-t="send">Send</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div class="overlay" id="guide" hidden>
       <div class="sheet card guide" role="dialog" aria-modal="true" aria-labelledby="guide-title">
         <div class="sheet-head">

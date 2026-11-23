@@ -3,12 +3,14 @@
 const express = require('express');
 
 const voice = require('./voice');
+const chats = require('./chats');
 const hub = require('./voicehub');
 const rules = require('./voicerules');
 const emails = require('./emails');
 const mailer = require('./mailer');
 const { throttled } = require('./throttle');
 const { BASE_DOMAIN } = require('./tenant');
+const { one } = require('./db');
 
 /**
  * The softphone's HTTP side, at /api/voice. The ringing itself is a WebSocket
@@ -16,9 +18,10 @@ const { BASE_DOMAIN } = require('./tenant');
  *
  * Two kinds of caller, two doors:
  *
- *   Call buttons, on any Reviewslip page   /status, /voicemail — open to any
+ *   Call buttons, on any Reviewslip page   /status, /chat — open to any
  *     origin and uncredentialed: they say only whether a line can be called,
- *     and take a message for a call that just went unanswered.
+ *     and, when nobody can answer, take a written message instead. The
+ *     guest's token is the only key to their conversation.
  *
  *   The phone pages   everything else — the dashboard's own session cookie,
  *     from Reviewslip's pages only. On reviewslip.com nginx serves /phone/ and
@@ -123,6 +126,68 @@ async function tellVoicemail(saved, vm) {
   });
   for (const address of to) await mailer.send({ to: address, ...email });
 }
+
+/* ------------------------------------------- messages instead of voicemail */
+
+/**
+ * A guest writes to a line nobody can answer: a conversation the line's
+ * people answer on the dashboard and the phone (chats.js). Only a line that
+ * has people on it takes one, as the button only shows for one.
+ */
+router.all('/chat', openCors, async (req, res) => {
+  if (req.method !== 'POST') return res.status(405).end();
+  if (throttled(`chat:${req.ip}`, { max: 5 })) {
+    return res.status(429).json({ error: 'Too many messages. Try again in a minute.' });
+  }
+  try {
+    const body = req.body || {};
+    const line = await hub.resolveLine(body.line, body.team);
+    if (!line || (await hub.status(body.line, body.team)) === 'off') {
+      return res.status(404).json({ error: 'Nobody takes messages on this line.' });
+    }
+    const { token, chat } = await chats.open(line, body, body.page);
+    res.status(201).json({ token, chat });
+    chats
+      .tellLine({
+        line,
+        title: chat.line,
+        name: chat.name,
+        body: chat.messages[0]?.body || '',
+        slug: line.subscriberId ? String(body.line).trim().toLowerCase() : null,
+      })
+      .catch((err) => console.error('Chat email failed:', err.message));
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+/** The conversation, for the guest holding its token. Polled while the panel is open. */
+router.all('/chat/:token', openCors, async (req, res) => {
+  try {
+    res.set('Cache-Control', 'no-store');
+    if (req.method === 'GET') return res.json({ chat: await chats.forGuest(req.params.token) });
+    if (req.method !== 'POST') return res.status(405).end();
+    if (throttled(`chat:${req.ip}`, { max: 12 })) {
+      return res.status(429).json({ error: 'Too many messages. Try again in a minute.' });
+    }
+    const out = await chats.guestReply(req.params.token, req.body?.body);
+    res.json({ chat: out.chat });
+    if (out.reopened) {
+      const venue = out.line.subscriberId ? await one('SELECT slug FROM subscribers WHERE id = $1', [out.line.subscriberId]) : null;
+      chats
+        .tellLine({
+          line: out.line,
+          title: out.line.title,
+          name: out.name,
+          body: out.chat.messages[out.chat.messages.length - 1]?.body || '',
+          slug: venue ? venue.slug : null,
+        })
+        .catch((err) => console.error('Chat email failed:', err.message));
+    }
+  } catch (err) {
+    sendError(res, err);
+  }
+});
 
 /* ------------------------------------------------------- the phone page */
 
@@ -306,6 +371,56 @@ router.post('/voicemails/:id/heard', requireAgent, async (req, res) => {
     const lines = await voice.linesFor(req.agent.id);
     await voice.markHeard(req.params.id, lines, req.agent, req.body?.heard !== false);
     res.json({ voicemails: await voice.voicemailsFor(lines) });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+/* ------------------------------------------------- messages, on the phone */
+
+router.get('/chats', requireAgent, async (req, res) => {
+  try {
+    const lines = await voice.linesFor(req.agent.id);
+    res.set('Cache-Control', 'no-store');
+    res.json({ chats: await chats.listFor(lines) });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+router.get('/chats/:id', requireAgent, async (req, res) => {
+  try {
+    const lines = await voice.linesFor(req.agent.id);
+    res.set('Cache-Control', 'no-store');
+    const { chat, messages } = await chats.get(req.params.id, lines);
+    res.json({ chat, messages });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+/**
+ * Answered from the phone. On a venue line the answer is signed with the
+ * venue's name, as the dashboard signs it; on Reviewslip's, "Reviewslip".
+ */
+router.post('/chats/:id/reply', requireAgent, async (req, res) => {
+  try {
+    const lines = await voice.linesFor(req.agent.id);
+    const { chat } = await chats.get(req.params.id, lines);
+    const signed = chat.slug ? (lines.find((l) => l.slug === chat.slug) || {}).name || chat.line : 'Reviewslip';
+    const thread = await chats.reply(req.params.id, lines, { id: req.agent.accountId || null, name: signed }, req.body?.body);
+    chats.tellGuest(thread).catch((err) => console.error('Chat reply email failed:', err.message));
+    res.json({ chat: thread.chat, messages: thread.messages });
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+router.post('/chats/:id/status', requireAgent, async (req, res) => {
+  try {
+    const lines = await voice.linesFor(req.agent.id);
+    const { chat, messages } = await chats.setStatus(req.params.id, lines, String(req.body?.status || ''));
+    res.json({ chat, messages });
   } catch (err) {
     sendError(res, err);
   }

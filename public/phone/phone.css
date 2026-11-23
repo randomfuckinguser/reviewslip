@@ -1563,3 +1563,79 @@ select {
   gap: 0.5rem;
   text-decoration: none;
 }
+
+/* ------------------------------------------------------------ messages */
+
+.chat-row {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--divider);
+  cursor: pointer;
+}
+
+.chat-preview {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-msgs {
+  display: grid;
+  gap: 0.5rem;
+  max-height: 50dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.chat-msg {
+  display: grid;
+  gap: 0.15rem;
+  max-width: 88%;
+  justify-self: start;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--radius);
+  background: var(--card-2);
+}
+
+.chat-msg.ours {
+  justify-self: end;
+  background: color-mix(in srgb, var(--primary) 12%, var(--card));
+}
+
+.chat-who {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.chat-said {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.chat-form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.chat-form textarea {
+  width: 100%;
+  font: inherit;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: inherit;
+  resize: vertical;
+}
+
+.chat-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

@@ -7,6 +7,7 @@ const webpush = require('web-push');
 const fcm = require('./fcm');
 
 const voice = require('./voice');
+const chats = require('./chats');
 const rules = require('./voicerules');
 const subscribers = require('./subscribers');
 const { BASE_DOMAIN } = require('./tenant');
@@ -559,7 +560,10 @@ function attach(server) {
   }, PING_MS);
   ping.unref();
 
-  const daily = setInterval(() => voice.prune().catch(logError), 24 * 60 * 60 * 1000);
+  const daily = setInterval(() => {
+    voice.prune().catch(logError);
+    chats.prune().catch(logError);
+  }, 24 * 60 * 60 * 1000);
   daily.unref();
   voice.prune().catch(logError);
 

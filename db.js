@@ -1522,6 +1522,64 @@ const MIGRATIONS = [
     `);
     await c.query('CREATE INDEX room_item_photos_day ON room_item_photos (subscriber_id, on_day)');
   },
+
+  // Messages instead of voicemail: a caller nobody could answer writes
+  // instead, and that conversation is a ticket the line's people answer in
+  // the dashboard and on the phone. The guest holds a token, not an account:
+  // made from the nonce with SECRET_KEY, so the emailed link can be made
+  // again while the database alone opens nothing. See chats.js.
+  async (c) => {
+    await c.query(`
+      CREATE TABLE line_chats (
+        id             integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        subscriber_id  integer REFERENCES subscribers (id) ON DELETE CASCADE,
+        team           text NOT NULL DEFAULT 'sales',
+        token_nonce    text NOT NULL,
+        token_hash     text NOT NULL UNIQUE,
+        guest_name     text NOT NULL DEFAULT '',
+        guest_email    text NOT NULL DEFAULT '',
+        page           text NOT NULL DEFAULT '',
+        status         text NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'answered', 'closed')),
+        guest_seen_at  timestamptz,
+        created_at     timestamptz NOT NULL DEFAULT now(),
+        updated_at     timestamptz NOT NULL DEFAULT now()
+      )
+    `);
+    await c.query('CREATE INDEX line_chats_line ON line_chats (subscriber_id, team, updated_at DESC)');
+    await c.query(`
+      CREATE TABLE line_chat_messages (
+        id          integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        chat_id     integer NOT NULL REFERENCES line_chats (id) ON DELETE CASCADE,
+        from_guest  boolean NOT NULL,
+        author_id   integer REFERENCES accounts (id) ON DELETE SET NULL,
+        author_name text NOT NULL DEFAULT '',
+        body        text NOT NULL,
+        created_at  timestamptz NOT NULL DEFAULT now()
+      )
+    `);
+    await c.query('CREATE INDEX line_chat_messages_chat ON line_chat_messages (chat_id, id)');
+  },
+
+  // Sharing a venue: other accounts given a level of access to it. The
+  // address is what the owner typed; account_id is filled in when someone
+  // with that address signs in. See sharing.js.
+  async (c) => {
+    await c.query(`
+      CREATE TABLE venue_members (
+        id            integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        subscriber_id integer NOT NULL REFERENCES subscribers (id) ON DELETE CASCADE,
+        email         text NOT NULL,
+        account_id    integer REFERENCES accounts (id) ON DELETE CASCADE,
+        role          text NOT NULL CHECK (role IN ('manager', 'frontdesk')),
+        added_by      integer REFERENCES accounts (id) ON DELETE SET NULL,
+        created_at    timestamptz NOT NULL DEFAULT now(),
+        joined_at     timestamptz
+      )
+    `);
+    await c.query('CREATE UNIQUE INDEX venue_members_email ON venue_members (subscriber_id, lower(email))');
+    await c.query('CREATE INDEX venue_members_account ON venue_members (account_id)');
+    await c.query('CREATE INDEX venue_members_pending ON venue_members (lower(email)) WHERE account_id IS NULL');
+  },
 ];
 
 // Any constant will do; it only has to be the same in every process.

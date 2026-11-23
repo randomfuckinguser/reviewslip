@@ -54,6 +54,9 @@ const voice = require('./voice');
 const codes = require('./codes');
 const voicerules = require('./voicerules');
 const voicehub = require('./voicehub');
+const sharing = require('./sharing');
+const sharerules = require('./sharerules');
+const chats = require('./chats');
 
 // The website: the phone lives beside its dashboard, at /phone/.
 const SITE_URL = String(process.env.SITE_URL || 'https://reviewslip.com').replace(/\/$/, '');
@@ -94,18 +97,29 @@ async function requireAccount(req, res, next) {
 }
 
 /**
- * Loads the venue named in the path *and* checks it belongs to the caller.
+ * Loads the venue named in the path *and* checks the caller may use it: their
+ * own, or one shared with them at a level that allows this request
+ * (sharerules.js). req.role says which.
  *
- * A venue that exists but belongs to someone else answers 404, not 403 — a 403
- * would confirm the slug is taken, which is not this customer's business.
+ * A venue that exists but is not theirs answers 404, not 403 — a 403 would
+ * confirm the slug is taken, which is not this customer's business. A shared
+ * venue asked for something its level does not cover answers 403, with why.
  */
 async function requireOwnVenue(req, res, next) {
   try {
     const row = await subscribers.get(req.params.slug);
-    if (!row || row.account_id !== req.account.id) {
+    const role = await sharing.roleFor(row, req.account.id);
+    if (!role) {
       return res.status(404).json({ error: 'No business at that address.' });
     }
+    const rest = (/^\/businesses\/[^/]+(.*)$/.exec(req.path) || [])[1] || '';
+    if (!sharerules.allowed(role, req.method, rest)) {
+      return res.status(403).json({
+        error: `Your access to ${row.name} (${sharerules.LABELS[role]}) does not include that. Ask the owner.`,
+      });
+    }
     req.venue = row;
+    req.role = role;
     next();
   } catch (err) {
     next(err);
@@ -180,7 +194,8 @@ router.post('/code', async (req, res, next) => {
     const checked = accounts.checkEmail(email);
     if (!checked.ok) return res.status(400).json({ error: checked.error });
 
-    const known = (await accounts.byEmail(email)) || (await voice.pendingInvite(email));
+    const known =
+      (await accounts.byEmail(email)) || (await voice.pendingInvite(email)) || (await sharing.pendingFor(email));
     if (known || create) {
       const { code } = await codes.issue({ email });
       if (mailer.configured) {
@@ -215,7 +230,8 @@ router.post('/code/verify', async (req, res, next) => {
     const existing = await accounts.byEmail(email);
     if (existing) return res.json(await accounts.signInAs(existing));
 
-    if (body.create !== true) {
+    // A business shared with this address: an account for it, on the spot.
+    if (body.create !== true && !(await sharing.pendingFor(email))) {
       return res
         .status(404)
         .json({ error: 'There is no Reviewslip account with that email. Create one instead.' });
@@ -246,18 +262,26 @@ router.post('/logout', async (req, res, next) => {
 /** Everything the dashboard's landing page needs, in one call. */
 router.get('/me', requireAccount, async (req, res, next) => {
   try {
-    const rows = await subscribers.listForAccount(req.account.id);
+    // Anything shared with this address before it had an account, or before
+    // it signed in, is theirs now.
+    await sharing.claim(req.account);
+    const own = await subscribers.listForAccount(req.account.id);
+    const shared = await sharing.sharedWith(req.account.id);
+    const rows = [...own, ...shared];
     const usage = await events.usageThisMonthFor(rows.map((r) => r.id));
     const plan = plans.planFor(req.account.plan);
 
-    const reviewsThisMonth = rows.reduce(
+    // The plan counts the account's own businesses, not ones shared with it.
+    const reviewsThisMonth = own.reduce(
       (total, row) => total + (usage.get(row.id)?.reviews ?? 0),
       0
     );
 
-    const list = rows.map((row) =>
-      venueSummary(row, usage.get(row.id), req.account.plan)
-    );
+    const list = rows.map((row) => ({
+      ...venueSummary(row, usage.get(row.id), req.account.plan),
+      role: row.member_role || 'owner',
+      roleLabel: sharerules.LABELS[row.member_role || 'owner'],
+    }));
 
     res.json({
       account: accounts.toRecord(req.account),
@@ -272,8 +296,8 @@ router.get('/me', requireAccount, async (req, res, next) => {
         reviewsPerBusiness: plans.REVIEWS_PER_BUSINESS,
         tokensPerMonthPerBusiness: plans.TOKENS_PER_MONTH_PER_VENUE,
       },
-      usage: { reviewsThisMonth, businesses: rows.length },
-      canAddBusiness: plans.canAddVenue(req.account.plan, rows.length),
+      usage: { reviewsThisMonth, businesses: own.length },
+      canAddBusiness: plans.canAddVenue(req.account.plan, own.length),
       businesses: list,
     });
   } catch (err) {
@@ -2141,6 +2165,7 @@ router.get(
 
       res.json({
         business: identity,
+        access: { role: req.role, label: sharerules.LABELS[req.role] },
         setup: setup.progress({
           settings: resolved,
           off: resolved.platformsOff,
@@ -3224,8 +3249,8 @@ router.get(
 /** Who answers this venue's calls: the account itself and the staff it invited. */
 async function voiceTeam(req) {
   const [own, staff, status] = await Promise.all([
-    voice.byAccount(req.account.id, 'venues'),
-    voice.staffFor(req.account.id, req.venue.id),
+    voice.byAccount(req.venue.account_id, 'venues'),
+    voice.staffFor(req.venue.account_id, req.venue.id),
     voicehub.status(req.venue.slug, 'sales'),
   ]);
   const people = [own, ...staff].filter(Boolean);
@@ -3275,7 +3300,7 @@ async function sendVoiceInvite(req, agent, token) {
 
 router.post('/businesses/:slug/voice/staff', requireAccount, requireOwnVenue, async (req, res, next) => {
   try {
-    const { agent, token } = await voice.invite(req.account.id, req.venue.id, req.body || {});
+    const { agent, token } = await voice.invite(req.venue.account_id, req.venue.id, req.body || {});
     const handed = token ? await sendVoiceInvite(req, agent, token) : null;
     res.status(201).json({ ...(await voiceTeam(req)), link: handed?.link ?? null, code: handed?.code ?? null });
   } catch (err) {
@@ -3289,7 +3314,7 @@ router.post(
   requireOwnVenue,
   async (req, res, next) => {
     try {
-      const { agent, token } = await voice.reinvite(req.account.id, Number(req.params.id));
+      const { agent, token } = await voice.reinvite(req.venue.account_id, Number(req.params.id));
       const handed = await sendVoiceInvite(req, agent, token);
       res.json({ ...(await voiceTeam(req)), link: handed?.link ?? null, code: handed?.code ?? null });
     } catch (err) {
@@ -3300,9 +3325,132 @@ router.post(
 
 router.delete('/businesses/:slug/voice/staff/:id', requireAccount, requireOwnVenue, async (req, res, next) => {
   try {
-    await voice.removeStaff(req.account.id, req.venue.id, Number(req.params.id));
+    await voice.removeStaff(req.venue.account_id, req.venue.id, Number(req.params.id));
     voicehub.changed();
     res.json(await voiceTeam(req));
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------------------------------------------------------------- sharing */
+
+/** The sharing list, as every sharing route answers. */
+async function sharingOf(req) {
+  return { ...(await sharing.listFor(req.venue)), you: req.role, canEmail: mailer.configured };
+}
+
+/**
+ * Who the business is shared with. Everyone with access may see the list;
+ * only the owner changes it (sharerules.js).
+ */
+router.get('/businesses/:slug/sharing', requireAccount, requireOwnVenue, async (req, res, next) => {
+  try {
+    res.json(await sharingOf(req));
+  } catch (err) {
+    next(err);
+  }
+});
+
+/** Shares it, and tells them: open the dashboard, or sign in with this address. */
+router.post('/businesses/:slug/sharing', requireAccount, requireOwnVenue, async (req, res, next) => {
+  try {
+    const { member, hasAccount } = await sharing.add(req.venue, req.account.id, req.body || {});
+    if (mailer.configured) {
+      await mailer
+        .send({
+          to: member.email,
+          ...emails.shareEmail({
+            venue: req.venue.name,
+            by: req.account.email,
+            role: member.roleLabel,
+            hasAccount,
+            url: hasAccount ? `${SITE_URL}/dashboard/${req.venue.slug}` : `${SITE_URL}/login`,
+          }),
+        })
+        .catch((err) => console.error('Share email failed:', err.message));
+    }
+    res.status(201).json(await sharingOf(req));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch('/businesses/:slug/sharing/:id', requireAccount, requireOwnVenue, async (req, res, next) => {
+  try {
+    await sharing.setRole(req.venue, req.params.id, req.body?.role);
+    res.json(await sharingOf(req));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/businesses/:slug/sharing/:id', requireAccount, requireOwnVenue, async (req, res, next) => {
+  try {
+    await sharing.remove(req.venue, req.params.id);
+    res.json(await sharingOf(req));
+  } catch (err) {
+    next(err);
+  }
+});
+
+/** Someone it was shared with gives it up. Not the owner: theirs is Delete. */
+router.post('/businesses/:slug/leave', requireAccount, requireOwnVenue, async (req, res, next) => {
+  try {
+    if (req.role === 'owner') return res.status(400).json({ error: 'You own this business.' });
+    await sharing.leave(req.venue, req.account.id);
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* --------------------------------------------------------- guest messages */
+
+/**
+ * Messages guests wrote when nobody could take their call (chats.js): the
+ * venue's side of them, the same list the phone shows.
+ */
+function venueLine(req) {
+  return [{ subscriberId: req.venue.id, team: null }];
+}
+
+router.get('/businesses/:slug/chats', requireAccount, requireOwnVenue, async (req, res, next) => {
+  try {
+    res.json({ chats: await chats.listFor(venueLine(req)) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/businesses/:slug/chats/:id', requireAccount, requireOwnVenue, async (req, res, next) => {
+  try {
+    const { chat, messages } = await chats.get(req.params.id, venueLine(req));
+    res.json({ chat, messages });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/businesses/:slug/chats/:id/reply', requireAccount, requireOwnVenue, async (req, res, next) => {
+  try {
+    const thread = await chats.reply(
+      req.params.id,
+      venueLine(req),
+      { id: req.account.id, name: req.venue.name },
+      req.body?.body
+    );
+    chats.tellGuest(thread).catch((err) => console.error('Chat reply email failed:', err.message));
+    res.json({ chat: thread.chat, messages: thread.messages });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/businesses/:slug/chats/:id/status', requireAccount, requireOwnVenue, async (req, res, next) => {
+  try {
+    const { chat, messages } = await chats.setStatus(req.params.id, venueLine(req), String(req.body?.status || ''));
+    res.json({ chat, messages });
   } catch (err) {
     next(err);
   }

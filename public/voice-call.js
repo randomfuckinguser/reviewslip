@@ -1,7 +1,8 @@
 /*
  * Reviewslip call buttons: a guest presses Call and talks to the venue's desk,
  * or to Reviewslip's Sales or Support, in the browser. When nobody is free
- * they leave a voice message instead.
+ * they write instead: a conversation the line answers on the dashboard and
+ * the phone, read here or from the link in the email of the answer.
  *
  * One script per page:
  *
@@ -27,7 +28,7 @@
  * names a line (data-voice-line) is still taken, for pages written before.
  *
  * A button stays hidden until its line answers: "open" shows it as it is,
- * "voicemail" relabels it to leave a message, "off" keeps it hidden — so a
+ * "voicemail" relabels it to write a message, "off" keeps it hidden — so a
  * phone link beside it stays the fallback. Buttons added later (a page that
  * navigates without reloading) are picked up on their own.
  *
@@ -50,7 +51,6 @@
   var ACCENT = script && script.dataset.voiceAccent;
   var POLL_MS = 45000;
   var TRIGGER = '[data-rs-call], [data-voice-call][data-voice-line]';
-  var MAX_SECONDS = 120;
 
   /* ------------------------------------------------------------- words */
 
@@ -59,122 +59,111 @@
       leave: 'Leave a message', calling: 'Calling', allowMic: 'Allow the microphone to start the call.',
       connecting: 'Connecting…', mute: 'Mute', unmute: 'Unmute', hangUp: 'Hang up', close: 'Close',
       ended: 'Call ended', noAnswer: 'Nobody could answer just now.', away: 'Nobody is free right now.',
-      leaveIntro: 'Leave a short message and they will get back to you.', record: 'Record message',
-      stop: 'Stop', again: 'Record again', send: 'Send message', sending: 'Sending…', name: 'Your name',
-      contact: 'Phone or email, for a call back', sent: 'Message sent. They will get back to you.',
+      send: 'Send message', sending: 'Sending…', name: 'Your name',
       micBlocked: 'The microphone is blocked. Allow it in your browser, or call the number instead.',
-      failed: 'The call could not connect.', callNumber: 'Call {number}', upTo: 'Up to 2 minutes.',
-      error: 'Something went wrong. Try again.', recording: 'Recording',
+      failed: 'The call could not connect.', callNumber: 'Call {number}',
+      error: 'Something went wrong. Try again.',
+      writeIntro: 'Write to them instead and they will answer here.', message: 'Message', email: 'Email, so the answer reaches you (optional)', you: 'You', waitingNote: 'Sent. Their answer appears here, and by email if you gave one.', reply: 'Write a reply', closedNote: 'This conversation is closed. Write again to open it.', gone: 'This conversation is no longer here.',
     },
     th: {
       leave: 'ฝากข้อความ', calling: 'กำลังโทรหา', allowMic: 'อนุญาตให้ใช้ไมโครโฟนเพื่อเริ่มโทร',
       connecting: 'กำลังเชื่อมต่อ…', mute: 'ปิดเสียง', unmute: 'เปิดเสียง', hangUp: 'วางสาย', close: 'ปิด',
       ended: 'วางสายแล้ว', noAnswer: 'ขณะนี้ไม่มีผู้รับสาย', away: 'ขณะนี้ไม่มีผู้ว่างรับสาย',
-      leaveIntro: 'ฝากข้อความสั้น ๆ แล้วทางเราจะติดต่อกลับ', record: 'อัดข้อความ',
-      stop: 'หยุด', again: 'อัดใหม่', send: 'ส่งข้อความ', sending: 'กำลังส่ง…', name: 'ชื่อของคุณ',
-      contact: 'เบอร์โทรหรืออีเมลสำหรับติดต่อกลับ', sent: 'ส่งข้อความแล้ว ทางเราจะติดต่อกลับ',
+      send: 'ส่งข้อความ', sending: 'กำลังส่ง…', name: 'ชื่อของคุณ',
       micBlocked: 'ไมโครโฟนถูกบล็อก โปรดอนุญาตในเบราว์เซอร์ หรือโทรตามเบอร์แทน',
-      failed: 'ไม่สามารถเชื่อมต่อสายได้', callNumber: 'โทร {number}', upTo: 'ไม่เกิน 2 นาที',
-      error: 'เกิดข้อผิดพลาด โปรดลองอีกครั้ง', recording: 'กำลังอัด',
+      failed: 'ไม่สามารถเชื่อมต่อสายได้', callNumber: 'โทร {number}',
+      error: 'เกิดข้อผิดพลาด โปรดลองอีกครั้ง',
+      writeIntro: 'เขียนข้อความถึงทางเราแทน แล้วจะได้รับคำตอบที่นี่', message: 'ข้อความ', email: 'อีเมล เพื่อรับคำตอบ (ไม่บังคับ)', you: 'คุณ', waitingNote: 'ส่งแล้ว คำตอบจะแสดงที่นี่ และทางอีเมลหากคุณให้ไว้', reply: 'เขียนตอบกลับ', closedNote: 'การสนทนานี้ปิดแล้ว เขียนอีกครั้งเพื่อเปิดใหม่', gone: 'ไม่พบการสนทนานี้แล้ว',
     },
     zh: {
       leave: '留言', calling: '正在呼叫', allowMic: '请允许使用麦克风以开始通话。',
       connecting: '正在连接…', mute: '静音', unmute: '取消静音', hangUp: '挂断', close: '关闭',
       ended: '通话已结束', noAnswer: '暂时无人接听。', away: '目前无人有空。',
-      leaveIntro: '请留下简短留言，我们会回复您。', record: '录制留言',
-      stop: '停止', again: '重新录制', send: '发送留言', sending: '正在发送…', name: '您的姓名',
-      contact: '电话或电子邮箱，方便回电', sent: '留言已发送，我们会回复您。',
+      send: '发送留言', sending: '正在发送…', name: '您的姓名',
       micBlocked: '麦克风已被阻止。请在浏览器中允许，或直接拨打电话。',
-      failed: '通话无法接通。', callNumber: '拨打 {number}', upTo: '最长 2 分钟。',
-      error: '出了点问题，请重试。', recording: '正在录音',
+      failed: '通话无法接通。', callNumber: '拨打 {number}',
+      error: '出了点问题，请重试。',
+      writeIntro: '请改为留言，他们会在这里回复。', message: '留言', email: '电子邮箱，以便收到回复（选填）', you: '您', waitingNote: '已发送。回复会显示在这里，若留了邮箱也会发到邮箱。', reply: '写回复', closedNote: '此对话已关闭。再次留言即可重新打开。', gone: '此对话已不存在。',
     },
     ja: {
       leave: 'メッセージを残す', calling: '発信中', allowMic: '通話を始めるにはマイクを許可してください。',
       connecting: '接続中…', mute: 'ミュート', unmute: 'ミュート解除', hangUp: '切る', close: '閉じる',
       ended: '通話が終了しました', noAnswer: 'ただいま応答できる者がおりません。', away: '現在、対応できる者がおりません。',
-      leaveIntro: '短いメッセージを残していただければ、折り返しご連絡します。', record: '録音する',
-      stop: '停止', again: '録り直す', send: '送信', sending: '送信中…', name: 'お名前',
-      contact: '折り返し用の電話番号またはメール', sent: '送信しました。折り返しご連絡します。',
+      send: '送信', sending: '送信中…', name: 'お名前',
       micBlocked: 'マイクがブロックされています。ブラウザで許可するか、電話でおかけください。',
-      failed: '通話を接続できませんでした。', callNumber: '{number} に電話', upTo: '最大2分。',
-      error: '問題が発生しました。もう一度お試しください。', recording: '録音中',
+      failed: '通話を接続できませんでした。', callNumber: '{number} に電話',
+      error: '問題が発生しました。もう一度お試しください。',
+      writeIntro: '代わりにメッセージを送ってください。ここに返信が届きます。', message: 'メッセージ', email: 'メールアドレス（返信の受け取り用・任意）', you: 'あなた', waitingNote: '送信しました。返信はここに表示され、メールを入力した場合はメールでも届きます。', reply: '返信を書く', closedNote: 'この会話は終了しています。もう一度書くと再開します。', gone: 'この会話は見つかりません。',
     },
     ko: {
       leave: '메시지 남기기', calling: '전화 거는 중', allowMic: '통화를 시작하려면 마이크를 허용하세요.',
       connecting: '연결 중…', mute: '음소거', unmute: '음소거 해제', hangUp: '끊기', close: '닫기',
       ended: '통화가 종료되었습니다', noAnswer: '지금은 받을 수 있는 사람이 없습니다.', away: '지금은 응대 가능한 사람이 없습니다.',
-      leaveIntro: '짧은 메시지를 남기시면 연락드리겠습니다.', record: '메시지 녹음',
-      stop: '중지', again: '다시 녹음', send: '메시지 보내기', sending: '보내는 중…', name: '이름',
-      contact: '회신받을 전화번호 또는 이메일', sent: '메시지를 보냈습니다. 연락드리겠습니다.',
+      send: '메시지 보내기', sending: '보내는 중…', name: '이름',
       micBlocked: '마이크가 차단되었습니다. 브라우저에서 허용하거나 전화로 연락하세요.',
-      failed: '통화를 연결할 수 없습니다.', callNumber: '{number}로 전화', upTo: '최대 2분.',
-      error: '문제가 발생했습니다. 다시 시도하세요.', recording: '녹음 중',
+      failed: '통화를 연결할 수 없습니다.', callNumber: '{number}로 전화',
+      error: '문제가 발생했습니다. 다시 시도하세요.',
+      writeIntro: '대신 메시지를 남기시면 여기에서 답변드립니다.', message: '메시지', email: '답변 받을 이메일 (선택)', you: '나', waitingNote: '보냈습니다. 답변은 여기에 표시되며, 이메일을 남기셨다면 이메일로도 보내드립니다.', reply: '답장 쓰기', closedNote: '이 대화는 종료되었습니다. 다시 쓰면 다시 열립니다.', gone: '이 대화를 더 이상 찾을 수 없습니다.',
     },
     es: {
       leave: 'Dejar un mensaje', calling: 'Llamando a', allowMic: 'Permite el micrófono para empezar la llamada.',
       connecting: 'Conectando…', mute: 'Silenciar', unmute: 'Activar sonido', hangUp: 'Colgar', close: 'Cerrar',
       ended: 'Llamada finalizada', noAnswer: 'Nadie ha podido contestar ahora.', away: 'Ahora mismo no hay nadie disponible.',
-      leaveIntro: 'Deja un mensaje breve y te responderán.', record: 'Grabar mensaje',
-      stop: 'Detener', again: 'Grabar de nuevo', send: 'Enviar mensaje', sending: 'Enviando…', name: 'Tu nombre',
-      contact: 'Teléfono o correo, para devolverte la llamada', sent: 'Mensaje enviado. Te responderán.',
+      send: 'Enviar mensaje', sending: 'Enviando…', name: 'Tu nombre',
       micBlocked: 'El micrófono está bloqueado. Permítelo en el navegador o llama al número.',
-      failed: 'No se pudo conectar la llamada.', callNumber: 'Llamar al {number}', upTo: 'Hasta 2 minutos.',
-      error: 'Algo salió mal. Inténtalo de nuevo.', recording: 'Grabando',
+      failed: 'No se pudo conectar la llamada.', callNumber: 'Llamar al {number}',
+      error: 'Algo salió mal. Inténtalo de nuevo.',
+      writeIntro: 'Escríbeles y te responderán aquí.', message: 'Mensaje', email: 'Correo, para recibir la respuesta (opcional)', you: 'Tú', waitingNote: 'Enviado. La respuesta aparecerá aquí, y por correo si lo has dejado.', reply: 'Escribe una respuesta', closedNote: 'Esta conversación está cerrada. Escribe de nuevo para reabrirla.', gone: 'Esta conversación ya no está disponible.',
     },
     fr: {
       leave: 'Laisser un message', calling: 'Appel vers', allowMic: 'Autorisez le micro pour lancer l’appel.',
       connecting: 'Connexion…', mute: 'Couper le micro', unmute: 'Réactiver le micro', hangUp: 'Raccrocher', close: 'Fermer',
       ended: 'Appel terminé', noAnswer: 'Personne n’a pu répondre pour le moment.', away: 'Personne n’est disponible pour le moment.',
-      leaveIntro: 'Laissez un court message et on vous rappellera.', record: 'Enregistrer un message',
-      stop: 'Arrêter', again: 'Recommencer', send: 'Envoyer le message', sending: 'Envoi…', name: 'Votre nom',
-      contact: 'Téléphone ou e-mail, pour vous rappeler', sent: 'Message envoyé. On vous recontactera.',
+      send: 'Envoyer le message', sending: 'Envoi…', name: 'Votre nom',
       micBlocked: 'Le micro est bloqué. Autorisez-le dans le navigateur, ou appelez le numéro.',
-      failed: 'L’appel n’a pas pu aboutir.', callNumber: 'Appeler le {number}', upTo: '2 minutes maximum.',
-      error: 'Une erreur s’est produite. Réessayez.', recording: 'Enregistrement',
+      failed: 'L’appel n’a pas pu aboutir.', callNumber: 'Appeler le {number}',
+      error: 'Une erreur s’est produite. Réessayez.',
+      writeIntro: 'Écrivez-leur et ils vous répondront ici.', message: 'Message', email: 'E-mail, pour recevoir la réponse (facultatif)', you: 'Vous', waitingNote: 'Envoyé. La réponse s’affichera ici, et par e-mail si vous en avez laissé un.', reply: 'Écrire une réponse', closedNote: 'Cette conversation est fermée. Écrivez à nouveau pour la rouvrir.', gone: 'Cette conversation n’est plus disponible.',
     },
     de: {
       leave: 'Nachricht hinterlassen', calling: 'Anruf bei', allowMic: 'Erlauben Sie das Mikrofon, um den Anruf zu starten.',
       connecting: 'Verbinden…', mute: 'Stumm', unmute: 'Ton an', hangUp: 'Auflegen', close: 'Schließen',
       ended: 'Anruf beendet', noAnswer: 'Gerade konnte niemand abnehmen.', away: 'Gerade ist niemand frei.',
-      leaveIntro: 'Hinterlassen Sie eine kurze Nachricht, wir melden uns.', record: 'Nachricht aufnehmen',
-      stop: 'Stopp', again: 'Neu aufnehmen', send: 'Nachricht senden', sending: 'Wird gesendet…', name: 'Ihr Name',
-      contact: 'Telefon oder E-Mail für den Rückruf', sent: 'Nachricht gesendet. Wir melden uns.',
+      send: 'Nachricht senden', sending: 'Wird gesendet…', name: 'Ihr Name',
       micBlocked: 'Das Mikrofon ist blockiert. Erlauben Sie es im Browser oder rufen Sie die Nummer an.',
-      failed: 'Der Anruf konnte nicht verbunden werden.', callNumber: '{number} anrufen', upTo: 'Bis zu 2 Minuten.',
-      error: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.', recording: 'Aufnahme',
+      failed: 'Der Anruf konnte nicht verbunden werden.', callNumber: '{number} anrufen',
+      error: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
+      writeIntro: 'Schreiben Sie stattdessen, die Antwort erscheint hier.', message: 'Nachricht', email: 'E-Mail für die Antwort (optional)', you: 'Sie', waitingNote: 'Gesendet. Die Antwort erscheint hier, und per E-Mail, falls angegeben.', reply: 'Antwort schreiben', closedNote: 'Diese Unterhaltung ist geschlossen. Schreiben Sie erneut, um sie wieder zu öffnen.', gone: 'Diese Unterhaltung gibt es nicht mehr.',
     },
     it: {
       leave: 'Lascia un messaggio', calling: 'Chiamata a', allowMic: 'Consenti il microfono per iniziare la chiamata.',
       connecting: 'Connessione…', mute: 'Disattiva audio', unmute: 'Riattiva audio', hangUp: 'Riaggancia', close: 'Chiudi',
       ended: 'Chiamata terminata', noAnswer: 'Nessuno ha potuto rispondere ora.', away: 'Al momento nessuno è disponibile.',
-      leaveIntro: 'Lascia un breve messaggio e ti ricontatteranno.', record: 'Registra messaggio',
-      stop: 'Ferma', again: 'Registra di nuovo', send: 'Invia messaggio', sending: 'Invio…', name: 'Il tuo nome',
-      contact: 'Telefono o email, per richiamarti', sent: 'Messaggio inviato. Ti ricontatteranno.',
+      send: 'Invia messaggio', sending: 'Invio…', name: 'Il tuo nome',
       micBlocked: 'Il microfono è bloccato. Consentilo nel browser o chiama il numero.',
-      failed: 'Impossibile collegare la chiamata.', callNumber: 'Chiama il {number}', upTo: 'Fino a 2 minuti.',
-      error: 'Qualcosa è andato storto. Riprova.', recording: 'Registrazione',
+      failed: 'Impossibile collegare la chiamata.', callNumber: 'Chiama il {number}',
+      error: 'Qualcosa è andato storto. Riprova.',
+      writeIntro: 'Scrivi loro e ti risponderanno qui.', message: 'Messaggio', email: 'Email, per ricevere la risposta (facoltativa)', you: 'Tu', waitingNote: 'Inviato. La risposta apparirà qui, e via email se l’hai indicata.', reply: 'Scrivi una risposta', closedNote: 'Questa conversazione è chiusa. Scrivi di nuovo per riaprirla.', gone: 'Questa conversazione non è più disponibile.',
     },
     pt: {
       leave: 'Deixar mensagem', calling: 'A ligar para', allowMic: 'Permita o microfone para iniciar a chamada.',
       connecting: 'A ligar…', mute: 'Silenciar', unmute: 'Ativar som', hangUp: 'Desligar', close: 'Fechar',
       ended: 'Chamada terminada', noAnswer: 'Ninguém pôde atender agora.', away: 'Ninguém está disponível agora.',
-      leaveIntro: 'Deixe uma mensagem curta e entrarão em contacto.', record: 'Gravar mensagem',
-      stop: 'Parar', again: 'Gravar de novo', send: 'Enviar mensagem', sending: 'A enviar…', name: 'O seu nome',
-      contact: 'Telefone ou email, para retorno', sent: 'Mensagem enviada. Entrarão em contacto.',
+      send: 'Enviar mensagem', sending: 'A enviar…', name: 'O seu nome',
       micBlocked: 'O microfone está bloqueado. Permita-o no navegador ou ligue para o número.',
-      failed: 'Não foi possível ligar a chamada.', callNumber: 'Ligar para {number}', upTo: 'Até 2 minutos.',
-      error: 'Algo correu mal. Tente de novo.', recording: 'A gravar',
+      failed: 'Não foi possível ligar a chamada.', callNumber: 'Ligar para {number}',
+      error: 'Algo correu mal. Tente de novo.',
+      writeIntro: 'Escreva-lhes e responderão aqui.', message: 'Mensagem', email: 'Email, para receber a resposta (opcional)', you: 'Você', waitingNote: 'Enviado. A resposta aparece aqui, e por email se o indicou.', reply: 'Escreva uma resposta', closedNote: 'Esta conversa está fechada. Escreva de novo para a reabrir.', gone: 'Esta conversa já não está disponível.',
     },
     nl: {
       leave: 'Bericht achterlaten', calling: 'Bellen naar', allowMic: 'Sta de microfoon toe om het gesprek te starten.',
       connecting: 'Verbinden…', mute: 'Dempen', unmute: 'Dempen opheffen', hangUp: 'Ophangen', close: 'Sluiten',
       ended: 'Gesprek beëindigd', noAnswer: 'Er kon nu niemand opnemen.', away: 'Er is nu niemand beschikbaar.',
-      leaveIntro: 'Laat een kort bericht achter, dan nemen ze contact op.', record: 'Bericht opnemen',
-      stop: 'Stoppen', again: 'Opnieuw opnemen', send: 'Bericht versturen', sending: 'Versturen…', name: 'Je naam',
-      contact: 'Telefoon of e-mail, om terug te bellen', sent: 'Bericht verstuurd. Ze nemen contact op.',
+      send: 'Bericht versturen', sending: 'Versturen…', name: 'Je naam',
       micBlocked: 'De microfoon is geblokkeerd. Sta hem toe in je browser, of bel het nummer.',
-      failed: 'Het gesprek kon niet worden verbonden.', callNumber: '{number} bellen', upTo: 'Maximaal 2 minuten.',
-      error: 'Er ging iets mis. Probeer het opnieuw.', recording: 'Opnemen',
+      failed: 'Het gesprek kon niet worden verbonden.', callNumber: '{number} bellen',
+      error: 'Er ging iets mis. Probeer het opnieuw.',
+      writeIntro: 'Schrijf ze en ze antwoorden hier.', message: 'Bericht', email: 'E-mail, voor het antwoord (optioneel)', you: 'Jij', waitingNote: 'Verzonden. Het antwoord verschijnt hier, en per e-mail als je die hebt opgegeven.', reply: 'Schrijf een antwoord', closedNote: 'Dit gesprek is gesloten. Schrijf opnieuw om het te heropenen.', gone: 'Dit gesprek is er niet meer.',
     },
   };
 
@@ -281,18 +270,24 @@
     '.rsv-btn[disabled]{opacity:.6;cursor:default}' +
     '.rsv-in{width:100%;min-height:38px;padding:8px 10px;border-radius:8px;border:1px solid var(--rsv-line);background:var(--rsv-bg);color:var(--rsv-fg);font:inherit}' +
     '.rsv-lbl{display:grid;gap:4px;font-size:13px;color:var(--rsv-muted)}' +
-    '.rsv audio{width:100%;height:36px}' +
+    '.rsv-area{min-height:72px;resize:vertical;line-height:1.45}' +
+    '.rsv-msgs{display:grid;gap:8px;max-height:min(320px,45vh);overflow-y:auto;overscroll-behavior:contain;padding:2px}' +
+    '.rsv-msg{display:grid;gap:2px;max-width:88%;justify-self:start;padding:8px 10px;border-radius:10px;background:var(--rsv-soft)}' +
+    '.rsv-me{justify-self:end;background:var(--rsv-accent);color:var(--rsv-on-accent)}' +
+    '.rsv-who{font-size:12px;opacity:.75}' +
+    '.rsv-said{white-space:pre-wrap;overflow-wrap:anywhere}' +
     '.rsv-err{color:#dc2626;font-size:13px;margin:0}' +
     '.rsv-time{font-variant-numeric:tabular-nums}' +
     /* On a phone: a sheet along the bottom, the page dimmed behind it, buttons big enough for a thumb. */
     '@media (max-width:600px){.rsv{left:0;right:0;bottom:0;width:auto;max-width:none;border-radius:18px 18px 0 0;border-bottom:0;' +
     'padding:20px 18px calc(20px + env(safe-area-inset-bottom));gap:16px;font-size:15px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}' +
     '.rsv-dot{width:52px;height:52px}.rsv-dot svg{width:24px;height:24px}.rsv-title{font-size:17px}.rsv-sub{font-size:14px}' +
-    '.rsv-btn{min-height:50px;border-radius:14px;font-size:16px}.rsv-in{min-height:46px;font-size:16px}.rsv audio{height:44px}}';
+    '.rsv-btn{min-height:50px;border-radius:14px;font-size:16px}.rsv-in{min-height:46px;font-size:16px}}';
 
   var ICON = {
     phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',
     mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4"/></svg>',
+    chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
     x: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
   };
 
@@ -331,6 +326,7 @@
   }
 
   function closePanel() {
+    stopChat();
     if (panel) panel.remove();
     panel = null;
   }
@@ -463,7 +459,11 @@
       } else if (msg.t === 'noanswer') {
         c.id = msg.callId;
         stopRing(c);
-        voicemail(c, msg.why);
+        // Nobody could take it: write to them instead.
+        var b = c.btn;
+        c.left = true;
+        cleanup();
+        writeTo(b, msg.why || 'away');
       } else if (msg.t === 'ended') {
         ended(c);
       } else if (msg.t === 'error') {
@@ -471,7 +471,7 @@
       }
     };
     ws.onclose = function () {
-      if (call === c && !c.recording && !c.left) failed(c);
+      if (call === c && !c.left) failed(c);
     };
   }
 
@@ -581,9 +581,6 @@
     if (!c) return;
     stopRing(c);
     clearInterval(c.timer);
-    if (c.recorder && c.recorder.state === 'recording') {
-      try { c.recorder.stop(); } catch (e) { /* stopped */ }
-    }
     if (c.pc) try { c.pc.close(); } catch (e) { /* closed */ }
     if (c.ws && c.ws.readyState <= 1) try { c.ws.close(); } catch (e) { /* closed */ }
     if (c.stream) c.stream.getTracks().forEach(function (tr) { tr.stop(); });
@@ -597,136 +594,182 @@
     closePanel();
   }
 
-  /* --------------------------------------------------------- voicemail */
+  /* ------------------------------------------------- write instead of call */
 
-  function recorderType() {
-    if (!window.MediaRecorder) return null;
-    var types = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4', 'audio/webm'];
-    for (var i = 0; i < types.length; i++) if (MediaRecorder.isTypeSupported(types[i])) return types[i];
-    return '';
+  // A conversation the guest started on a line: its key, kept in this browser
+  // so pressing the button again opens it. The server keeps only a hash.
+  var CHAT_POLL_MS = 8000;
+  var chat = null;
+
+  function storedToken(key) {
+    try { return localStorage.getItem('rsv-chat:' + key) || ''; } catch (e) { return ''; }
   }
 
-  function voicemail(c, why) {
-    c.recording = true;
-    if (c.ws) try { c.ws.close(); } catch (e) { /* closed */ }
-    var type = recorderType();
-    if (type === null) {
-      c.left = true;
-      cleanup();
-      return draw({
-        title: why === 'timeout' || why === 'declined' ? t('noAnswer') : t('away'),
-        closable: true,
-        body: [el('div', { class: 'rsv-row' }, [telLink(c.btn), button(t('close'), '', finish)])],
-      });
-    }
-    c.mime = type;
-    var title = why === 'timeout' || why === 'declined' ? t('noAnswer') : t('away');
-    draw({
-      title: title,
-      sub: t('leaveIntro') + ' ' + t('upTo'),
-      icon: ICON.mic,
-      closable: true,
-      body: [el('div', { class: 'rsv-row' }, [button(t('record'), 'rsv-main', function () { record(c, title); }, { 'data-focus': '' })])],
-    });
-  }
-
-  function record(c, title) {
-    var chunks = [];
-    var rec;
+  function storeToken(key, token) {
     try {
-      rec = new MediaRecorder(c.stream, c.mime ? { mimeType: c.mime, audioBitsPerSecond: 24000 } : undefined);
-    } catch (e) {
-      rec = new MediaRecorder(c.stream);
-    }
-    c.recorder = rec;
-    var began = Date.now();
-    rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
-    rec.onstop = function () {
-      clearInterval(c.timer);
-      if (call !== c) return;
-      var seconds = Math.max(1, Math.round((Date.now() - began) / 1000));
-      var blob = new Blob(chunks, { type: (rec.mimeType || c.mime || 'audio/webm').split(';')[0] });
-      review(c, title, blob, seconds);
-    };
-    rec.start(1000);
-    draw({
-      title: t('recording'),
-      sub: clock(0) + ' / ' + clock(MAX_SECONDS),
-      timer: true,
-      icon: ICON.mic,
-      ring: true,
-      body: [el('div', { class: 'rsv-row' }, [button(t('stop'), 'rsv-main', function () { rec.stop(); }, { 'data-focus': '' })])],
-    });
-    c.timer = setInterval(function () {
-      var s = Math.round((Date.now() - began) / 1000);
-      var sub = panel && panel.querySelector('.rsv-sub');
-      if (sub) sub.textContent = clock(s) + ' / ' + clock(MAX_SECONDS);
-      if (s >= MAX_SECONDS && rec.state === 'recording') rec.stop();
-    }, 500);
+      if (token) localStorage.setItem('rsv-chat:' + key, token);
+      else localStorage.removeItem('rsv-chat:' + key);
+    } catch (e) { /* storage off: the emailed link still opens it */ }
   }
 
-  function review(c, title, blob, seconds) {
-    var url = URL.createObjectURL(blob);
+  function stopChat() {
+    if (chat) clearTimeout(chat.timer);
+    chat = null;
+  }
+
+  function api(path, opts) {
+    return fetch(API + '/api/voice' + path, Object.assign({ credentials: 'omit', cache: 'no-store' }, opts || {}))
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (d) {
+          if (!r.ok) {
+            var err = new Error(d.error || t('error'));
+            err.status = r.status;
+            throw err;
+          }
+          return d;
+        });
+      });
+  }
+
+  function post(path, body) {
+    return api(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  }
+
+  /**
+   * Nobody can answer (the line said so, or the call rang out): write to
+   * them instead. A conversation already going on this line opens instead.
+   */
+  function writeTo(btn, why) {
+    var key = keyOf(btn);
+    var token = storedToken(key);
+    if (token) return openThread(token, key, btn);
+    compose(btn, why);
+  }
+
+  function compose(btn, why) {
+    stopChat();
+    var key = keyOf(btn);
+    var title = why === 'timeout' || why === 'declined' ? t('noAnswer') : why ? t('away') : btn.dataset.voiceLeave || t('leave');
     var name = el('input', { class: 'rsv-in', type: 'text', maxlength: '80', autocomplete: 'name' });
-    name.value = c.btn.dataset.voiceCaller || window.VOICE_CALLER || '';
-    var contact = el('input', { class: 'rsv-in', type: 'text', maxlength: '120', autocomplete: 'tel' });
+    name.value = btn.dataset.voiceCaller || window.VOICE_CALLER || '';
+    var email = el('input', { class: 'rsv-in', type: 'email', maxlength: '160', autocomplete: 'email' });
+    var body = el('textarea', { class: 'rsv-in rsv-area', maxlength: '2000', rows: '4' });
     var err = el('p', { class: 'rsv-err', role: 'alert' });
     err.hidden = true;
     var sendBtn = button(t('send'), 'rsv-main', function () {
       sendBtn.disabled = true;
       sendBtn.textContent = t('sending');
       err.hidden = true;
-      toBase64(blob).then(function (audio) {
-        return fetch(API + '/api/voice/voicemail', {
-          method: 'POST',
-          credentials: 'omit',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            callId: c.id, mime: blob.type, audio: audio, seconds: seconds, name: name.value, contact: contact.value,
-          }),
-        });
-      }).then(function (r) {
-        return r.json().catch(function () { return {}; }).then(function (d) {
-          if (!r.ok) throw new Error(d.error || t('error'));
-        });
-      }).then(function () {
-        URL.revokeObjectURL(url);
-        c.left = true;
-        cleanup();
-        draw({ title: t('sent'), closable: true, body: [el('div', { class: 'rsv-row' }, [button(t('close'), '', finish, { 'data-focus': '' })])] });
+      post('/chat', {
+        line: btn.dataset.voiceLine,
+        team: btn.dataset.voiceTeam || 'sales',
+        name: name.value,
+        email: email.value,
+        body: body.value,
+        page: location.href,
+      }).then(function (d) {
+        storeToken(key, d.token);
+        showThread(d.token, key, d.chat, btn);
       }).catch(function (e) {
         err.textContent = e.message || t('error');
         err.hidden = false;
         sendBtn.disabled = false;
         sendBtn.textContent = t('send');
       });
-    }, { 'data-focus': '' });
-
+    });
     draw({
       title: title,
-      sub: clock(seconds),
-      icon: ICON.mic,
+      sub: t('writeIntro'),
+      icon: ICON.chat,
       closable: true,
       body: [
-        el('audio', { controls: '', src: url, preload: 'metadata' }),
         el('label', { class: 'rsv-lbl' }, [document.createTextNode(t('name')), name]),
-        el('label', { class: 'rsv-lbl' }, [document.createTextNode(t('contact')), contact]),
+        el('label', { class: 'rsv-lbl' }, [document.createTextNode(t('email')), email]),
+        el('label', { class: 'rsv-lbl' }, [document.createTextNode(t('message')), body]),
         err,
-        el('div', { class: 'rsv-row' }, [
-          button(t('again'), '', function () { URL.revokeObjectURL(url); record(c, title); }),
-          sendBtn,
-        ]),
+        el('div', { class: 'rsv-row' }, [sendBtn]),
       ],
+    });
+    (name.value ? body : name).focus({ preventScroll: true });
+  }
+
+  function openThread(token, key, btn) {
+    api('/chat/' + encodeURIComponent(token)).then(function (d) {
+      showThread(token, key || d.chat.key, d.chat, btn);
+    }).catch(function (e) {
+      if (e.status === 404) {
+        if (key) storeToken(key, '');
+        if (btn) return compose(btn);
+        return draw({ title: t('gone'), closable: true, icon: ICON.chat });
+      }
+      draw({ title: t('error'), closable: true, icon: ICON.chat });
     });
   }
 
-  function toBase64(blob) {
-    return new Promise(function (resolve, reject) {
-      var reader = new FileReader();
-      reader.onload = function () { resolve(String(reader.result).split(',')[1] || ''); };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
+  function when(iso) {
+    var d = new Date(iso);
+    return isNaN(d) ? '' : d.toLocaleString(lang(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function messageList(data) {
+    var list = el('div', { class: 'rsv-msgs', role: 'log' });
+    data.messages.forEach(function (m) {
+      list.appendChild(el('div', { class: 'rsv-msg' + (m.fromGuest ? ' rsv-me' : '') }, [
+        el('span', { class: 'rsv-who', text: (m.fromGuest ? t('you') : m.name || data.line) + ' · ' + when(m.at) }),
+        el('span', { class: 'rsv-said', text: m.body }),
+      ]));
     });
+    return list;
+  }
+
+  /** The conversation: what was said, a box to answer in, kept fresh while open. */
+  function showThread(token, key, data, btn) {
+    stopChat();
+    if (key && data.key && key !== data.key) key = data.key;
+    if (data.key) storeToken(data.key, token);
+    chat = { token: token, key: key || data.key, count: data.messages.length, timer: null };
+    var current = chat;
+    var reply = el('textarea', { class: 'rsv-in rsv-area', maxlength: '2000', rows: '2', 'aria-label': t('reply'), placeholder: t('reply') });
+    var err = el('p', { class: 'rsv-err', role: 'alert' });
+    err.hidden = true;
+    var sendBtn = button(t('send'), 'rsv-main', function () {
+      if (!reply.value.trim()) return reply.focus();
+      sendBtn.disabled = true;
+      err.hidden = true;
+      post('/chat/' + encodeURIComponent(token), { body: reply.value }).then(function (d) {
+        if (chat === current) showThread(token, current.key, d.chat, btn);
+      }).catch(function (e) {
+        err.textContent = e.message || t('error');
+        err.hidden = false;
+        sendBtn.disabled = false;
+      });
+    });
+    var waiting = data.messages.length && data.messages[data.messages.length - 1].fromGuest;
+    var note = data.status === 'closed' ? t('closedNote') : waiting ? t('waitingNote') : '';
+    var list = messageList(data);
+    draw({
+      title: data.line,
+      sub: note,
+      icon: ICON.chat,
+      closable: true,
+      body: [list, el('label', { class: 'rsv-lbl' }, [reply]), err, el('div', { class: 'rsv-row' }, [sendBtn])],
+    });
+    list.scrollTop = list.scrollHeight;
+    reply.focus({ preventScroll: true });
+
+    // Answers arrive while it is open; the box being typed in is kept.
+    function poll() {
+      current.timer = setTimeout(function () {
+        if (chat !== current) return;
+        if (document.visibilityState !== 'visible') return poll();
+        api('/chat/' + encodeURIComponent(token)).then(function (d) {
+          if (chat !== current) return;
+          if (d.chat.messages.length !== current.count && !reply.value.trim()) return showThread(token, current.key, d.chat, btn);
+          poll();
+        }).catch(function () { if (chat === current) poll(); });
+      }, CHAT_POLL_MS);
+    }
+    poll();
   }
 
   /* ------------------------------------------------------------ wiring */
@@ -735,7 +778,10 @@
     var btn = e.target.closest && e.target.closest(TRIGGER);
     if (!btn || btn.hidden || !supported) return;
     e.preventDefault();
-    start(btn);
+    if (call || chat) return;
+    // Nobody free on the line: straight to writing, no microphone asked for.
+    if (btn.dataset.voiceState === 'voicemail') writeTo(btn);
+    else start(btn);
   });
 
   var queued = null;
@@ -756,4 +802,13 @@
 
   window.ReviewslipVoice = { refresh: function () { refresh(true); } };
   refresh(true);
+
+  // The link in the email of an answer: the conversation, opened on the page
+  // it was written from. The key is after the #, so it reaches no server; it
+  // comes off the address bar at once.
+  var linked = /[#&]rs-chat=([A-Za-z0-9_-]{20,64})/.exec(location.hash);
+  if (linked) {
+    history.replaceState(null, '', location.pathname + location.search);
+    openThread(linked[1], '', null);
+  }
 })();

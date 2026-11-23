@@ -451,6 +451,62 @@ function voicemailEmail({ line, caller, contact, seconds, url }) {
   return { subject, text, html };
 }
 
+/** An email body: the paragraphs, a link, and the sign-off. */
+function simpleHtml(paragraphs, link, linkText, quote) {
+  return [
+    '<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:16px;line-height:1.6;color:#1b2a23;max-width:34rem">',
+    ...paragraphs.map((l) => `<p>${escapeHtml(l)}</p>`),
+    quote
+      ? `<blockquote style="margin:0 0 1em;padding:0.6em 0.9em;border-left:3px solid #d1d1d1;white-space:pre-wrap;color:#242424">${escapeHtml(quote)}</blockquote>`
+      : '',
+    `<p><a href="${escapeHtml(link)}" style="color:#2f5f4c">${escapeHtml(linkText)}</a></p>`,
+    '<p style="font-size:0.9em;color:#5a6b63">— Reviewslip</p>',
+    '</div>',
+  ].join('');
+}
+
+/**
+ * A guest wrote to a line nobody could answer, or wrote again in a
+ * conversation: to everyone on the line, with what they said.
+ */
+function chatEmail({ line, name, body, url }) {
+  const who = clean(name, 80) || 'A guest';
+  const place = clean(line, 80);
+  const said = String(body || '').slice(0, 1500);
+  const subject = `Message for ${place} from ${who}`;
+  const lines = [`${who} wrote to ${place}:`];
+  const text = [...lines, '', said, '', `Answer it: ${url}`, '', '— Reviewslip'].join('\n');
+  return { subject, text, html: simpleHtml(lines, url, 'Answer it', said) };
+}
+
+/** The line answered: to the guest, with the answer and the way back in. */
+function chatReplyEmail({ line, name, body, url }) {
+  const place = clean(line, 80);
+  const said = String(body || '').slice(0, 1500);
+  const subject = `${place} answered your message`;
+  const lines = [`Hello ${clean(name, 80) || 'there'},`, `${place} answered your message:`];
+  const text = [...lines, '', said, '', `Read it and answer: ${url}`, '', '— Reviewslip'].join('\n');
+  return { subject, text, html: simpleHtml(lines, url, 'Read it and answer', said) };
+}
+
+/**
+ * A business shared with someone: open the dashboard, or, with no account
+ * yet, sign in with this address (a code comes to it, no password).
+ */
+function shareEmail({ venue, by, role, hasAccount, url }) {
+  const place = clean(venue, 120);
+  const subject = `${place} was shared with you on Reviewslip`;
+  const lines = [
+    `${clean(by, 120) || 'Its owner'} shared ${place} with you on Reviewslip. Your access: ${clean(role, 40)}.`,
+    hasAccount
+      ? 'It is on your dashboard now.'
+      : 'Sign in with this email address: we send a code to it, there is no password to make up.',
+  ];
+  const linkText = hasAccount ? 'Open the dashboard' : 'Sign in';
+  const text = [...lines, '', `${linkText}: ${url}`, '', '— Reviewslip'].join('\n');
+  return { subject, text, html: simpleHtml(lines, url, linkText) };
+}
+
 /** The six digits, large, for an email someone reads on a phone. */
 function codeBlock(code) {
   return `<p style="font-size:2em;font-weight:700;letter-spacing:0.25em;margin:0.6em 0;color:#1b2a23">${escapeHtml(code)}</p>`;
@@ -523,6 +579,9 @@ function codeEmail({ code, minutes }) {
 }
 
 module.exports = {
+  chatEmail,
+  chatReplyEmail,
+  shareEmail,
   voicemailEmail,
   voiceInviteEmail,
   codeEmail,
