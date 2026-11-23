@@ -172,6 +172,13 @@ export default async function DashboardPage({
                           >
                             {business.name}
                           </Link>
+                          {/* Shared with this account, not its own: whose
+                              level of access, and that it is not on the plan. */}
+                          {business.role !== "owner" ? (
+                            <div style={{ fontSize: "var(--fs12)", color: "var(--muted-foreground)" }}>
+                              Shared with you · {business.roleLabel}
+                            </div>
+                          ) : null}
                         </td>
                         <td style={{ wordBreak: "break-all" }}>
                           <a href={business.url} target="_blank" rel="noreferrer">
@@ -196,12 +203,15 @@ export default async function DashboardPage({
                           />
                         </td>
                         <td style={{ textAlign: "right" }}>
-                          <Link
-                            className="btn btn-quiet"
-                            href={localizedPath(lang, `/dashboard/${business.slug}/settings`)}
-                          >
-                            Settings
-                          </Link>
+                          {/* Front Desk cannot change settings: no way in. */}
+                          {business.role !== "frontdesk" ? (
+                            <Link
+                              className="btn btn-quiet"
+                              href={localizedPath(lang, `/dashboard/${business.slug}/settings`)}
+                            >
+                              Settings
+                            </Link>
+                          ) : null}
                         </td>
                       </tr>
                     ))}

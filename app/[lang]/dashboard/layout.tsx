@@ -23,7 +23,8 @@ export default async function DashboardLayout({
 
   const me = await currentUser();
   if (!me) redirect(localizedPath(lang, "/login"));
-  // Invited front-desk staff have an account for the phone and nothing else.
+  // Invited phone staff have an account for the phone and nothing else
+  // (a business shared with them gives them the dashboard too).
   if (me.account.phoneOnly) redirect("/phone/");
 
   return (
@@ -31,7 +32,7 @@ export default async function DashboardLayout({
       kind="customer"
       lang={lang}
       email={me.account.email}
-      venues={me.businesses.map(({ slug, name }) => ({ slug, name }))}
+      venues={me.businesses.map(({ slug, name, role }) => ({ slug, name, role }))}
       isAdmin={me.account.isAdmin === true}
     >
       {children}

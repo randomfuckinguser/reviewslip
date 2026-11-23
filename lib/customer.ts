@@ -224,6 +224,62 @@ export interface BusinessSummary {
   usage: { reviews: number; tokens: number; tokenLimit: number };
   ready: boolean;
   plan: string;
+  /** The caller's access: their own, or shared with them at one level. */
+  role: AccessRole;
+  roleLabel: string;
+}
+
+/** owner: everything. manager (Full Access): all but deleting and sharing.
+ *  frontdesk (Front Desk): reads everything, changes the desk's work only. */
+export type AccessRole = "owner" | "manager" | "frontdesk";
+
+export interface SharedMember {
+  id: number;
+  email: string;
+  role: Exclude<AccessRole, "owner">;
+  roleLabel: string;
+  /** Signed in since it was shared: the business is on their dashboard. */
+  joined: boolean;
+  addedAt: string;
+  joinedAt: string | null;
+}
+
+export interface SharingData {
+  owner: string | null;
+  members: SharedMember[];
+  roles: Record<AccessRole, string>;
+  you: AccessRole;
+  canEmail: boolean;
+}
+
+/** A guest's message to the venue, written when nobody could take their call. */
+export interface GuestChat {
+  id: number;
+  line: string;
+  slug: string | null;
+  name: string;
+  email: string;
+  page: string;
+  /** open: waiting on the venue. answered: waiting on the guest. */
+  status: "open" | "answered" | "closed";
+  preview: string;
+  lastFromGuest: boolean;
+  messages: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GuestChatMessage {
+  id: number;
+  fromGuest: boolean;
+  name: string;
+  body: string;
+  at: string;
+}
+
+export interface GuestChatThread {
+  chat: GuestChat;
+  messages: GuestChatMessage[];
 }
 
 export interface Me {
@@ -866,6 +922,7 @@ export interface SetupProgress {
 
 export interface BusinessDetail {
   setup: SetupProgress;
+  access: { role: AccessRole; label: string };
   business: {
     slug: string;
     name: string;

@@ -388,7 +388,8 @@ export default async function BusinessSettingsPage({
           name={data.business.name}
           settings={data.settings}
         >
-          <DeleteBusiness slug={slug} destroy={destroy} />
+          {/* Only the owner deletes a business; it is shared with the rest. */}
+          {data.access.role === "owner" ? <DeleteBusiness slug={slug} destroy={destroy} /> : null}
         </SettingsForm>
       </div>
     </>

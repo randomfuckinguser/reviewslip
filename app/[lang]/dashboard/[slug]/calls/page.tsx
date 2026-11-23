@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 const STATUS: Record<VoiceTeamData["status"], { text: string; tone: string }> = {
   open: { text: "Answering now: guests who press Call ring your phone.", tone: "var(--success)" },
-  voicemail: { text: "Nobody is on duty: guests who press Call leave a voice message.", tone: "var(--warning)" },
+  voicemail: { text: "Nobody is on duty: guests who press Call write to you instead, under Messages.", tone: "var(--warning)" },
   off: { text: "Nobody answers yet: guests see your phone number instead.", tone: "var(--muted-foreground)" },
 };
 
@@ -24,9 +24,9 @@ const STATUS: Record<VoiceTeamData["status"], { text: string; tone: string }> = 
  * Calls to the venue, from its side: who answers, and the way into the phone.
  *
  * Guests press Call on the venue's booking pages and in the Guest App, and
- * talk to whoever is on duty, in the browser. The phone itself — going on
- * duty, answering, voicemail, hours — is its own page (the review app's
- * /phone/), opened from here.
+ * talk to whoever is on duty, in the browser; with nobody free they write
+ * instead (Messages). The phone itself — going on duty, answering, messages,
+ * hours — is its own page (the review app's /phone/), opened from here.
  */
 export default async function CallsPage({ params }: PageProps<"/[lang]/dashboard/[slug]/calls">) {
   const { lang, slug } = await params;
@@ -105,7 +105,13 @@ export default async function CallsPage({ params }: PageProps<"/[lang]/dashboard
           <ol style={{ margin: 0, paddingLeft: "1.2rem", display: "grid", gap: "0.35rem" }}>
             <li>Open the phone and press Go on duty. It stays on duty until you press Go off duty.</li>
             <li>On an Android phone, install the Phone app so a call rings even when the phone is locked.</li>
-            <li>Nobody free? The guest leaves a voice message, and everyone here gets an email.</li>
+            <li>
+              Nobody free? The guest writes instead. It waits under{" "}
+              <a href={localizedPath(locale, `/dashboard/${slug}/messages`)} style={{ color: "var(--primary)" }}>
+                Messages
+              </a>{" "}
+              and on the phone, and everyone here gets an email.
+            </li>
           </ol>
         </section>
 

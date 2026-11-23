@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LifeBuoy,
   MessageSquareText,
+  MessagesSquare,
   Phone,
   PhoneCall,
   QrCode,
@@ -18,6 +19,7 @@ import {
   Map,
   Tag,
   Ticket,
+  UserPlus,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -53,6 +55,8 @@ export interface NavGroup {
 export interface Venue {
   slug: string;
   name: string;
+  /** The account's access to it: its own, or shared at one level. */
+  role?: "owner" | "manager" | "frontdesk";
 }
 
 /**
@@ -76,13 +80,17 @@ export function customerNav(
   isAdmin = false
 ): { modules: NavGroup[]; last: NavGroup } {
   const at = (path = "") => to(`/dashboard/${venue?.slug}${path}`);
+  // Front Desk sees the desk's screens: not settings, the guest pages or the
+  // setup they cannot change (sharerules.js in the review app).
+  const desk = venue?.role === "frontdesk";
 
   const modules: NavGroup[] = venue
     ? [
         {
           items: [
             { title: "Dashboard", href: at(), icon: LayoutDashboard, exact: true },
-            { title: "Settings", href: at("/settings"), icon: Settings },
+            ...(desk ? [] : [{ title: "Settings", href: at("/settings"), icon: Settings }]),
+            { title: "Sharing", href: at("/sharing"), icon: UserPlus },
           ],
         },
         {
@@ -99,21 +107,30 @@ export function customerNav(
           // for what is in it.
           label: "Guests",
           items: [
+            { title: "Messages", href: at("/messages"), icon: MessagesSquare },
             { title: "Reviews", href: at("/reviews"), icon: MessageSquareText },
             { title: "Phone", href: "/phone/", icon: Phone, external: true },
             { title: "Calls", href: at("/calls"), icon: PhoneCall },
-            { title: "Guest App", href: at("/welcome"), icon: HandHeart },
-            { title: "Table Card", href: at("/poster"), icon: QrCode },
+            ...(desk
+              ? []
+              : [
+                  { title: "Guest App", href: at("/welcome"), icon: HandHeart },
+                  { title: "Table Card", href: at("/poster"), icon: QrCode },
+                ]),
           ],
         },
-        {
-          label: "Setup",
-          items: [
-            { title: "Rooms", href: at("/bookings/rooms"), icon: BedDouble },
-            { title: "Rates", href: at("/bookings/rates"), icon: Tag },
-            { title: "Online Booking", href: at("/bookings/online"), icon: Globe },
-          ],
-        },
+        ...(desk
+          ? []
+          : [
+              {
+                label: "Setup",
+                items: [
+                  { title: "Rooms", href: at("/bookings/rooms"), icon: BedDouble },
+                  { title: "Rates", href: at("/bookings/rates"), icon: Tag },
+                  { title: "Online Booking", href: at("/bookings/online"), icon: Globe },
+                ],
+              },
+            ]),
       ]
     : [];
 

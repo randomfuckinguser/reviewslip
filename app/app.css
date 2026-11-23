@@ -3411,3 +3411,105 @@ body.has-side-panel .app .tl-notes {
 .app :is(.rm-day, .mg-cell, .mg-take, .mg-top, .tl-warn, .tl-notes > p) {
   border-radius: var(--radius) !important;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Messages: guests' conversations, a list beside the open one                 */
+/* -------------------------------------------------------------------------- */
+
+.app .msg-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  border-top: 1px solid var(--divider);
+}
+
+.app .msg-row {
+  display: grid;
+  gap: 0.25rem;
+  justify-items: start;
+  width: 100%;
+  padding: 0.6rem 0.5rem;
+  border: 0;
+  border-bottom: 1px solid var(--divider);
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: var(--fs14);
+  text-align: left;
+  cursor: pointer;
+}
+
+.app .msg-row:hover {
+  background: var(--accent);
+}
+
+.app .msg-row[aria-current="true"] {
+  background: color-mix(in srgb, var(--primary) 8%, var(--card));
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+.app .msg-row-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.app .msg-row-top strong {
+  font-weight: 600;
+}
+
+.app .msg-when {
+  color: var(--muted-foreground);
+  font-size: var(--fs12);
+  white-space: nowrap;
+}
+
+.app .msg-preview {
+  width: 100%;
+  color: var(--muted-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app .msg-thread {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+  max-height: min(28rem, 55vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.app .msg-thread > li {
+  display: grid;
+  gap: 0.15rem;
+  max-width: 85%;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+}
+
+.app .msg-them {
+  justify-self: start;
+  background: var(--muted);
+}
+
+.app .msg-us {
+  justify-self: end;
+  background: color-mix(in srgb, var(--primary) 12%, var(--card));
+}
+
+.app .msg-who {
+  color: var(--muted-foreground);
+  font-size: var(--fs12);
+}
+
+.app .msg-said {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

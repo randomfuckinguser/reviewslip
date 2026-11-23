@@ -172,6 +172,28 @@ export const TOURS: TourDef[] = [
     ],
   },
   {
+    id: "messages",
+    version: 1,
+    title: "Messages",
+    summary: "Guests who wrote when nobody could take their call.",
+    screen: "/messages",
+    steps: [
+      { id: "messages-list", title: "Messages", body: "Each guest who wrote, newest first. Waiting on You is everything nobody has answered yet." },
+      { id: "messages-thread", title: "The Conversation", body: "What they wrote and what you answered. They read your answer where they wrote, and by email if they left one." },
+    ],
+  },
+  {
+    id: "sharing",
+    version: 1,
+    title: "Sharing",
+    summary: "Who else uses this business, and how much they may do.",
+    screen: "/sharing",
+    steps: [
+      { id: "sharing-people", title: "People with Access", body: "You, and everyone you shared the business with, with their access." },
+      { id: "sharing-add", title: "Share the Business", body: "Full Access is everything but sharing and deleting. Front Desk works bookings, guests and messages, not prices or settings." },
+    ],
+  },
+  {
     id: "calls",
     version: 1,
     title: "Calls",
@@ -180,7 +202,7 @@ export const TOURS: TourDef[] = [
     steps: [
       { id: "calls-line", title: "Your Line", body: "Whether a guest who presses Call can reach someone right now." },
       { id: "calls-team", title: "Who Answers", body: "Everyone who answers this venue's calls, and whether a call would reach them now." },
-      { id: "calls-add", title: "Add Person", body: "Invites a member of staff to answer calls on the Phone, and to see nothing else." },
+      { id: "calls-add", title: "Add Person", body: "Invites a member of staff to answer calls and messages on the Phone, and to see nothing else." },
     ],
   },
   {
@@ -227,11 +249,13 @@ export const tourById = (id: string) => TOURS.find((t) => t.id === id) ?? null;
 const GRAND_ORDER = [
   "venue-dashboard",
   "settings",
+  "sharing",
   "today",
   "calendar",
   "bookings-list",
   "customers",
   "tm30",
+  "messages",
   "reviews",
   "calls",
   "guest-app",

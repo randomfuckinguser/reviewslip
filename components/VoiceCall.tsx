@@ -8,7 +8,7 @@ import styles from "./VoiceCall.module.css";
 
 /**
  * A call button through Reviewslip's own softphone: an in-browser call to a
- * venue's desk, or to Reviewslip's Sales or Support, and a voice message when
+ * venue's desk, or to Reviewslip's Sales or Support, and a written message when
  * nobody is free. Whoever answers does so on the phone beside the dashboard
  * (/phone/), signed in as they are on the dashboard.
  *
