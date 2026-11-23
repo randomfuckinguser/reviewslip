@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ExternalLink, Plus } from "lucide-react";
 
 import PageHeader from "@/components/app-shell/PageHeader";
 import SetupProgress from "@/components/dashboard/SetupProgress";
@@ -96,14 +95,12 @@ export default async function BusinessPage({
           this screen. */}
       <PageHeader tour="venue-dashboard" title={business.name} sub={business.url}>
         <a className="btn btn-quiet" href={business.url} target="_blank" rel="noreferrer">
-          <ExternalLink size={15} aria-hidden="true" />
           Open Review Page
         </a>
         <Link
           className="btn btn-go"
           href={localizedPath(lang, `/dashboard/${business.slug}/bookings`)}
         >
-          <Plus size={15} aria-hidden="true" />
           New Booking
         </Link>
       </PageHeader>

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
-import { CalendarCheck, ChevronLeft, ChevronRight } from "lucide-react";
 
 import PageHeader from "@/components/app-shell/PageHeader";
 import DeskBoard from "@/components/dashboard/DeskBoard";
@@ -208,16 +207,13 @@ export default async function TodayPage({
       back={localizedPath(locale, `/dashboard/${slug}`)}
     >
       <Link className="btn btn-quiet" href={link(shift(date, -1))}>
-        <ChevronLeft size={15} aria-hidden="true" />
         Yesterday
       </Link>
       <Link className="btn btn-quiet" href={here}>
-        <CalendarCheck size={15} aria-hidden="true" />
         Today
       </Link>
       <Link className="btn btn-quiet" href={link(shift(date, 1))}>
         Tomorrow
-        <ChevronRight size={15} aria-hidden="true" />
       </Link>
     </PageHeader>
     <div className="page-body">

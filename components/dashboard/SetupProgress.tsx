@@ -34,7 +34,7 @@ export default function SetupProgress({
     return (
       <div className="setup">
         <div className="setup-head">
-          <h2>Nearly there</h2>
+          <h2>Nearly There</h2>
         </div>
         <p className="setup-note">
           Everything on your side is done. We are fitting the last piece and your review page

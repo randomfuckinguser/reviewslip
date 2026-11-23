@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { useActionState, useRef, useState, useTransition } from "react";
 
 import ThemeEditor from "@/components/dashboard/ThemeEditor";
@@ -57,7 +58,7 @@ function Mark({ label, hex, path }: { label: string; hex: string; path: string |
       style={
         path
           ? markBox
-          : { ...markBox, background: hex, color: "#fff", fontSize: "0.72rem", fontWeight: 500 }
+          : { ...markBox, background: hex, color: "#fff", fontSize: "var(--fs12)", fontWeight: 500 }
       }
     >
       {path ? (
@@ -75,7 +76,7 @@ const markBox: React.CSSProperties = {
   flex: "0 0 auto",
   width: "1.9rem",
   height: "1.9rem",
-  borderRadius: 8,
+  borderRadius: "var(--radius)",
   display: "grid",
   placeItems: "center",
   border: "1px solid var(--jade-line)",
@@ -178,14 +179,14 @@ function summarise(font: StoredFont | null): FontSummary | null {
 const input: React.CSSProperties = {
   width: "100%",
   padding: "0.65rem 0.8rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   border: "1px solid var(--jade-line)",
   background: "color-mix(in srgb, var(--cream) 6%, transparent)",
   color: "var(--cream)",
   font: "inherit",
 };
 
-const label: React.CSSProperties = { fontSize: "0.85rem", fontWeight: 500 };
+const label: React.CSSProperties = { fontSize: "var(--fs14)", fontWeight: 500 };
 
 /* The description editor. Its surface is in globals.css, because a backdrop
    cannot be reached from here; everything below is the layout inside it. */
@@ -227,7 +228,7 @@ const editorTitle: React.CSSProperties = {
   margin: 0,
   fontFamily: "var(--display)",
   fontWeight: 400,
-  fontSize: "1.35rem",
+  fontSize: "var(--fs24)",
   lineHeight: 1.2,
   color: "var(--cream)",
 };
@@ -244,7 +245,7 @@ const editorDone: React.CSSProperties = {
   background: "var(--primary)",
   color: "var(--primary-foreground)",
   fontFamily: "inherit",
-  fontSize: "0.85rem",
+  fontSize: "var(--fs14)",
   fontWeight: 600,
   cursor: "pointer",
 };
@@ -255,7 +256,7 @@ const editorFoot: React.CSSProperties = {
   justifyContent: "space-between",
   gap: "1rem",
 };
-const hint: React.CSSProperties = { fontSize: "0.8rem", color: "var(--ink-soft)" };
+const hint: React.CSSProperties = { fontSize: "var(--fs12)", color: "var(--ink-soft)" };
 const field: React.CSSProperties = { display: "grid", gap: "0.35rem" };
 const row: React.CSSProperties = { display: "flex", gap: "0.6rem", flexWrap: "wrap" };
 
@@ -316,9 +317,9 @@ function TopAction({ children }: { children: React.ReactNode }) {
 const noWebsite: React.CSSProperties = {
   margin: 0,
   padding: "0.7rem 0.85rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   border: "1px solid var(--jade-line)",
-  fontSize: "0.8rem",
+  fontSize: "var(--fs12)",
   lineHeight: 1.5,
   color: "var(--ink-soft)",
 };
@@ -1007,7 +1008,7 @@ export default function SettingsForm({
                     gap: "0.4rem",
                     alignItems: "center",
                     marginTop: "0.4rem",
-                    fontSize: "0.82rem",
+                    fontSize: "var(--fs14)",
                     color: "var(--admin-muted)",
                   }}
                 >
@@ -1304,21 +1305,21 @@ export default function SettingsForm({
                         type="button"
                         onClick={() => moveCat(editing, -1)}
                         disabled={editing === 0}
-                        aria-label="Move topic up"
-                        title="Move up"
+                        aria-label="Move Topic Up"
+                        title="Move Up"
                         style={lock}
                       >
-                        ↑
+                        <ArrowUp size={16} aria-hidden="true" />
                       </button>
                       <button
                         type="button"
                         onClick={() => moveCat(editing, 1)}
                         disabled={editing === cats.length - 1}
-                        aria-label="Move topic down"
-                        title="Move down"
+                        aria-label="Move Topic Down"
+                        title="Move Down"
                         style={lock}
                       >
-                        ↓
+                        <ArrowDown size={16} aria-hidden="true" />
                       </button>
 
                       <button
@@ -1483,7 +1484,7 @@ export default function SettingsForm({
           aria-live="polite"
           style={{
             minHeight: "1.25rem",
-            fontSize: "0.88rem",
+            fontSize: "var(--fs14)",
             color: state.error ? "var(--destructive)" : "var(--success)",
           }}
         >
@@ -1520,11 +1521,11 @@ export default function SettingsForm({
 const lock: React.CSSProperties = {
   flex: "0 0 auto",
   padding: "0.4rem 0.6rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   border: "1px solid var(--jade-line)",
   background: "transparent",
   fontFamily: "inherit",
-  fontSize: "0.75rem",
+  fontSize: "var(--fs12)",
   fontWeight: 500,
   cursor: "pointer",
   whiteSpace: "nowrap",
@@ -1533,7 +1534,7 @@ const lock: React.CSSProperties = {
 const remove: React.CSSProperties = {
   flex: "0 0 auto",
   width: "2.2rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   border: "1px solid var(--jade-line)",
   background: "transparent",
   color: "var(--ink-soft)",

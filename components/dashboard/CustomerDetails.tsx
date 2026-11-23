@@ -23,21 +23,26 @@ export default function CustomerDetails({
     phone: customer.phone ?? "",
     notes: customer.notes ?? "",
   });
+  // What was last saved: Save can act only once something differs from it,
+  // and saving quietly moves it forward — no "Saved" to read.
+  const [saved, setSaved] = useState(values);
   const [busy, setBusy] = useState(false);
-  const [said, setSaid] = useState<{ ok?: boolean; error?: string }>({});
+  const [error, setError] = useState("");
+  const changed = (Object.keys(values) as (keyof typeof values)[]).some((k) => values[k] !== saved[k]);
 
   const set = (key: keyof typeof values) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setValues((was) => ({ ...was, [key]: e.target.value }));
-    setSaid({});
+    setError("");
   };
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (busy) return;
+    if (busy || !changed) return;
     setBusy(true);
     const result = await save(values);
     setBusy(false);
-    setSaid(result.error ? { error: result.error } : { ok: true });
+    if (result.error) setError(result.error);
+    else setSaved(values);
   }
 
   return (
@@ -57,7 +62,7 @@ export default function CustomerDetails({
         </label>
       </div>
       <label>
-        <span>Notes for next time</span>
+        <span>Notes for Next Time</span>
         <textarea
           rows={4}
           value={values.notes}
@@ -67,16 +72,12 @@ export default function CustomerDetails({
         />
       </label>
       <div className="cu-save">
-        <button type="submit" className="btn btn-go" disabled={busy}>
+        <button type="submit" className="btn btn-go" disabled={busy || !changed}>
           {busy ? "Saving…" : "Save"}
         </button>
-        {said.error ? (
-          <span role="alert" className="cu-said is-error">
-            {said.error}
-          </span>
-        ) : said.ok ? (
-          <span role="status" className="cu-said">
-            Saved.
+        {error ? (
+          <span role="alert" className="cu-said">
+            {error}
           </span>
         ) : null}
       </div>

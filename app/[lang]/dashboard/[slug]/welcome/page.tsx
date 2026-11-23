@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
-import { ExternalLink } from "lucide-react";
 
 import PageHeader from "@/components/app-shell/PageHeader";
 import WelcomeLinks from "@/components/dashboard/WelcomeLinks";
@@ -104,7 +103,6 @@ export default async function WelcomePage({
         back={localizedPath(locale, `/dashboard/${slug}`)}
       >
         <a className="btn btn-quiet" href={data.url} target="_blank" rel="noreferrer">
-          <ExternalLink size={15} aria-hidden="true" />
           Open Guest App
         </a>
       </PageHeader>
@@ -169,7 +167,7 @@ export default async function WelcomePage({
 
         <section className="group-box wide" aria-labelledby="guests-title" data-tour="ga-guests">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem", flexWrap: "wrap" }}>
-            <h2 id="guests-title">Guests</h2>
+            <h2 id="guests-title" className="card-title">Guests</h2>
             {/* Only the guests who ticked the box. Everyone else gave an
                 address to see the links, which is not agreeing to be emailed. */}
             <a className="btn btn-quiet" href={`/api/welcome/${encodeURIComponent(slug)}`}>

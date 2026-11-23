@@ -85,7 +85,7 @@ export default function MarketPhotos({
         )}
       </div>
       {error && (
-        <p className={styles.error} role="alert" style={{ margin: 0, fontSize: "0.875rem" }}>
+        <p className={styles.error} role="alert" style={{ margin: 0, fontSize: "var(--fs14)" }}>
           {error}
         </p>
       )}

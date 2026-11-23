@@ -1,7 +1,6 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { GraduationCap } from "lucide-react";
 
 /**
  * Take the Tour, in a screen's header: starts the dashboard's one tour at this
@@ -31,7 +30,6 @@ export default function TourButton() {
       onClick={start}
       data-tip="A guided tour of the dashboard, starting on this screen"
     >
-      <GraduationCap size={15} aria-hidden="true" />
       Take the Tour
     </button>
   );

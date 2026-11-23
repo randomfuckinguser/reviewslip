@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
-import { ExternalLink } from "lucide-react";
 
 import PageHeader from "@/components/app-shell/PageHeader";
 import MarketListing, { type ListingDraft } from "@/components/dashboard/MarketListing";
@@ -108,7 +107,6 @@ export default async function OnlineBookingPage({
       >
         {data.listed && (
           <a className="btn btn-quiet" href={publicPage} target="_blank" rel="noreferrer">
-            <ExternalLink size={15} aria-hidden="true" />
             View on Reviewslip
           </a>
         )}
@@ -142,7 +140,7 @@ export default async function OnlineBookingPage({
             readOnly
             rows={2}
             aria-label="Embed code"
-            style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: "0.8rem" }}
+            style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: "var(--fs12)" }}
             value={`<div data-reviewslip-booking data-venue="${slug}"></div>\n<script src="${SITE_URL}/embed.js" async></script>`}
           />
           {!data.listed && (

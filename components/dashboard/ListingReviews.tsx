@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, RefreshCw, X } from "lucide-react";
 
 import { PLATFORMS } from "@/lib/platforms.data";
 
@@ -203,7 +202,6 @@ export default function ListingReviews({
         <div className="container-actions">
           {automatic.length > 0 && (
             <button type="button" className="btn btn-quiet" onClick={onCheck} disabled={pending}>
-              <RefreshCw size={15} aria-hidden="true" />
               {pending ? "Looking…" : "Check for New"}
             </button>
           )}
@@ -212,7 +210,6 @@ export default function ListingReviews({
             className="btn btn-quiet"
             onClick={() => { setAdding((v) => !v); setError(null); }}
           >
-            {adding ? <X size={15} aria-hidden="true" /> : <Plus size={15} aria-hidden="true" />}
             {adding ? "Cancel" : "Add One"}
           </button>
         </div>
@@ -229,7 +226,7 @@ export default function ListingReviews({
       )}
 
       {error && (
-        <p role="status" style={{ fontSize: "0.8rem", color: "var(--warning)", margin: "0.6rem 0 0" }}>
+        <p role="status" style={{ fontSize: "var(--fs12)", color: "var(--warning)", margin: "0.6rem 0 0" }}>
           {error}
         </p>
       )}
@@ -237,12 +234,12 @@ export default function ListingReviews({
       {ran && (
         <ul role="status" style={ranList}>
           {ran.length === 0 && (
-            <li style={{ fontSize: "0.78rem", color: "var(--ink-soft)" }}>
+            <li style={{ fontSize: "var(--fs12)", color: "var(--ink-soft)" }}>
               Nothing could be read. Check the listing links in Settings.
             </li>
           )}
           {ran.map((r, i) => (
-            <li key={`${r.id}-${r.platform}-${i}`} style={{ fontSize: "0.78rem" }}>
+            <li key={`${r.id}-${r.platform}-${i}`} style={{ fontSize: "var(--fs12)" }}>
               <strong style={{ fontWeight: 500 }}>{r.label}</strong>{" "}
               {r.reason ? (
                 <span style={{ color: "var(--ink-soft)" }}>— {r.reason}</span>
@@ -347,7 +344,7 @@ export default function ListingReviews({
                           onClick={() => onReplied(review)}
                           style={mark(isReplied(review))}
                         >
-                          {isReplied(review) ? "✓ Answered" : "Mark Answered"}
+                          {isReplied(review) ? "Answered" : "Mark Answered"}
                         </button>
 
                         {review.url && (
@@ -508,7 +505,7 @@ const ranList: React.CSSProperties = {
   listStyle: "none",
   margin: "0.8rem 0 0",
   padding: "0.7rem 0.9rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   background: "color-mix(in srgb, var(--ink) 4%, transparent)",
   display: "grid",
   gap: "0.3rem",
@@ -524,7 +521,7 @@ const rowHead: React.CSSProperties = {
 };
 
 const reply: React.CSSProperties = {
-  fontSize: "0.82rem",
+  fontSize: "var(--fs14)",
   lineHeight: 1.5,
   margin: "0.5rem 0 0",
   paddingLeft: "0.7rem",
@@ -549,10 +546,10 @@ const meta: React.CSSProperties = {
  */
 function mark(on: boolean): React.CSSProperties {
   return {
-    fontSize: "0.75rem",
+    fontSize: "var(--fs12)",
     fontWeight: 500,
     cursor: "pointer",
-    borderRadius: 8,
+    borderRadius: "var(--radius)",
     padding: "0.25rem 0.6rem",
     border: on ? "1px solid transparent" : "1px solid color-mix(in srgb, var(--ink) 24%, transparent)",
     background: on ? "color-mix(in srgb, var(--success) 14%, transparent)" : "transparent",
@@ -565,7 +562,7 @@ const form: React.CSSProperties = {
   gap: "0.7rem",
   margin: "1rem 0 0",
   padding: "1rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   background: "color-mix(in srgb, var(--ink) 4%, transparent)",
 };
 
@@ -576,15 +573,15 @@ const field: React.CSSProperties = {
 };
 
 const label: React.CSSProperties = {
-  fontSize: "0.72rem",
+  fontSize: "var(--fs12)",
   color: "var(--ink-soft)",
 };
 
 const input: React.CSSProperties = {
   font: "inherit",
-  fontSize: "0.85rem",
+  fontSize: "var(--fs14)",
   padding: "0.4rem 0.5rem",
-  borderRadius: 8,
+  borderRadius: "var(--radius)",
   border: "1px solid color-mix(in srgb, var(--ink) 20%, transparent)",
   background: "var(--paper)",
   color: "var(--ink)",

@@ -10,17 +10,17 @@ export interface GuestResult {
 const field: React.CSSProperties = {
   width: "100%",
   padding: "0.5rem 0.7rem",
-  borderRadius: 8,
+  borderRadius: "var(--radius)",
   border: "1px solid var(--jade-line)",
   background: "var(--shade-soft)",
   color: "var(--cream)",
   fontFamily: "inherit",
-  fontSize: "0.9rem",
+  fontSize: "var(--fs14)",
 };
 
 const label: React.CSSProperties = {
   display: "block",
-  fontSize: "0.75rem",
+  fontSize: "var(--fs12)",
   marginBottom: "0.2rem",
   color: "var(--admin-muted)",
 };
@@ -132,7 +132,7 @@ export default function GuestList({
           marginBottom: "0.6rem",
         }}
       >
-        <h3 style={{ margin: 0, fontSize: "0.95rem" }}>
+        <h3 style={{ margin: 0, fontSize: "var(--fs14)" }}>
           Guests{" "}
           <span style={{ fontWeight: 400, color: "var(--admin-muted)" }}>
             for TM30
@@ -148,7 +148,7 @@ export default function GuestList({
       </div>
 
       {guests.length === 0 ? (
-        <p style={{ margin: "0 0 0.6rem", fontSize: "0.85rem", color: "var(--admin-muted)" }}>
+        <p style={{ margin: "0 0 0.6rem", fontSize: "var(--fs14)", color: "var(--admin-muted)" }}>
           Nobody recorded. Foreign guests have to be notified to Immigration
           within 24 hours of arriving.
         </p>
@@ -166,12 +166,12 @@ export default function GuestList({
                 borderBottom: "1px solid color-mix(in srgb, var(--wash) 12%, transparent)",
               }}
             >
-              <span style={{ minWidth: 0, fontSize: "0.88rem" }}>
+              <span style={{ minWidth: 0, fontSize: "var(--fs14)" }}>
                 {g.firstName} {g.familyName}
                 <span
                   style={{
                     display: "block",
-                    fontSize: "0.76rem",
+                    fontSize: "var(--fs12)",
                     color: g.ready ? "var(--admin-muted)" : "var(--marigold)",
                   }}
                 >
@@ -192,7 +192,7 @@ export default function GuestList({
                     ...field,
                     width: "auto",
                     padding: "0.3rem 0.45rem",
-                    fontSize: "0.78rem",
+                    fontSize: "var(--fs12)",
                     appearance: "auto",
                   }}
                 >
@@ -297,12 +297,12 @@ export default function GuestList({
           {!canStorePassports ? (
             // Said before somebody types a passport number and loses it on
             // save, rather than after.
-            <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--marigold)" }}>
+            <p style={{ margin: 0, fontSize: "var(--fs12)", color: "var(--marigold)" }}>
               Passport numbers are turned off until SECRET_KEY is set on the
               server. Everything else here will save.
             </p>
           ) : (
-            <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--admin-muted)" }}>
+            <p style={{ margin: 0, fontSize: "var(--fs12)", color: "var(--admin-muted)" }}>
               The number is encrypted and never shown again — only the last four
               digits, and the file you send to Immigration.
             </p>
@@ -321,7 +321,7 @@ export default function GuestList({
         </div>
       ) : null}
 
-      <p role="alert" style={{ margin: problem ? "0.6rem 0 0" : 0, fontSize: "0.85rem", color: "var(--marigold)" }}>
+      <p role="alert" style={{ margin: problem ? "0.6rem 0 0" : 0, fontSize: "var(--fs14)", color: "var(--marigold)" }}>
         {problem}
       </p>
     </div>

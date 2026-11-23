@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
-import { Download, ExternalLink, Phone } from "lucide-react";
 
 import PageHeader from "@/components/app-shell/PageHeader";
 import VoiceTeam, { type VoiceTeamData } from "@/components/dashboard/VoiceTeam";
@@ -89,7 +88,6 @@ export default async function CallsPage({ params }: PageProps<"/[lang]/dashboard
         {/* A plain link: the phone is served beside the dashboard, not by this app's router. */}
         {/* Outlined: the screen's one filled button is Add Person. */}
         <a className="btn btn-quiet" href="/phone/" target="_blank" rel="noopener">
-          <Phone size={15} aria-hidden="true" />
           Open the Phone
         </a>
       </PageHeader>
@@ -138,11 +136,9 @@ export default async function CallsPage({ params }: PageProps<"/[lang]/dashboard
               </p>
               <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                 <a className="btn btn-go" href="/phone/app" download="ReviewslipPhone.apk">
-                  <Download size={15} aria-hidden="true" />
                   Download for Android
                 </a>
                 <a className="btn btn-quiet" href="/app" target="_blank" rel="noopener">
-                  <ExternalLink size={15} aria-hidden="true" />
                   Install Steps
                 </a>
               </div>

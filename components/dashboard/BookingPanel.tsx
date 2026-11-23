@@ -3,6 +3,7 @@
 import FormTourButton from "@/components/help/FormTourButton";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import GuestList from "./GuestList";
 import { nightCount } from "@/lib/nights";
@@ -640,10 +641,10 @@ export default function BookingPanel({
         {/* The toolbar, as on an edit screen: back, what this is, and the two
             ways out — Save keeps it open, Done saves and closes. */}
         <div className="bp-toolbar">
-          <button type="button" className="bp-back" onClick={onClose} aria-label="Close">
-            ◀
+          <button type="button" className="icon-btn bp-back" onClick={onClose} aria-label="Close" title="Close">
+            <ArrowLeft size={16} aria-hidden="true" />
           </button>
-          <h2 id="booking-title" className="bp-title">
+          <h2 id="booking-title" className="bp-title card-title">
             {taking ? "New Booking" : "Edit Booking"}
           </h2>
           <div className="bp-tools">
@@ -759,7 +760,7 @@ export default function BookingPanel({
                       set("customerId", "");
                     }}
                   >
-                    Not them
+                    Not Them
                   </button>
                 </p>
               ) : !taking && stays > 1 ? (
@@ -768,13 +769,13 @@ export default function BookingPanel({
                   {customersBase && customerId ? (
                     <>
                       {" · "}
-                      <Link href={`${customersBase}/${customerId}`}>See their stays</Link>
+                      <Link href={`${customersBase}/${customerId}`}>See Their Stays</Link>
                     </>
                   ) : null}
                 </p>
               ) : offered.length ? (
                 <div className="bp-matches" role="listbox" aria-label="Returning guests">
-                  <span className="bp-matches-h">Stayed before?</span>
+                  <span className="bp-matches-h">Stayed Before?</span>
                   {offered.map((c) => (
                     <button key={c.id} type="button" role="option" aria-selected={false} onClick={() => pick(c)}>
                       <strong>{c.name}</strong>

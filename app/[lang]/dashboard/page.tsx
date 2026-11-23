@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CircleAlert, CircleCheck } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
-import { CircleAlert, CircleCheck, Plus } from "lucide-react";
 
 import PageHeader from "@/components/app-shell/PageHeader";
 import { currentUser } from "@/lib/customer";
@@ -80,7 +80,6 @@ export default async function DashboardPage({
           className="btn btn-go"
           href={localizedPath(lang, "/dashboard/businesses/new")}
         >
-          <Plus size={15} aria-hidden="true" />
           Add a Business
         </Link>
       </PageHeader>
@@ -98,14 +97,14 @@ export default async function DashboardPage({
                 <dt>Businesses</dt>
                 <dd className="kv-big">
                   {me.usage.businesses}
-                  <span style={{ fontSize: "0.875rem", fontWeight: 400 }}> of {businessLimit}</span>
+                  <span style={{ fontSize: "var(--fs14)", fontWeight: 400 }}> of {businessLimit}</span>
                 </dd>
               </div>
               <div>
-                <dt>Reviews this month</dt>
+                <dt>Reviews This Month</dt>
                 <dd className="kv-big">
                   {me.usage.reviewsThisMonth.toLocaleString()}
-                  <span style={{ fontSize: "0.875rem", fontWeight: 400 }}>
+                  <span style={{ fontSize: "var(--fs14)", fontWeight: 400 }}>
                     {" "}
                     of {me.plan.reviewAllowance.toLocaleString()}
                   </span>
@@ -142,9 +141,9 @@ export default async function DashboardPage({
                     <tr>
                       <th scope="col">Status</th>
                       <th scope="col">Name</th>
-                      <th scope="col">Review page</th>
-                      <th scope="col">Reviews this month</th>
-                      <th scope="col">Tokens this month</th>
+                      <th scope="col">Review Page</th>
+                      <th scope="col">Reviews This Month</th>
+                      <th scope="col">Tokens This Month</th>
                       <th scope="col" aria-label="Actions" />
                     </tr>
                   </thead>

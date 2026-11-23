@@ -50,7 +50,7 @@ export default async function StaffAccountPage({
 
       <div className="admin-card wide">
         <h2>Plan</h2>
-        <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--admin-muted)" }}>
+        <p style={{ margin: 0, fontSize: "var(--fs14)", color: "var(--admin-muted)" }}>
           <strong style={{ color: "var(--cream)" }}>{plan.name}</strong> ·{" "}
           {venues.length} of {plan.venues === null ? "unlimited" : plan.venues} venues
           used · {plan.reviewsPerBusiness.toLocaleString()} reviews and{" "}
@@ -58,7 +58,7 @@ export default async function StaffAccountPage({
           month
         </p>
         {plan.venues !== null && venues.length > plan.venues ? (
-          <p style={{ margin: "0.6rem 0 0", fontSize: "0.9rem", color: "var(--marigold)" }}>
+          <p style={{ margin: "0.6rem 0 0", fontSize: "var(--fs14)", color: "var(--marigold)" }}>
             Over the plan limit by {venues.length - plan.venues}.
           </p>
         ) : null}
@@ -125,7 +125,7 @@ export default async function StaffAccountPage({
 
       <div className="admin-card">
         <h2 style={{ marginBottom: "0.3rem" }}>Referrals</h2>
-        <p style={{ margin: "0 0 0.9rem", fontSize: "0.9rem" }}>
+        <p style={{ margin: "0 0 0.9rem", fontSize: "var(--fs14)" }}>
           <strong
             style={{
               color: referrals.progress.earned ? "var(--marigold)" : "var(--cream)",
@@ -143,7 +143,7 @@ export default async function StaffAccountPage({
         </p>
 
         {referredBy ? (
-          <p style={{ margin: "0 0 0.9rem", fontSize: "0.9rem", color: "var(--admin-muted)" }}>
+          <p style={{ margin: "0 0 0.9rem", fontSize: "var(--fs14)", color: "var(--admin-muted)" }}>
             Referred by{" "}
             <Link href={`/accounts/${referredBy.id}`} style={{ color: "var(--jade)" }}>
               {referredBy.email}

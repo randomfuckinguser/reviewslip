@@ -13,12 +13,12 @@ const EMPTY: RoomsState = {};
 
 const field: React.CSSProperties = {
   padding: "0.6rem 0.8rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   border: "1px solid var(--jade-line)",
   background: "var(--shade-soft)",
   color: "var(--cream)",
   fontFamily: "inherit",
-  fontSize: "0.95rem",
+  fontSize: "var(--fs14)",
 };
 
 function Problem({ error }: { error?: string }) {
@@ -27,7 +27,7 @@ function Problem({ error }: { error?: string }) {
       role="status"
       style={{
         margin: error ? "0.6rem 0 0" : 0,
-        fontSize: "0.9rem",
+        fontSize: "var(--fs14)",
         color: "var(--marigold)",
       }}
     >
@@ -122,7 +122,7 @@ export default function RoomsSetup({
                   <span
                     style={{
                       display: "block",
-                      fontSize: "0.8rem",
+                      fontSize: "var(--fs12)",
                       color: "var(--admin-muted)",
                     }}
                   >
@@ -204,7 +204,7 @@ export default function RoomsSetup({
                   <span
                     style={{
                       display: "block",
-                      fontSize: "0.8rem",
+                      fontSize: "var(--fs12)",
                       color: "var(--admin-muted)",
                     }}
                   >
@@ -217,7 +217,7 @@ export default function RoomsSetup({
                     onChange={(e) => changeStatus(r.id, e.target.value)}
                     disabled={statusPending}
                     aria-label={`State of ${r.name}`}
-                    style={{ ...field, padding: "0.35rem 0.5rem", fontSize: "0.85rem", appearance: "auto", justifySelf: "end" }}
+                    style={{ ...field, padding: "0.35rem 0.5rem", fontSize: "var(--fs14)", appearance: "auto", justifySelf: "end" }}
                   >
                     {states.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -242,7 +242,7 @@ export default function RoomsSetup({
         <Problem error={statusProblem || undefined} />
 
         {groups.length === 0 ? (
-          <p style={{ color: "var(--admin-muted)", fontSize: "0.9rem", margin: 0 }}>
+          <p style={{ color: "var(--admin-muted)", fontSize: "var(--fs14)", margin: 0 }}>
             Add a room type first — every room belongs to one.
           </p>
         ) : (

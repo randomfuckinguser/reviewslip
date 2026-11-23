@@ -50,7 +50,7 @@ export default function InviteForm({
       <p
         style={{
           color: "var(--cream-faint)",
-          fontSize: "0.9rem",
+          fontSize: "var(--fs14)",
           margin: "0 0 1rem",
         }}
       >
@@ -76,12 +76,12 @@ export default function InviteForm({
           style={{
             flex: "1 1 16rem",
             padding: "0.7rem 0.9rem",
-            borderRadius: 10,
+            borderRadius: "var(--radius)",
             border: `1px solid ${state.error ? "var(--marigold)" : "var(--jade-line)"}`,
             background: "var(--shade-soft)",
             color: "var(--cream)",
             fontFamily: "inherit",
-            fontSize: "0.95rem",
+            fontSize: "var(--fs14)",
           }}
         />
         <button type="submit" className="btn btn-go" disabled={pending}>
@@ -96,7 +96,7 @@ export default function InviteForm({
         role="status"
         style={{
           margin: state.error ? "0.7rem 0 0" : 0,
-          fontSize: "0.9rem",
+          fontSize: "var(--fs14)",
           color: "var(--marigold)",
           minHeight: state.error ? undefined : 0,
         }}

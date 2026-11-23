@@ -3,7 +3,7 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import PageHeader from "@/components/app-shell/PageHeader";
 import Diary from "@/components/dashboard/Diary";
 import RoomTypeFilter from "@/components/dashboard/RoomTypeFilter";
@@ -276,7 +276,6 @@ export default async function CalendarPage({
         <ChevronLeft size={16} aria-hidden="true" />
       </Link>
       <Link className="btn btn-quiet" href={month("")}>
-        <CalendarDays size={15} aria-hidden="true" />
         This Month
       </Link>
       <Link

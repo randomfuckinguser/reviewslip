@@ -117,7 +117,7 @@ export default async function RegistrationCard({
         </section>
 
         <section>
-          <h2>Booked under</h2>
+          <h2>Booked Under</h2>
           <div className="card-lines">
             <p>
               <span>Name</span>
@@ -135,15 +135,15 @@ export default async function RegistrationCard({
         </section>
 
         <section>
-          <h2>Everyone staying</h2>
+          <h2>Everyone Staying</h2>
           <table className="card-guests">
             <thead>
               <tr>
-                <th>Family name</th>
-                <th>First name</th>
+                <th>Family Name</th>
+                <th>First Name</th>
                 <th>Nationality</th>
                 <th>Passport</th>
-                <th>Date of birth</th>
+                <th>Date of Birth</th>
               </tr>
             </thead>
             <tbody>

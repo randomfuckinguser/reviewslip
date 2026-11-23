@@ -169,7 +169,7 @@ export default function VoiceTeam({
             code: no password, and they stay signed in. Both work for 14 days.
           </p>
           {link.code ? (
-            <p style={{ margin: "0.5rem 0 0", fontSize: "1.4rem", fontWeight: 700, letterSpacing: "0.2em" }} aria-label="Invite code">
+            <p style={{ margin: "0.5rem 0 0", fontSize: "var(--fs24)", fontWeight: 700, letterSpacing: "0.2em" }} aria-label="Invite code">
               {link.code}
             </p>
           ) : null}
@@ -185,11 +185,11 @@ export default function VoiceTeam({
 
       <form ref={form} onSubmit={onInvite} data-tour="calls-add" style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "end" }}>
         <label style={{ display: "grid", gap: "0.25rem", flex: "1 1 10rem" }}>
-          <span style={{ fontSize: "0.85rem", fontWeight: 500 }}>Name</span>
+          <span style={{ fontSize: "var(--fs14)", fontWeight: 500 }}>Name</span>
           <input name="name" required maxLength={60} autoComplete="off" disabled={pending} />
         </label>
         <label style={{ display: "grid", gap: "0.25rem", flex: "2 1 14rem" }}>
-          <span style={{ fontSize: "0.85rem", fontWeight: 500 }}>Email</span>
+          <span style={{ fontSize: "var(--fs14)", fontWeight: 500 }}>Email</span>
           <input name="email" type="email" required autoComplete="off" disabled={pending} />
         </label>
         {/* What Add Person does is said on it, as a tip, not as small print

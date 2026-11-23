@@ -38,7 +38,7 @@ export default async function StaffVenuesPage() {
             borderLeftWidth: 3,
             background: "color-mix(in srgb, var(--alert) 8%, transparent)",
             padding: "0.8rem 1rem",
-            fontSize: "0.9rem",
+            fontSize: "var(--fs14)",
           }}
         >
           A venue whose account was deleted keeps serving its public page and

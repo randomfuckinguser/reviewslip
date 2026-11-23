@@ -90,14 +90,14 @@ export default function Tm30Board({
                 style={{
                   padding: "0.5rem 0",
                   borderBottom: "1px solid color-mix(in srgb, var(--wash) 12%, transparent)",
-                  fontSize: "0.9rem",
+                  fontSize: "var(--fs14)",
                 }}
               >
                 {g.firstName} {g.familyName}
                 <span
                   style={{
                     display: "block",
-                    fontSize: "0.8rem",
+                    fontSize: "var(--fs12)",
                     color: "var(--marigold)",
                   }}
                 >
@@ -125,7 +125,7 @@ export default function Tm30Board({
               style={{
                 margin: "0 0 1.1rem",
                 paddingLeft: "1.2rem",
-                fontSize: "0.9rem",
+                fontSize: "var(--fs14)",
                 lineHeight: 1.8,
                 color: "var(--admin-muted)",
               }}
@@ -175,7 +175,7 @@ export default function Tm30Board({
               <p
                 style={{
                   margin: "0.9rem 0 0",
-                  fontSize: "0.85rem",
+                  fontSize: "var(--fs14)",
                   color: "var(--marigold)",
                 }}
               >

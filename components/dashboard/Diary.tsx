@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Plus } from "lucide-react";
 import MonthGrid from "./MonthGrid";
 import Timeline, { type MoveResult } from "./Timeline";
 import BookingPanel, {
@@ -143,7 +142,6 @@ export default function Diary({
             setOpen("new");
           }}
         >
-          <Plus size={15} aria-hidden="true" />
           Take a Booking
         </button>
       </div>

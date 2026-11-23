@@ -524,7 +524,7 @@ export default function ThemeEditor({
                 // On the paper colour, since that is the lighter of the two and
                 // shows a dark mark; the guest page puts it on the ground.
                 background: v("--paper"),
-                borderRadius: 8,
+                borderRadius: "var(--radius)",
                 padding: "0.4rem 0.6rem",
               }}
             />
@@ -693,7 +693,7 @@ export default function ThemeEditor({
             style={{
               background: v("--paper"),
               border: `1px solid ${v("--paper-edge") || "transparent"}`,
-              borderRadius: 3,
+              borderRadius: "var(--radius)",
               padding: "0.8rem 0.75rem",
             }}
           >
@@ -751,7 +751,7 @@ const urlBox: React.CSSProperties = {
   flex: "1 1 20rem",
   minWidth: 0,
   padding: "0.4rem 0.55rem",
-  borderRadius: 8,
+  borderRadius: "var(--radius)",
   border: "1px solid color-mix(in srgb, var(--cream) 22%, transparent)",
   background: "color-mix(in srgb, var(--cream) 6%, transparent)",
   color: "inherit",
@@ -784,17 +784,16 @@ const fromSite: React.CSSProperties = {
 
 /** A starting phrase. Quieter than the Generate button it sits under. */
 const chip: React.CSSProperties = {
-  fontSize: "0.78rem",
-  padding: "0.25rem 0.6rem",
-  borderRadius: 999,
+  fontSize: "var(--fs14)",
+  padding: "0 0.75rem",
 };
 
 const noteBox: React.CSSProperties = {
   font: "inherit",
-  fontSize: "0.88rem",
+  fontSize: "var(--fs14)",
   lineHeight: 1.5,
   padding: "0.55rem 0.7rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   border: "1px solid var(--jade-line)",
   background: "color-mix(in srgb, var(--cream) 6%, transparent)",
   color: "var(--cream)",
@@ -808,7 +807,7 @@ const swatch: React.CSSProperties = {
   height: "2.6rem",
   padding: 0,
   border: "1px solid var(--jade-line)",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   background: "transparent",
   cursor: "pointer",
 };
@@ -830,7 +829,7 @@ const grabbedBox: React.CSSProperties = {
   justifyContent: "space-between",
   flexWrap: "wrap",
   padding: "0.6rem 0.75rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   border: "1px solid var(--jade-line)",
   fontSize: "0.88rem",
 };
@@ -840,7 +839,7 @@ const rightsBox: React.CSSProperties = {
   gap: "0.6rem",
   alignItems: "flex-start",
   padding: "0.85rem 1rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   border: "1px solid var(--jade-line)",
   fontSize: "0.82rem",
   color: "var(--ink-soft)",
@@ -851,7 +850,7 @@ const rightsBox: React.CSSProperties = {
 const select: React.CSSProperties = {
   width: "100%",
   padding: "0.55rem 0.7rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   border: "1px solid var(--jade-line)",
   background: "color-mix(in srgb, var(--cream) 6%, transparent)",
   color: "var(--cream)",
@@ -880,7 +879,7 @@ const option: React.CSSProperties = {
 const hexInput: React.CSSProperties = {
   flex: "0 0 6.5rem",
   padding: "0.5rem 0.6rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   border: "1px solid var(--jade-line)",
   background: "color-mix(in srgb, var(--cream) 6%, transparent)",
   color: "var(--cream)",
@@ -890,7 +889,7 @@ const hexInput: React.CSSProperties = {
 
 const previewFrame: React.CSSProperties = {
   padding: "1.1rem",
-  borderRadius: 12,
+  borderRadius: "var(--radius-card)",
   border: "1px solid var(--jade-line)",
 };
 
@@ -919,7 +918,7 @@ const button: React.CSSProperties = {
 
 const adjustedBox: React.CSSProperties = {
   padding: "0.9rem 1rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   border: "1px solid var(--jade-line)",
   fontSize: "0.82rem",
   color: "var(--ink-soft)",

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 import { localizedPath } from "@/lib/i18n/routing";
@@ -24,10 +24,11 @@ export default function Nav({ lang, nav, ctaLabel, selectors, staysLabel }: Prop
   // Read after mount, not during render: the server has no idea and guessing
   // would mismatch the hydrated markup. A signed-in visitor sees Sign in for a
   // moment on first paint, which is the price of keeping these pages static.
-  const [signedIn, setSignedIn] = useState(false);
-  useEffect(() => {
-    setSignedIn(document.cookie.split("; ").includes("rs_signed_in=1"));
-  }, []);
+  const signedIn = useSyncExternalStore(
+    noChanges,
+    () => document.cookie.split("; ").includes("rs_signed_in=1"),
+    () => false
+  );
 
   const links = [
     { route: "/stays", label: staysLabel },
@@ -146,4 +147,9 @@ export default function Nav({ lang, nav, ctaLabel, selectors, staysLabel }: Prop
       )}
     </header>
   );
+}
+
+/** The cookie is set by signing in on another page, never under this one. */
+function noChanges() {
+  return () => {};
 }

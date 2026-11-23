@@ -14,18 +14,18 @@ const EMPTY: TicketState = {};
 const field: React.CSSProperties = {
   width: "100%",
   padding: "0.7rem 0.9rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   border: "1px solid var(--jade-line)",
   background: "var(--shade-soft)",
   color: "var(--cream)",
   fontFamily: "inherit",
-  fontSize: "0.95rem",
+  fontSize: "var(--fs14)",
   lineHeight: 1.6,
 };
 
 const label: React.CSSProperties = {
   display: "block",
-  fontSize: "0.85rem",
+  fontSize: "var(--fs14)",
   marginBottom: "0.35rem",
   color: "var(--cream)",
 };
@@ -50,7 +50,7 @@ function Problem({ error }: { error?: string }) {
       role="status"
       style={{
         margin: error ? "0.7rem 0 0" : 0,
-        fontSize: "0.9rem",
+        fontSize: "var(--fs14)",
         color: "var(--marigold)",
       }}
     >

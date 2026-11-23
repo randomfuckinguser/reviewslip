@@ -277,7 +277,7 @@ function ReviewsPanel({ stats, href }: { stats: BusinessDetail["stats"]; href: s
       </dl>
 
       <div style={{ marginTop: "1rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8125rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--fs12)" }}>
           <span>Writing tokens this month</span>
           <span style={{ fontVariantNumeric: "tabular-nums" }}>{share}%</span>
         </div>
@@ -288,8 +288,8 @@ function ReviewsPanel({ stats, href }: { stats: BusinessDetail["stats"]; href: s
 
       <hr className="container-rule" />
 
-      <h3 style={{ margin: 0 }}>Reviews per day</h3>
-      <div className="bar-chart" role="img" aria-label={`Reviews per day over the last 30 days, at most ${peak} in a day`}>
+      <h3 style={{ margin: 0 }}>Reviews per Day</h3>
+      <div className="bar-chart" role="img" aria-label={`Reviews per Day over the last 30 days, at most ${peak} in a day`}>
         <div className="bar-scale" aria-hidden="true">
           {[4, 3, 2, 1, 0].map((n) => (
             <span key={n}>{n * step}</span>
@@ -312,7 +312,7 @@ function ReviewsPanel({ stats, href }: { stats: BusinessDetail["stats"]; href: s
       </div>
 
       <hr className="container-rule" />
-      <h3 style={{ margin: "0 0 0.4rem" }}>What guests pick</h3>
+      <h3 style={{ margin: "0 0 0.4rem" }}>What Guests Pick</h3>
             {stats.byCategory.length > 0 ? (
               <table className="console-table container-bleed" style={{ marginBottom: "-1rem" }}>
                 <thead>

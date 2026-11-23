@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 
-import { Phone } from "lucide-react";
 
 import PageHeader from "@/components/app-shell/PageHeader";
 import VoiceCall from "@/components/VoiceCall";
@@ -168,7 +167,6 @@ export default async function SupportPage({
           label="Call Support"
           className="btn btn-quiet"
           caller={me.account.email}
-          icon={<Phone size={15} aria-hidden="true" />}
         />
       </PageHeader>
       <div className="page-body cols is-main">

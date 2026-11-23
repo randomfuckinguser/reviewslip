@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
 import { getDisclaimer } from "@/lib/disclaimer";
@@ -17,19 +17,23 @@ export default function TermsGate({ lang }: { lang: Locale }) {
   const d = getDisclaimer(lang);
   const storageKey = `rs_terms_ack_v${d.version}`;
 
-  const [open, setOpen] = useState(false);
+  const acked = useSyncExternalStore(
+    noChanges,
+    () => {
+      try {
+        return localStorage.getItem(storageKey) === "1";
+      } catch {
+        // Storage blocked (private mode / cookies off): show it, don't hard-fail.
+        return false;
+      }
+    },
+    // On the server: treated as acknowledged, so nothing renders there.
+    () => true
+  );
+  const [accepted, setAccepted] = useState(false);
+  const open = !acked && !accepted;
   const dialogRef = useRef<HTMLDivElement>(null);
   const acceptRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    let acked = false;
-    try {
-      acked = localStorage.getItem(storageKey) === "1";
-    } catch {
-      // Storage blocked (private mode / cookies off): show it, don't hard-fail.
-    }
-    if (!acked) setOpen(true);
-  }, [storageKey]);
 
   // Lock background scroll and move focus into the dialog while it's open.
   useEffect(() => {
@@ -46,7 +50,7 @@ export default function TermsGate({ lang }: { lang: Locale }) {
     try {
       localStorage.setItem(storageKey, "1");
     } catch {}
-    setOpen(false);
+    setAccepted(true);
   };
 
   // Keep focus trapped inside the dialog; it's a required acknowledgement, so
@@ -121,4 +125,9 @@ export default function TermsGate({ lang }: { lang: Locale }) {
       </div>
     </div>
   );
+}
+
+/** Storage this gate reads never changes under it while the page is open. */
+function noChanges() {
+  return () => {};
 }

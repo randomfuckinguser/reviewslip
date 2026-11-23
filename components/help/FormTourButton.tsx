@@ -1,6 +1,5 @@
 "use client";
 
-import { GraduationCap } from "lucide-react";
 
 import { tourById } from "./tours";
 import { useTour } from "./useTour";
@@ -22,7 +21,6 @@ export default function FormTourButton({ tour: id }: { tour: string }) {
       onClick={start}
       data-tip={`A ${tour.steps.length}-step tour of this form`}
     >
-      <GraduationCap size={15} aria-hidden="true" />
       Take the Tour
     </button>
   );

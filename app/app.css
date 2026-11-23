@@ -16,20 +16,22 @@
 /* -------------------------------------------------------------------------- */
 
 .app {
-  --background: #ffffff;
-  --foreground: #18181b;
+  /* Stock Fluent Compact's neutrals, unchanged (the standard's table): the
+     page is Fluent's light grey and what is read or typed into is white on
+     it. #616161 on #FAFAFA is 5.9:1. */
+  --background: #fafafa;
+  --foreground: #242424;
   --card: #ffffff;
-  --muted: #f4f4f5;
-  /* zinc-600, not the usual zinc-500: muted text also sits on --muted panels,
-     where 500 measures 4.4:1 and small text needs 4.5. */
-  --muted-foreground: #52525b;
-  --border: #e4e4e7;
+  --muted: #f5f5f5;
+  --muted-foreground: #616161;
+  --border: #e0e0e0;
   /* Rows inside a card or table: the same hairline. */
-  --divider: #e4e4e7;
-  --input: #d4d4d8;
+  --divider: #e0e0e0;
+  /* An editor's outline: Fluent's, a step darker than a frame. */
+  --input: #d1d1d1;
   /* shadcn's naming: --accent is the neutral hover ground, not the accent
      colour. The one accent is --primary. */
-  --accent: #f4f4f5;
+  --accent: #f5f5f5;
 
   /* Thai royal blue, the standards' one accent. 7.8:1 on white. */
   --primary: #1f4fa3;
@@ -47,21 +49,28 @@
      16% tint of itself, and on that ground the 700s measure about 4.0:1. These
      hold 5.0 there and 7.1 on the page. */
   --success: #166534;
-  --warning: #92400e;
+  /* The standard's warning, fixed for every app: Fluent 2's warning
+     foreground. AA as text on the page and on its own 8% tint. */
+  --warning: #bc4b09;
   --warning-foreground: #ffffff;
 
-  /* The standard's three sizes, two weights and one corner. A figure is 24px. */
+  /* The standard's three sizes, two weights and one corner. A figure is 24px.
+     The corner is Fluent's own 4px for controls, frames and cards; a dialog
+     is 8px. */
   --fs12: 0.75rem;
   --fs14: 0.875rem;
   --fs16: 1rem;
   --fs24: 1.5rem;
   --fw5: 500;
   --fw6: 600;
+  --r4: 4px;
   --r8: 8px;
 
-  --sidebar: #fafafa;
-  --radius: var(--r8);
-  --radius-container: var(--r8);
+  /* The Sidebar: Fluent's filled-editor grey. */
+  --sidebar: #f5f5f5;
+  --radius: var(--r4);
+  --radius-container: var(--r4);
+  --radius-dialog: var(--r8);
   --shadow-container: none;
   --pad: 1rem;
   --sidebar-width: 13.5rem;
@@ -70,15 +79,17 @@
 }
 
 .dark .app {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --card: #18181b;
-  --muted: #1f1f23;
-  --muted-foreground: #a1a1aa;
-  --border: #27272a;
-  --divider: #27272a;
-  --input: #3f3f46;
-  --accent: #27272a;
+  /* Fluent Compact dark: the content a lighter grey on a darker page.
+     #ADADAD on #1F1F1F is 7.3:1. */
+  --background: #1f1f1f;
+  --foreground: #ffffff;
+  --card: #292929;
+  --muted: #3d3d3d;
+  --muted-foreground: #adadad;
+  --border: #616161;
+  --divider: #3d3d3d;
+  --input: #757575;
+  --accent: #3d3d3d;
 
   /* Same hue, lighter, to hold contrast on a dark ground: 6.5:1. White text on
      it fails, so the foreground turns dark. Still one accent. */
@@ -89,10 +100,10 @@
   --destructive: #f87171;
   --destructive-foreground: #1c1917;
   --success: #4ade80;
-  --warning: #fbbf24;
+  --warning: #faa06b;
   --warning-foreground: #1c1917;
 
-  --sidebar: #111113;
+  --sidebar: #141414;
 }
 
 /* The bridge.
@@ -160,12 +171,12 @@ body:has(.app) > footer {
 }
 
 body:has(.app) {
-  background: #ffffff;
+  background: #fafafa;
   overflow: hidden;
 }
 
 .dark body:has(.app) {
-  background: #09090b;
+  background: #1f1f1f;
 }
 
 .app {
@@ -419,6 +430,7 @@ body:has(.app) {
     .desk-card,
     .group-box
   ) {
+  --pad: 0.75rem;
   background: var(--card) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
@@ -727,15 +739,9 @@ body:has(.app) {
 }
 
 .flash.is-warn {
-  background: #fef3c7;
-  color: #78350f;
-  border: 1px solid #fcd34d;
-}
-
-.dark .flash.is-warn {
-  background: #2b2410;
-  color: #fbbf24;
-  border-color: #7a6100;
+  background: color-mix(in srgb, var(--warning, #bc4b09) 8%, var(--card, #ffffff));
+  color: var(--foreground, #242424);
+  border: 1px solid var(--warning, #bc4b09);
 }
 
 .app .flash a {
@@ -943,11 +949,11 @@ body:has(.app) {
   ) {
   height: 36px !important;
   padding-block: 0 !important;
-  font-size: 0.875rem !important;
+  font-size: var(--fs14) !important;
 }
 
 .app textarea {
-  font-size: 0.875rem !important;
+  font-size: var(--fs14) !important;
 }
 
 .app :is(input, select, textarea)::placeholder {
@@ -969,7 +975,7 @@ body:has(.app) {
   padding: 0 0.75rem;
   height: 28px;
   border-radius: var(--radius);
-  font-size: 0.75rem;
+  font-size: var(--fs12);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -997,7 +1003,6 @@ body:has(.app) {
 }
 
 .app .admin-card {
-  padding: 1rem;
   margin-bottom: 0.75rem;
 }
 
@@ -1107,7 +1112,7 @@ body:has(.app) {
 /* A plain dimmed backdrop. The marketing site's is a blurred dark teal, which
    over a neutral app reads as a colour cast rather than as "behind". */
 .app .editor {
-  border-radius: 12px;
+  border-radius: var(--radius-dialog);
   box-shadow: 0 16px 48px color-mix(in srgb, #000 24%, transparent);
 }
 
@@ -1142,17 +1147,22 @@ body:has(.app) {
 /* A destructive action that sits under a field rather than beside the primary
    button: a red text link, so it is found by anybody looking for it and not
    pressed by anybody who is not. */
+/* A destructive action on a page: an outlined button with the destructive
+   word in red. A filled red button is only ever a confirmation's own. */
 .app .btn-link-danger {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  justify-content: center;
+  height: 32px;
+  min-width: 80px;
   margin-top: 0.4rem;
-  padding: 0;
-  border: 0;
-  background: none;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
   color: var(--destructive);
   font: inherit;
-  font-size: 0.8rem;
+  font-size: var(--fs14);
   font-weight: 500;
   cursor: pointer;
 }
@@ -1861,8 +1871,8 @@ body:has(.app) {
   padding: 0.6rem 1rem;
   margin: 0 0 1rem;
   border-radius: var(--radius);
-  background: #b42318;
-  color: #ffffff !important;
+  background: var(--destructive);
+  color: var(--destructive-foreground) !important;
   font-size: var(--fs14);
 }
 
@@ -1952,17 +1962,17 @@ body:has(.app) {
 .driver-popover.rs-tour {
   max-width: 20rem;
   padding: 0.9rem 1rem;
-  border: 1px solid #e4e4e7;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
   background: #ffffff;
-  color: #18181b;
+  color: #242424;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Thai", sans-serif;
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
 }
 
 .dark .driver-popover.rs-tour {
-  border-color: #27272a;
-  background: #18181b;
+  border-color: #616161;
+  background: #292929;
   color: #fafafa;
 }
 
@@ -1981,11 +1991,11 @@ body:has(.app) {
 
 .driver-popover.rs-tour .driver-popover-progress-text {
   font-size: 0.75rem;
-  color: #52525b;
+  color: #616161;
 }
 
 .dark .driver-popover.rs-tour .driver-popover-progress-text {
-  color: #a1a1aa;
+  color: #adadad;
 }
 
 .driver-popover.rs-tour .driver-popover-footer {
@@ -1995,8 +2005,8 @@ body:has(.app) {
 .driver-popover.rs-tour .driver-popover-footer button {
   height: 32px;
   padding: 0 0.75rem;
-  border: 1px solid #d4d4d8;
-  border-radius: 8px;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
   background: transparent;
   color: inherit;
   font: inherit;
@@ -2018,7 +2028,7 @@ body:has(.app) {
 }
 
 .driver-popover.rs-tour .driver-popover-close-btn {
-  color: #52525b;
+  color: #616161;
 }
 
 .driver-popover.rs-tour :is(button, a):focus-visible {
@@ -2031,7 +2041,7 @@ body:has(.app) {
 }
 
 .dark .driver-popover.rs-tour .driver-popover-arrow-side-bottom {
-  border-bottom-color: #18181b;
+  border-bottom-color: #242424;
 }
 
 /* The Tutorials page: each tour's steps, numbered. */
@@ -2049,41 +2059,26 @@ body:has(.app) {
 /* The hybrid look                                                            */
 /* -------------------------------------------------------------------------- */
 
-/* Half console, half app standard. From the console: a light grey canvas the
-   white cards stand on, a 12px card corner with the faintest lift, larger
-   page and card titles, and cards in a row that end level. From the
-   standard: Thai blue as the one accent, the Sidebar and its pill, the 56px
-   header with Back and Help, 14px text, 8px controls, status dots, underlined
-   tabs and labels above fields. Last in the file, so it wins. */
+/* The app standard throughout: Fluent's grey page with white cards on it, a
+   4px corner and no shadow, the Sidebar in the filled grey, the page header
+   on the page's own ground, a 16px page title, and cards in a row that end
+   level. Last in the file, so it wins. */
 .app {
-  --background: #f4f4f5;
-  --radius-card: 12px;
-  --shadow-card: 0 1px 2px rgb(9 9 11 / 0.05);
-}
-
-.dark .app {
-  --background: #09090b;
+  --radius-card: var(--radius);
   --shadow-card: none;
 }
 
-body:has(.app) {
-  background: #f4f4f5;
-}
-
-.dark body:has(.app) {
-  background: #09090b;
-}
-
 .sidebar {
-  background: var(--card);
+  background: var(--sidebar);
 }
 
 .page-header {
-  background: var(--card);
+  background: var(--background);
 }
 
 .app .page-title h1 {
-  font-size: 1.25rem !important;
+  font-size: var(--fs16) !important;
+  margin: 0;
 }
 
 .app
@@ -2110,8 +2105,10 @@ body:has(.app) {
   box-shadow: none !important;
 }
 
-/* Card titles: 16px, the console's weight of heading over the standard's. */
-.app :is(.container-head h2, .bw-head h2, .admin-card > h2, .group-box > h2, .desk-card > h2, .list-head h2):not(.venue-look *) {
+/* Card titles: 16px, the console's weight of heading over the standard's.
+   .card-title is the same heading where it sits in a row with its actions
+   rather than straight under the card, and the side panel's own title. */
+.app :is(.container-head h2, .bw-head h2, .admin-card > h2, .group-box > h2, .desk-card > h2, .list-head h2, .setup-head h2, h2.card-title):not(.venue-look *) {
   font-size: var(--fs16) !important;
   font-weight: var(--fw6) !important;
 }
@@ -2568,7 +2565,7 @@ body:has(.app) {
 }
 
 .app .settings-save .hint {
-  font-size: 0.8125rem;
+  font-size: var(--fs12);
   color: var(--muted-foreground);
 }
 
@@ -2586,7 +2583,7 @@ body:has(.app) {
   background: var(--background);
   color: var(--foreground);
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--fs14);
   cursor: pointer;
 }
 
@@ -2616,7 +2613,7 @@ body:has(.app) {
   background: transparent !important;
   color: var(--foreground);
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--fs14);
 }
 
 .app .desk-find:focus-within {
@@ -2633,7 +2630,7 @@ body:has(.app) {
 
 .app .desk-ready > p {
   margin: 0 0 0.5rem;
-  font-size: 0.78rem;
+  font-size: var(--fs12);
   color: var(--muted-foreground);
 }
 
@@ -2644,15 +2641,15 @@ body:has(.app) {
 }
 
 .app .desk-chip {
-  min-width: 2.75rem;
-  height: 28px;
-  padding: 0 0.55rem;
+  min-width: 80px;
+  height: 32px;
+  padding: 0 0.75rem;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius);
   background: transparent;
   color: var(--foreground);
   font: inherit;
-  font-size: 0.8rem;
+  font-size: var(--fs14);
   cursor: pointer;
 }
 
@@ -2747,7 +2744,7 @@ body:has(.app) {
 
 .app .cal-actions > p {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: var(--fs12);
   color: var(--muted-foreground);
 }
 
@@ -2790,7 +2787,7 @@ body.has-side-panel .app .tl-notes {
 }
 
 .app .tl-notes > .tl-warn {
-  background: color-mix(in srgb, var(--alert, #f59e0b) 16%, var(--card, #fff));
+  background: color-mix(in srgb, var(--warning) 16%, var(--card));
   color: var(--foreground);
 }
 
@@ -2829,66 +2826,15 @@ body.has-side-panel .app .tl-notes {
 /* The booking panel's status bar, returning guests, and the Customers pages  */
 /* -------------------------------------------------------------------------- */
 
-/* Tones the status pills share: each status is a colour as well as a word. */
-.app :is(.bp-seg button, .bp-pill)[data-tone="info"] { --tone: #2563eb; }
-.app :is(.bp-seg button, .bp-pill)[data-tone="good"] { --tone: #15803d; }
-.app :is(.bp-seg button, .bp-pill)[data-tone="warn"] { --tone: #b45309; }
-.app :is(.bp-seg button, .bp-pill)[data-tone="bad"] { --tone: #b42318; }
-.app :is(.bp-seg button, .bp-pill)[data-tone="muted"] { --tone: #6b7280; }
+/* Tones the status markers share, from the shared tokens: each status is a
+   colour as well as a word. */
+.app :is(.bp-pill, .bp-band, .bp-pick)[data-tone="info"] { --tone: var(--primary); }
+.app :is(.bp-pill, .bp-band, .bp-pick)[data-tone="good"] { --tone: var(--success); }
+.app :is(.bp-pill, .bp-band, .bp-pick)[data-tone="warn"] { --tone: var(--warning); }
+.app :is(.bp-pill, .bp-band, .bp-pick)[data-tone="bad"] { --tone: var(--destructive); }
+.app :is(.bp-pill, .bp-band, .bp-pick)[data-tone="muted"] { --tone: var(--muted-foreground); }
 
-/* Where the stay is and whether it is paid, at the top of the panel. */
-.app .bp-status {
-  display: grid;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: color-mix(in srgb, var(--muted-foreground) 5%, transparent);
-}
-
-/* The label over its choices, so the choices have the panel's whole width. */
-.app .bp-status-row {
-  display: grid;
-  gap: 0.3rem;
-}
-
-.app .bp-status-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--muted-foreground);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-/* Equal cells, so the choices line up in rows: three for the stay, four for
-   the payment (set on each group as --cols). */
-.app .bp-seg {
-  display: grid;
-  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
-  gap: 0.3rem;
-}
-
-.app .bp-seg button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  min-width: 0;
-  white-space: nowrap;
-  height: 26px;
-  padding: 0 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--muted-foreground);
-  font: inherit;
-  font-size: 0.78rem;
-  cursor: pointer;
-}
-
-/* The chosen one carries its colour's dot; the rest are words, so a row of
-   five fits the panel's width. */
-.app .bp-seg button[aria-pressed="true"]::before,
+/* A status shown, not changed: the customer's stays. The dot, then the word. */
 .app .bp-pill::before {
   content: "";
   width: 0.5rem;
@@ -2897,18 +2843,6 @@ body.has-side-panel .app .tl-notes {
   background: var(--tone);
 }
 
-.app .bp-seg button[aria-pressed="true"] {
-  border-color: var(--tone);
-  background: color-mix(in srgb, var(--tone) 14%, transparent);
-  color: var(--foreground);
-  font-weight: 600;
-}
-
-.app .bp-seg button:disabled {
-  cursor: progress;
-}
-
-/* A status shown, not changed: the customer's stays. */
 .app .bp-pill {
   display: inline-flex;
   align-items: center;
@@ -2916,7 +2850,7 @@ body.has-side-panel .app .tl-notes {
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
   background: color-mix(in srgb, var(--tone) 12%, transparent);
-  font-size: 0.75rem;
+  font-size: var(--fs12);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -2925,8 +2859,8 @@ body.has-side-panel .app .tl-notes {
 .app .bp-returning {
   display: block;
   margin: 0.35rem 0 0;
-  font-size: 0.8rem;
-  color: #15803d;
+  font-size: var(--fs12);
+  color: var(--success);
 }
 
 .app .bp-returning a,
@@ -2951,7 +2885,7 @@ body.has-side-panel .app .tl-notes {
 
 .app .bp-matches-h {
   padding: 0.35rem 0.7rem;
-  font-size: 0.72rem;
+  font-size: var(--fs12);
   font-weight: 600;
   color: var(--muted-foreground);
   background: color-mix(in srgb, var(--muted-foreground) 6%, transparent);
@@ -2976,12 +2910,12 @@ body.has-side-panel .app .tl-notes {
 }
 
 .app .bp-matches strong {
-  font-size: 0.88rem;
+  font-size: var(--fs14);
   font-weight: 600;
 }
 
 .app .bp-matches span {
-  font-size: 0.75rem;
+  font-size: var(--fs12);
   color: var(--muted-foreground);
 }
 
@@ -2990,9 +2924,9 @@ body.has-side-panel .app .tl-notes {
   margin-left: 0.5rem;
   padding: 0.1rem 0.45rem;
   border-radius: 999px;
-  background: color-mix(in srgb, #15803d 12%, transparent);
-  color: #15803d;
-  font-size: 0.7rem;
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  color: var(--success);
+  font-size: var(--fs12);
   font-weight: 600;
 }
 
@@ -3008,7 +2942,7 @@ body.has-side-panel .app .tl-notes {
 }
 
 .app .cu-form label > span {
-  font-size: 0.8rem;
+  font-size: var(--fs12);
   font-weight: 500;
 }
 
@@ -3025,18 +2959,14 @@ body.has-side-panel .app .tl-notes {
 }
 
 .app .cu-said {
-  font-size: 0.85rem;
-  color: #15803d;
-}
-
-.app .cu-said.is-error {
-  color: #b42318;
+  font-size: var(--fs14);
+  color: var(--destructive);
 }
 
 .app .cu-owed {
   margin: 0;
-  font-size: 0.82rem;
-  color: #b45309;
+  font-size: var(--fs14);
+  color: var(--warning);
 }
 
 .app .cu-stays {
@@ -3066,12 +2996,12 @@ body.has-side-panel .app .tl-notes {
 }
 
 .app .cu-stay-main strong {
-  font-size: 0.9rem;
+  font-size: var(--fs14);
   font-weight: 600;
 }
 
 .app .cu-stay-main span {
-  font-size: 0.78rem;
+  font-size: var(--fs12);
   color: var(--muted-foreground);
 }
 
@@ -3095,7 +3025,7 @@ body.has-side-panel .app .tl-notes {
 .app .bp .bp-body {
   display: grid;
   gap: 0.75rem;
-  font-size: 0.875rem;
+  font-size: var(--fs14);
 }
 
 /* Back, the title, then Save and Done on the right. */
@@ -3112,7 +3042,7 @@ body.has-side-panel .app .tl-notes {
   background: none;
   padding: 0.2rem 0.3rem;
   color: var(--primary);
-  font-size: 1rem;
+  font-size: var(--fs16);
   cursor: pointer;
 }
 
@@ -3120,7 +3050,7 @@ body.has-side-panel .app .tl-notes {
   margin: 0;
   flex: 1;
   min-width: 0;
-  font-size: 1.15rem;
+  font-size: var(--fs16);
   font-weight: 600;
   color: var(--foreground);
   white-space: nowrap;
@@ -3133,30 +3063,15 @@ body.has-side-panel .app .tl-notes {
   gap: 0.4rem;
 }
 
-.app .bp-tools .btn {
-  min-width: 4.5rem;
-}
-
 /* The status band: the stay's state in its own colour across the top, the
    payment at the other end, like an invoice's status and payment due. */
-.app .bp-band[data-tone="info"],
-.app .bp-pick[data-tone="info"] { --tone: #2563eb; }
-.app .bp-band[data-tone="good"],
-.app .bp-pick[data-tone="good"] { --tone: #15803d; }
-.app .bp-band[data-tone="warn"],
-.app .bp-pick[data-tone="warn"] { --tone: #b45309; }
-.app .bp-band[data-tone="bad"],
-.app .bp-pick[data-tone="bad"] { --tone: #b42318; }
-.app .bp-band[data-tone="muted"],
-.app .bp-pick[data-tone="muted"] { --tone: #6b7280; }
-
 .app .bp-band {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
   padding: 0.35rem;
-  border-radius: 8px;
+  border-radius: var(--radius);
   border-left: 6px solid var(--tone);
   background: color-mix(in srgb, var(--tone) 10%, transparent);
 }
@@ -3174,7 +3089,7 @@ body.has-side-panel .app .tl-notes {
 }
 
 .app .bp-band-label {
-  font-size: 0.8rem;
+  font-size: var(--fs12);
   color: var(--muted-foreground);
 }
 
@@ -3184,7 +3099,7 @@ body.has-side-panel .app .tl-notes {
   min-width: 9rem;
   padding: 0 1.8rem 0 1.6rem;
   border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
-  border-radius: 6px;
+  border-radius: var(--radius);
   background-color: var(--card);
   background-image:
     radial-gradient(circle at 0.8rem 50%, var(--tone) 0.3rem, transparent 0.32rem);
@@ -3227,7 +3142,7 @@ body.has-side-panel .app .tl-notes {
 }
 
 .app .bp-l {
-  font-size: 0.8rem;
+  font-size: var(--fs14);
   color: var(--muted-foreground);
   white-space: nowrap;
 }
@@ -3244,7 +3159,7 @@ body.has-side-panel .app .tl-notes {
   height: 32px;
   padding: 0 0.55rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
   background: var(--card);
   color: var(--foreground);
   font: inherit;
@@ -3277,7 +3192,7 @@ body.has-side-panel .app .tl-notes {
    and the total under it. */
 .app .bp-items {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
   overflow: hidden;
 }
 
@@ -3292,7 +3207,7 @@ body.has-side-panel .app .tl-notes {
 
 .app .bp-items-head h3 {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: var(--fs14);
   font-weight: 600;
 }
 
@@ -3300,7 +3215,7 @@ body.has-side-panel .app .tl-notes {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  font-size: 0.8rem;
+  font-size: var(--fs12);
   color: var(--muted-foreground);
 }
 
@@ -3308,7 +3223,7 @@ body.has-side-panel .app .tl-notes {
   min-width: 6.5rem;
   padding: 0.25rem 0.5rem;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
   background: var(--card);
   color: var(--foreground);
   font-weight: 600;
@@ -3319,7 +3234,7 @@ body.has-side-panel .app .tl-notes {
 .app .bp-items table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.82rem;
+  font-size: var(--fs14);
 }
 
 .app .bp-items th {
@@ -3349,13 +3264,13 @@ body.has-side-panel .app .tl-notes {
 
 .app .bp-items tfoot td:first-child {
   font-weight: 400;
-  font-size: 0.78rem;
+  font-size: var(--fs12);
   color: var(--muted-foreground);
 }
 
 .app .bp-sub {
   display: block;
-  font-size: 0.75rem;
+  font-size: var(--fs12);
   color: var(--muted-foreground);
 }
 
@@ -3367,7 +3282,7 @@ body.has-side-panel .app .tl-notes {
 
 .app .bp-hint {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: var(--fs12);
   color: var(--muted-foreground);
 }
 
@@ -3382,7 +3297,7 @@ body.has-side-panel .app .tl-notes {
 .app .bp span.bp-l {
   display: block;
   margin: 0;
-  font-size: 0.8rem;
+  font-size: var(--fs14);
   font-weight: 400;
   color: var(--muted-foreground);
 }
@@ -3402,4 +3317,97 @@ body.has-side-panel .app .tl-notes {
   grid-template-rows: none;
   grid-auto-rows: max-content;
   align-content: start;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* The type scale for the dashboard's own classes in globals.css              */
+/* -------------------------------------------------------------------------- */
+
+/* Those rules were written in the marketing site's in-between sizes (0.72,
+   0.8, 0.82, 0.85, 0.9, 0.95rem). The app has three: 12px for notes, counts,
+   chips and the calendar's small labels; 14px for anything read; 16px for
+   card titles. !important for the same reason as the heading rules above. */
+.app :is(
+    .setup-note,
+    .desk-count,
+    .desk-done,
+    .tl-hint,
+    .tl-holdlabel,
+    .tl-who,
+    .tl-head b,
+    .tl b,
+    .rm-num,
+    .rm-note,
+    .rm-weekdays > span,
+    .desk-who > span,
+    .rate-legend,
+    .admin-tile-note,
+    .bl-clear,
+    .rt-chip,
+    td .sub,
+    .sub
+  ) {
+  font-size: var(--fs12) !important;
+}
+
+.app :is(
+    .setup-count,
+    .setup-steps strong,
+    .desk-empty,
+    .desk-card strong,
+    .tl-room,
+    .view-tab,
+    .admin-sub,
+    .rm-price
+  ) {
+  font-size: var(--fs14) !important;
+}
+
+
+/* The Rates head: the fields on one line along their bottom edge, and the
+   note under them across the card, so a long note never pushes a field out
+   of line. */
+.app .rm-head .rm-note {
+  flex: 1 1 100%;
+}
+
+
+/* The rates key: each swatch beside its word, the pairs spaced apart. */
+.app .rate-legend {
+  gap: 0.5rem 1.5rem;
+}
+
+.app .rate-legend .rate-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.app .rate-legend .swatch {
+  margin: 0;
+  vertical-align: middle;
+}
+
+/* The empty places before the 1st and after the last day are not days: no
+   hover, no frame, nothing to click. They were taking the day's hover and
+   showing a grey card under the pointer. */
+.app .rm-day.rm-blank,
+.app .rm-day.rm-blank:hover {
+  background: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* Corners on the dashboard's own classes in globals.css                      */
+/* -------------------------------------------------------------------------- */
+
+/* Written there as 6, 8 and 14px. The calendar's day cells, the month view's
+   cells and its add-a-booking cell, the room warning: Fluent's 4px, the
+   same as every other frame. The booking bars keep their 4px. */
+.app :is(.rm-day, .mg-cell, .mg-take, .mg-top, .tl-warn, .tl-notes > p) {
+  border-radius: var(--radius) !important;
 }

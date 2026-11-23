@@ -81,8 +81,8 @@ export default function HousekeepingPin({
   }
 
   return (
-    <section style={card} data-tour="rooms-board">
-      <h2 style={heading}>Housekeeping Board</h2>
+    <section className="admin-card" data-tour="rooms-board">
+      <h2 className="card-title" style={heading}>Housekeeping Board</h2>
       <p style={lede}>
         A page your housekeepers open on their own phone. It lists today&rsquo;s
         rooms in the order they need doing — turnarounds first — and they tap a
@@ -94,7 +94,7 @@ export default function HousekeepingPin({
         <button type="button" className="btn btn-quiet" onClick={() => void copy()}>
           {copied ? "Copied" : "Copy Link"}
         </button>
-        <span style={{ fontSize: "0.8rem", color: on ? "var(--success)" : "var(--admin-muted)" }}>
+        <span style={{ fontSize: "var(--fs12)", color: on ? "var(--success)" : "var(--admin-muted)" }}>
           {on ? "On" : "Off — the link will not open"}
         </span>
       </div>
@@ -146,7 +146,7 @@ export default function HousekeepingPin({
           role="status"
           style={{
             margin: "0.7rem 0 0",
-            fontSize: "0.82rem",
+            fontSize: "var(--fs14)",
             color: said.ok ? "var(--success)" : "var(--warning)",
           }}
         >
@@ -168,27 +168,20 @@ export default function HousekeepingPin({
   );
 }
 
-const card: React.CSSProperties = {
-  background: "var(--paper)",
-  color: "var(--ink)",
-  borderRadius: 14,
-  padding: "1.4rem",
-  marginTop: "1.5rem",
-};
 
-const heading: React.CSSProperties = { fontSize: "1.1rem", margin: "0 0 0.35rem" };
+const heading: React.CSSProperties = { fontSize: "var(--fs16)", fontWeight: 600, margin: "0 0 0.35rem" };
 
 const lede: React.CSSProperties = {
   margin: "0 0 1rem",
-  fontSize: "0.85rem",
+  fontSize: "var(--fs14)",
   lineHeight: 1.6,
   color: "var(--ink-soft)",
 };
 
 const link: React.CSSProperties = {
-  fontSize: "0.82rem",
+  fontSize: "var(--fs14)",
   padding: "0.3rem 0.55rem",
-  borderRadius: 8,
+  borderRadius: "var(--radius)",
   background: "color-mix(in srgb, var(--ink) 6%, transparent)",
   wordBreak: "break-all",
 };
@@ -201,11 +194,11 @@ const form: React.CSSProperties = {
   margin: "1rem 0 0",
 };
 
-const label: React.CSSProperties = { fontSize: "0.75rem", color: "var(--ink-soft)" };
+const label: React.CSSProperties = { fontSize: "var(--fs12)", color: "var(--ink-soft)" };
 
 const input: React.CSSProperties = {
   font: "inherit",
-  fontSize: "1.15rem",
+  fontSize: "var(--fs16)",
   // Tabular, so six digits are six equal columns and a "1" does not leave a
   // gap. The indent puts letter-spaced text back on its centre.
   fontVariantNumeric: "tabular-nums",
@@ -214,7 +207,7 @@ const input: React.CSSProperties = {
   textAlign: "center",
   width: "8rem",
   padding: "0.45rem 0.6rem",
-  borderRadius: 8,
+  borderRadius: "var(--radius)",
   border: "1px solid color-mix(in srgb, var(--ink) 20%, transparent)",
   background: "var(--paper)",
   color: "var(--ink)",
@@ -222,7 +215,7 @@ const input: React.CSSProperties = {
 
 const note: React.CSSProperties = {
   margin: "1rem 0 0",
-  fontSize: "0.78rem",
+  fontSize: "var(--fs12)",
   lineHeight: 1.6,
   color: "var(--ink-soft)",
 };

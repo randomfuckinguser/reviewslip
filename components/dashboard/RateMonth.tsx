@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
 import { weeksOf } from "@/lib/nights";
 import type { RateCalendar, RateNight, RoomGroup } from "@/lib/customer";
 
@@ -25,17 +24,17 @@ type Wish = "keep" | "on" | "off";
 const field: React.CSSProperties = {
   width: "100%",
   padding: "0.5rem 0.7rem",
-  borderRadius: 8,
+  borderRadius: "var(--radius)",
   border: "1px solid var(--jade-line)",
   background: "var(--shade-soft)",
   color: "var(--cream)",
   fontFamily: "inherit",
-  fontSize: "0.9rem",
+  fontSize: "var(--fs14)",
 };
 
 const label: React.CSSProperties = {
   display: "block",
-  fontSize: "0.75rem",
+  fontSize: "var(--fs12)",
   marginBottom: "0.25rem",
   color: "var(--admin-muted)",
 };
@@ -313,23 +312,31 @@ export default function RateMonth({
                   </option>
                 ))}
               </select>
-              {plan ? (
+            </div>
+
+            {/* In the row, beside what it deletes, not under it: under the
+                dropdown it made that column taller than its neighbours, and
+                the fields beside it no longer lined up. */}
+            {plan ? (
+              // A 36px slot, so the 32px button sits on the fields' centre line.
+              <div style={{ height: 36, display: "flex", alignItems: "center" }}>
                 <button
                   type="button"
                   className="btn-link-danger"
+                  style={{ marginTop: 0 }}
                   disabled={busy}
                   onClick={() => void removePlan(plan.id, `${plan.groupName} — ${plan.name}`)}
                 >
-                  <Trash2 size={13} aria-hidden="true" /> Delete This Rate
+                  Delete This Rate
                 </button>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
 
             <div style={{ flex: "1 1 10rem" }}>
               <label htmlFor="rm-base" style={label}>
                 Every Night
               </label>
-              <div style={{ display: "flex", gap: "0.4rem" }}>
+              <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
                 <input
                   id="rm-base"
                   inputMode="decimal"
@@ -405,11 +412,13 @@ export default function RateMonth({
             ))}
           </div>
 
+          {/* Each colour with its own word, held together, so the key reads
+              as four pairs rather than eight things evenly spaced. */}
           <div className="rate-legend">
-            <span className="swatch base" /> everyday price
-            <span className="swatch override" /> set by hand
-            <span className="swatch closed" /> not selling
-            <span className="swatch unpriced" /> no price
+            <span className="rate-key"><span className="swatch base" />Everyday Price</span>
+            <span className="rate-key"><span className="swatch override" />Set by Hand</span>
+            <span className="rate-key"><span className="swatch closed" />Not Selling</span>
+            <span className="rate-key"><span className="swatch unpriced" />No Price</span>
           </div>
 
           {/* ------------------------------------------ what to do to them */}
@@ -602,7 +611,7 @@ export default function RateMonth({
                       disabled={busy}
                       onClick={() => void removePlan(p.id, `${p.groupName} — ${p.name}`)}
                     >
-                      <Trash2 size={14} aria-hidden="true" /> Delete
+                      Delete
                     </button>
                   </td>
                 </tr>

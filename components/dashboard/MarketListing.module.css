@@ -17,7 +17,7 @@
 
 .hint {
   display: block;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 400;
   color: var(--muted-foreground);
 }
@@ -170,7 +170,7 @@
   border: 1px dashed var(--input);
   border-radius: var(--radius);
   color: var(--muted-foreground);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   cursor: pointer;
 }
 

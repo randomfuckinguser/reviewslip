@@ -131,10 +131,10 @@ export default function CleaningStandard({
   };
 
   return (
-    <section style={card} className="wide" data-tour="rooms-cleaning">
+    <section className="admin-card wide" data-tour="rooms-cleaning">
       <div style={headRow}>
         <div style={{ minWidth: 0 }}>
-          <h2 style={heading}>What Cleaning a Room Means</h2>
+          <h2 className="card-title" style={heading}>What Cleaning a Room Means</h2>
           <p style={lede}>
             Housekeepers see this on their phone under each room, tick it off,
             and photograph each area when it is done. Add a photo of how an area
@@ -161,7 +161,7 @@ export default function CleaningStandard({
       )}
 
       {problem && (
-        <p role="status" style={{ margin: "0.6rem 0 0", fontSize: "0.82rem", color: "var(--warning)" }}>
+        <p role="status" style={{ margin: "0.6rem 0 0", fontSize: "var(--fs14)", color: "var(--warning)" }}>
           {problem}
         </p>
       )}
@@ -187,7 +187,7 @@ export default function CleaningStandard({
           <AreaCard area={null} items={loose} {...lineProps} />
         )}
 
-        <form onSubmit={newArea} style={{ ...box, ...addBox }}>
+        <form onSubmit={newArea} style={box}>
           <h3 style={areaTitle}>Add an Area</h3>
           <p style={{ ...hint, margin: "0 0 0.6rem" }}>
             A part of the room with its own photo: Bedroom, Bathroom, Balcony.
@@ -263,7 +263,6 @@ function AreaCard({
           <button
             type="button"
             className="btn btn-quiet"
-            style={tiny}
             disabled={busy}
             onClick={() => {
               if (
@@ -318,7 +317,6 @@ function AreaCard({
               <button
                 type="button"
                 className="btn btn-quiet"
-                style={tiny}
                 disabled={busy}
                 onClick={() => onDrop(item.id)}
               >
@@ -359,7 +357,7 @@ function AreaCard({
             checked={needsPhoto}
             onChange={(e) => setNeedsPhotoNew(e.target.checked)}
           />
-          Needs a photo
+          Needs a Photo
         </label>
         <button type="submit" className="btn btn-quiet" disabled={busy || !label.trim()}>
           Add
@@ -410,15 +408,14 @@ function NeedsPhoto({
           ? "Ticked by a photo: the housekeeper has to take one. Press to let a tap tick it."
           : "Ticked by a tap. Press so the housekeeper has to take a photo instead."
       }
+      // Pressed is a state, shown in neutral the way a chosen filter is: the
+      // accent stays for the one action a screen has.
       style={{
-        ...tiny,
         whiteSpace: "nowrap",
-        ...(on
-          ? { background: "color-mix(in srgb, var(--warning) 18%, transparent)", color: "var(--ink)" }
-          : {}),
+        ...(on ? { background: "var(--accent)", borderColor: "var(--foreground)", fontWeight: 600 } : {}),
       }}
     >
-      {on ? "📷 Photo to tick" : "Tap to tick"}
+      {on ? "Photo to Tick" : "Tap to Tick"}
     </button>
   );
 }
@@ -518,11 +515,11 @@ function Photo({
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         ) : wide ? (
-          <span style={{ fontSize: "0.85rem", color: "var(--ink-soft)" }}>
+          <span style={{ fontSize: "var(--fs14)", color: "var(--ink-soft)" }}>
             + Photo of {label}
           </span>
         ) : (
-          <span style={{ fontSize: "1.1rem", opacity: 0.55 }}>+</span>
+          <span style={{ fontSize: "var(--fs16)", opacity: 0.55 }}>+</span>
         )}
       </button>
 
@@ -532,7 +529,6 @@ function Photo({
             <button
               type="button"
               className="btn btn-quiet"
-              style={tiny}
               disabled={busy || working}
               onClick={() => picker.current?.click()}
             >
@@ -543,7 +539,6 @@ function Photo({
             <button
               type="button"
               className="btn btn-quiet"
-              style={tiny}
               disabled={busy || working}
               onClick={() => void clear()}
             >
@@ -553,7 +548,7 @@ function Photo({
           {/* Beside the picture rather than in the page's own notice, so a
               failure sits with the line it happened on. */}
           {(working || problem) && (
-            <span style={{ ...tinyNote, color: problem ? "var(--warn, #b4423a)" : undefined }}>
+            <span style={{ ...tinyNote, color: problem ? "var(--destructive)" : undefined }}>
               {problem || "Working…"}
             </span>
           )}
@@ -573,8 +568,8 @@ const well: React.CSSProperties = {
   display: "grid",
   placeItems: "center",
   overflow: "hidden",
-  borderRadius: 8,
-  border: "1px dashed var(--ink-soft, #7b8a82)",
+  borderRadius: "var(--radius)",
+  border: "1px dashed var(--muted-foreground)",
   background: "color-mix(in srgb, var(--ink) 4%, transparent)",
   cursor: "pointer",
 };
@@ -584,25 +579,17 @@ const wideWell: React.CSSProperties = {
   ...well,
   width: "100%",
   height: "9.5rem",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
 };
 
-const tiny: React.CSSProperties = { fontSize: "0.72rem", padding: "0.15rem 0.45rem" };
 
 const tinyNote: React.CSSProperties = {
-  fontSize: "0.72rem",
+  fontSize: "var(--fs12)",
   lineHeight: 1.35,
   maxWidth: "14rem",
   color: "var(--ink-soft)",
 };
 
-const card: React.CSSProperties = {
-  background: "var(--paper)",
-  color: "var(--ink)",
-  borderRadius: 14,
-  padding: "1.4rem",
-  marginTop: "1.5rem",
-};
 
 const headRow: React.CSSProperties = {
   display: "flex",
@@ -611,17 +598,17 @@ const headRow: React.CSSProperties = {
   gap: "1rem",
 };
 
-const heading: React.CSSProperties = { fontSize: "1.1rem", margin: "0 0 0.35rem" };
+const heading: React.CSSProperties = { fontSize: "var(--fs16)", fontWeight: 600, margin: "0 0 0.35rem" };
 
 const lede: React.CSSProperties = {
   margin: "0 0 1rem",
-  fontSize: "0.85rem",
+  fontSize: "var(--fs14)",
   lineHeight: 1.6,
   color: "var(--ink-soft)",
 };
 
 const hint: React.CSSProperties = {
-  fontSize: "0.8rem",
+  fontSize: "var(--fs12)",
   lineHeight: 1.5,
   color: "var(--ink-soft)",
 };
@@ -632,8 +619,8 @@ const starterBand: React.CSSProperties = {
   alignItems: "center",
   gap: "0.75rem",
   padding: "0.75rem 1rem",
-  borderRadius: 10,
-  fontSize: "0.88rem",
+  borderRadius: "var(--radius)",
+  fontSize: "var(--fs14)",
   background: "color-mix(in srgb, var(--ink) 6%, transparent)",
 };
 
@@ -644,15 +631,9 @@ const grid: React.CSSProperties = {
 };
 
 const box: React.CSSProperties = {
-  border: "1px solid color-mix(in srgb, var(--ink) 14%, transparent)",
-  borderRadius: 12,
-  padding: "1rem",
   minWidth: 0,
 };
 
-const addBox: React.CSSProperties = {
-  borderStyle: "dashed",
-};
 
 const areaHead: React.CSSProperties = {
   display: "flex",
@@ -663,7 +644,7 @@ const areaHead: React.CSSProperties = {
 };
 
 const areaTitle: React.CSSProperties = {
-  fontSize: "0.95rem",
+  fontSize: "var(--fs14)",
   fontWeight: 600,
   margin: 0,
 };
@@ -672,7 +653,7 @@ const needsBox: React.CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   gap: "0.35rem",
-  fontSize: "0.8rem",
+  fontSize: "var(--fs12)",
   whiteSpace: "nowrap",
   color: "var(--ink-soft)",
 };
@@ -681,8 +662,8 @@ const typeTag: React.CSSProperties = {
   display: "inline-block",
   marginLeft: "0.4rem",
   padding: "0 0.4rem",
-  borderRadius: 6,
-  fontSize: "0.72rem",
+  borderRadius: 999,
+  fontSize: "var(--fs12)",
   color: "var(--ink-soft)",
   border: "1px solid color-mix(in srgb, var(--ink) 18%, transparent)",
 };
@@ -696,11 +677,11 @@ const formRow: React.CSSProperties = {
 
 const input: React.CSSProperties = {
   font: "inherit",
-  fontSize: "0.9rem",
+  fontSize: "var(--fs14)",
   flex: "1 1 10rem",
   minWidth: 0,
   padding: "0.45rem 0.6rem",
-  borderRadius: 8,
+  borderRadius: "var(--radius)",
   border: "1px solid color-mix(in srgb, var(--ink) 20%, transparent)",
   background: "var(--paper)",
   color: "var(--ink)",
@@ -708,9 +689,9 @@ const input: React.CSSProperties = {
 
 const select: React.CSSProperties = {
   font: "inherit",
-  fontSize: "0.85rem",
+  fontSize: "var(--fs14)",
   padding: "0.4rem 0.5rem",
-  borderRadius: 8,
+  borderRadius: "var(--radius)",
   border: "1px solid color-mix(in srgb, var(--ink) 20%, transparent)",
   background: "var(--paper)",
   color: "var(--ink)",
@@ -730,6 +711,6 @@ const row: React.CSSProperties = {
   justifyContent: "space-between",
   gap: "0.75rem",
   padding: "0.35rem 0",
-  fontSize: "0.9rem",
+  fontSize: "var(--fs14)",
   borderTop: "1px solid color-mix(in srgb, var(--ink) 10%, transparent)",
 };

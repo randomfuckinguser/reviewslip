@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import BookingPanel, {
@@ -131,7 +131,6 @@ export default function BookingListView({
             <RefreshCw size={16} aria-hidden="true" />
           </Link>
           <button type="button" className="btn btn-go" onClick={() => setOpen("new")} data-tour="bl-take">
-            <Plus size={15} aria-hidden="true" />
             Take a Booking
           </button>
         </div>

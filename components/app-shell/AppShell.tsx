@@ -165,7 +165,7 @@ export default function AppShell({ kind, lang, email, venues = [], isAdmin = fal
         onClick={() => setOpenOn(drawerOpen ? null : pathname)}
         aria-expanded={drawerOpen}
         aria-controls="app-sidebar"
-        aria-label={drawerOpen ? "Close menu" : "Open menu"}
+        aria-label={drawerOpen ? "Close Menu" : "Open Menu"}
       >
         {drawerOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
       </button>

@@ -20,7 +20,7 @@ export default function Thread({
 }) {
   if (messages.length === 0) {
     return (
-      <p style={{ color: "var(--cream-faint)", fontSize: "0.9rem" }}>
+      <p style={{ color: "var(--cream-faint)", fontSize: "var(--fs14)" }}>
         Nothing on this ticket yet.
       </p>
     );
@@ -37,7 +37,7 @@ export default function Thread({
             // Staff messages get the accent edge, so a long thread can be
             // skimmed for "did we answer" without reading any of it.
             borderLeft: `3px solid ${m.fromStaff ? "var(--jade)" : "var(--jade-line)"}`,
-            borderRadius: 10,
+            borderRadius: "var(--radius)",
             padding: "0.9rem 1.1rem",
             background: "var(--shade-soft)",
           }}
@@ -49,7 +49,7 @@ export default function Thread({
               gap: "1rem",
               flexWrap: "wrap",
               marginBottom: "0.5rem",
-              fontSize: "0.8rem",
+              fontSize: "var(--fs12)",
               color: "var(--cream-faint)",
             }}
           >

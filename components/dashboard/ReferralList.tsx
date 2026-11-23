@@ -80,7 +80,7 @@ export default function ReferralList({
               style={{
                 minWidth: 0,
                 overflowWrap: "anywhere",
-                fontSize: "0.95rem",
+                fontSize: "var(--fs14)",
               }}
             >
               {referral.email}
@@ -91,7 +91,7 @@ export default function ReferralList({
                 justifySelf: "start",
                 borderRadius: 999,
                 padding: "0.15rem 0.6rem",
-                fontSize: "0.75rem",
+                fontSize: "var(--fs12)",
                 whiteSpace: "nowrap",
                 background: state.bg,
                 color: state.fg,

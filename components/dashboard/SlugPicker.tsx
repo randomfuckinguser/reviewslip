@@ -46,7 +46,7 @@ export default function SlugPicker({
   // Once someone edits the address themselves the name stops driving it —
   // otherwise a later change to the name would undo their choice silently.
   const [edited, setEdited] = useState(Boolean(state.values?.slug));
-  const [check, setCheck] = useState<Check>({ state: "idle" });
+  const [answer, setAnswer] = useState<{ value: string; check: Check } | null>(null);
 
   const shown = edited ? slug : slugify(name);
 
@@ -58,29 +58,26 @@ export default function SlugPicker({
     const value = shown;
     latest.current = value;
 
-    if (!value) {
-      setCheck({ state: "idle" });
-      return;
-    }
+    if (!value) return;
 
-    setCheck({ state: "checking" });
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(`/api/slug?slug=${encodeURIComponent(value)}`);
         const data = await res.json();
         if (latest.current !== value) return;
 
-        setCheck(
-          data.valid && data.available
+        setAnswer({
+          value,
+          check: data.valid && data.available
             ? { state: "ok" }
             : {
                 state: "bad",
                 reason: data.reason ?? data.error ?? "Not usable.",
-              }
-        );
+              },
+        });
       } catch {
         if (latest.current === value) {
-          setCheck({ state: "bad", reason: "Could not check that address." });
+          setAnswer({ value, check: { state: "bad", reason: "Could not check that address." } });
         }
       }
     }, 400);
@@ -88,12 +85,17 @@ export default function SlugPicker({
     return () => clearTimeout(timer);
   }, [shown]);
 
+  const check: Check = !shown
+    ? { state: "idle" }
+    : answer && answer.value === shown
+      ? answer.check
+      : { state: "checking" };
   const ready = check.state === "ok" && name.trim().length > 0;
 
   const input: React.CSSProperties = {
     width: "100%",
     padding: "0.65rem 0.8rem",
-    borderRadius: 10,
+    borderRadius: "var(--radius)",
     border: "1px solid var(--jade-line)",
     background: "color-mix(in srgb, var(--cream) 6%, transparent)",
     color: "var(--cream)",
@@ -103,7 +105,7 @@ export default function SlugPicker({
   return (
     <form action={formAction} style={{ display: "grid", gap: "1.25rem", maxWidth: "34rem" }}>
       <div style={{ display: "grid", gap: "0.35rem" }}>
-        <label htmlFor="name" style={{ fontSize: "0.85rem", fontWeight: 500 }}>
+        <label htmlFor="name" style={{ fontSize: "var(--fs14)", fontWeight: 500 }}>
           Business Name
         </label>
         <input
@@ -116,13 +118,13 @@ export default function SlugPicker({
           placeholder="Baanpong Lodge"
           required
         />
-        <span style={{ fontSize: "0.8rem", color: "var(--ink-soft)" }}>
+        <span style={{ fontSize: "var(--fs12)", color: "var(--ink-soft)" }}>
           What guests see at the top of the page.
         </span>
       </div>
 
       <div style={{ display: "grid", gap: "0.35rem" }}>
-        <label htmlFor="slug" style={{ fontSize: "0.85rem", fontWeight: 500 }}>
+        <label htmlFor="slug" style={{ fontSize: "var(--fs14)", fontWeight: 500 }}>
           Address
         </label>
         <div style={{ display: "flex" }}>
@@ -168,7 +170,7 @@ export default function SlugPicker({
         <span
           aria-live="polite"
           style={{
-            fontSize: "0.85rem",
+            fontSize: "var(--fs14)",
             minHeight: "1.2rem",
             color:
               check.state === "ok"
@@ -185,14 +187,14 @@ export default function SlugPicker({
             "Filled in from the name — edit it if you like."}
         </span>
 
-        <span style={{ fontSize: "0.8rem", color: "var(--ink-soft)" }}>
+        <span style={{ fontSize: "var(--fs12)", color: "var(--ink-soft)" }}>
           This becomes the business&apos;s own web address and what a QR code points
           at. Changing it later means reprinting the code, so pick one you can
           live with.
         </span>
       </div>
 
-      <p aria-live="polite" style={{ minHeight: "1.25rem", color: "var(--destructive)", fontSize: "0.88rem" }}>
+      <p aria-live="polite" style={{ minHeight: "1.25rem", color: "var(--destructive)", fontSize: "var(--fs14)" }}>
         {state.error ?? ""}
       </p>
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import PageHeader from "@/components/app-shell/PageHeader";
 import RateMonth from "@/components/dashboard/RateMonth";
 import {
@@ -184,7 +184,6 @@ export default async function RatesPage({
         <ChevronLeft size={16} aria-hidden="true" />
       </Link>
       <Link className="btn btn-quiet" href={here}>
-        <CalendarDays size={15} aria-hidden="true" />
         This Month
       </Link>
       <Link

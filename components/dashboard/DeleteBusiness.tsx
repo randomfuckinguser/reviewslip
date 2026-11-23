@@ -33,7 +33,7 @@ export default function DeleteBusiness({
   if (!open) {
     return (
       <div style={frame}>
-        <h2 style={heading}>Delete This Business</h2>
+        <h2 className="card-title" style={heading}>Delete This Business</h2>
         <p style={body}>
           Its reviews, ratings and settings go with it, and{" "}
           <strong>{slug}</strong> becomes available for someone else to claim —
@@ -49,7 +49,7 @@ export default function DeleteBusiness({
 
   return (
     <div style={frame}>
-      <h2 style={heading}>Delete This Business</h2>
+      <h2 className="card-title" style={heading}>Delete This Business</h2>
       <p style={body}>
         This cannot be undone. Type <strong>{slug}</strong> to confirm.
       </p>
@@ -66,7 +66,7 @@ export default function DeleteBusiness({
           width: "100%",
           maxWidth: "20rem",
           padding: "0.65rem 0.8rem",
-          borderRadius: 10,
+          borderRadius: "var(--radius)",
           border: "1px solid color-mix(in srgb, var(--destructive) 50%, transparent)",
           background: "color-mix(in srgb, var(--cream) 6%, transparent)",
           color: "var(--cream)",
@@ -119,17 +119,17 @@ const frame: React.CSSProperties = {
   marginTop: "1.5rem",
   padding: "1rem 1.25rem",
   border: "1px solid color-mix(in srgb, var(--destructive) 35%, transparent)",
-  borderRadius: 12,
+  borderRadius: "var(--radius-card)",
 };
 
 const heading: React.CSSProperties = {
-  fontSize: "1.1rem",
+  fontSize: "var(--fs16)",
   margin: "0 0 0.4rem",
   color: "var(--destructive)",
 };
 
 const body: React.CSSProperties = {
-  fontSize: "0.85rem",
+  fontSize: "var(--fs14)",
   color: "var(--ink-soft)",
   margin: "0 0 0.9rem",
 };

@@ -573,9 +573,9 @@ export default async function ServerHealth({ tab = "overview", base }: { tab?: s
                       <tr>
                         <th>Application</th>
                         <th>Connections</th>
-                        <th className={styles.num}>Running a query</th>
+                        <th className={styles.num}>Running a Query</th>
                         <th className={styles.num}>Idle</th>
-                        <th className={styles.num}>Open transaction</th>
+                        <th className={styles.num}>Open Transaction</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -625,7 +625,7 @@ export default async function ServerHealth({ tab = "overview", base }: { tab?: s
                       <th>From</th>
                       <th>State</th>
                       <th className={styles.num}>Count</th>
-                      <th className={styles.num}>Longest in state</th>
+                      <th className={styles.num}>Longest in State</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -761,7 +761,7 @@ export default async function ServerHealth({ tab = "overview", base }: { tab?: s
               <Panel title="Services" note="systemd, at the last monitor check">
                 {r ? (
                   <table className={styles.table}>
-                    <thead><tr><th>Service</th><th>State</th><th className={styles.num}>Up for</th><th className={styles.num}>Memory</th><th className={styles.num}>Restarts</th></tr></thead>
+                    <thead><tr><th>Service</th><th>State</th><th className={styles.num}>Up For</th><th className={styles.num}>Memory</th><th className={styles.num}>Restarts</th></tr></thead>
                     <tbody>
                       {r.services.map((s) => (
                         <tr key={s.name}>

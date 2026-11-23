@@ -130,12 +130,12 @@ export default async function ReferralsPage({
               marginBottom: "1rem",
             }}
           >
-            <strong style={{ fontSize: "1.6rem", fontVariantNumeric: "tabular-nums" }}>
+            <strong style={{ fontSize: "var(--fs24)", fontVariantNumeric: "tabular-nums" }}>
               {progress.qualified} of {progress.needed}
             </strong>
             <span
               style={{
-                fontSize: "0.9rem",
+                fontSize: "var(--fs14)",
                 color: progress.earned ? "var(--success)" : "var(--ink-soft)",
               }}
             >
@@ -168,7 +168,7 @@ export default async function ReferralsPage({
 
           {progress.earned ? (
             <div style={{ marginTop: "1.2rem" }}>
-              <p style={{ margin: "0 0 0.9rem", fontSize: "0.9rem" }}>
+              <p style={{ margin: "0 0 0.9rem", fontSize: "var(--fs14)" }}>
                 Get in touch and we will put it on your account.
               </p>
               {/* A button, not the inline link this was. The site's anchors

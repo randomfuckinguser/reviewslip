@@ -61,9 +61,9 @@ export default function CleaningResults({
     `/api/checklist-photo/${encodeURIComponent(slug)}/result-line/${roomId}/${itemId}?date=${data.date}`;
 
   return (
-    <section style={card} data-tour="rooms-results">
+    <section className="admin-card" data-tour="rooms-results">
       <div style={headRow}>
-        <h2 style={heading}>{data.date === today ? "Today’s Photos" : "Photos"}</h2>
+        <h2 className="card-title" style={heading}>{data.date === today ? "Today’s Photos" : "Photos"}</h2>
         <input
           type="date"
           value={data.date}
@@ -81,7 +81,7 @@ export default function CleaningResults({
       </p>
 
       {problem && (
-        <p role="status" style={{ margin: "0 0 0.6rem", fontSize: "0.82rem", color: "var(--warning)" }}>
+        <p role="status" style={{ margin: "0 0 0.6rem", fontSize: "var(--fs14)", color: "var(--warning)" }}>
           {problem}
         </p>
       )}
@@ -137,7 +137,7 @@ export default function CleaningResults({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={lineSrc(room.roomId, l.itemId)} alt="" style={thumbImg} loading="lazy" />
                     <span style={thumbLabel}>
-                      📷 {l.label} · {time(l.takenAt, timezone)}
+                      {l.label} · {time(l.takenAt, timezone)}
                     </span>
                   </button>
                 ))}
@@ -158,8 +158,8 @@ export default function CleaningResults({
         >
           <figure style={{ margin: 0, maxWidth: "min(92vw, 70rem)", textAlign: "center" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={open.src} alt={open.caption} style={{ maxWidth: "100%", maxHeight: "82vh", borderRadius: 10 }} />
-            <figcaption style={{ color: "#fff", marginTop: "0.6rem", fontSize: "0.9rem" }}>
+            <img src={open.src} alt={open.caption} style={{ maxWidth: "100%", maxHeight: "82vh", borderRadius: "var(--radius)" }} />
+            <figcaption style={{ color: "#fff", marginTop: "0.6rem", fontSize: "var(--fs14)" }}>
               {open.caption}
             </figcaption>
           </figure>
@@ -188,13 +188,6 @@ function shift(date: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-const card: React.CSSProperties = {
-  background: "var(--paper)",
-  color: "var(--ink)",
-  borderRadius: 14,
-  padding: "1.4rem",
-  marginTop: "1.5rem",
-};
 
 const headRow: React.CSSProperties = {
   display: "flex",
@@ -204,20 +197,20 @@ const headRow: React.CSSProperties = {
   flexWrap: "wrap",
 };
 
-const heading: React.CSSProperties = { fontSize: "1.1rem", margin: 0 };
+const heading: React.CSSProperties = { fontSize: "var(--fs16)", fontWeight: 600, margin: 0 };
 
 const lede: React.CSSProperties = {
   margin: "0.35rem 0 1rem",
-  fontSize: "0.85rem",
+  fontSize: "var(--fs14)",
   lineHeight: 1.6,
   color: "var(--ink-soft)",
 };
 
 const dateInput: React.CSSProperties = {
   font: "inherit",
-  fontSize: "0.85rem",
+  fontSize: "var(--fs14)",
   padding: "0.3rem 0.5rem",
-  borderRadius: 8,
+  borderRadius: "var(--radius)",
   border: "1px solid color-mix(in srgb, var(--ink) 20%, transparent)",
   background: "var(--paper)",
   color: "var(--ink)",
@@ -226,7 +219,7 @@ const dateInput: React.CSSProperties = {
 
 const empty: React.CSSProperties = {
   margin: 0,
-  fontSize: "0.85rem",
+  fontSize: "var(--fs14)",
   color: "var(--ink-soft)",
 };
 
@@ -242,7 +235,7 @@ const roomRow: React.CSSProperties = {
 
 const sub: React.CSSProperties = {
   display: "block",
-  fontSize: "0.75rem",
+  fontSize: "var(--fs12)",
   color: "var(--ink-soft)",
 };
 
@@ -269,12 +262,12 @@ const thumbImg: React.CSSProperties = {
   width: "6.5rem",
   height: "4.9rem",
   objectFit: "cover",
-  borderRadius: 8,
+  borderRadius: "var(--radius)",
   background: "color-mix(in srgb, var(--ink) 6%, transparent)",
 };
 
 const thumbLabel: React.CSSProperties = {
-  fontSize: "0.72rem",
+  fontSize: "var(--fs12)",
   color: "var(--ink-soft)",
 };
 
