@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 
-import PageHeader from "@/components/app-shell/PageHeader";
 import DeleteBusiness from "@/components/dashboard/DeleteBusiness";
 import SettingsForm, {
   type BusinessState,
@@ -364,20 +363,22 @@ export default async function BusinessSettingsPage({
 
   return (
     <>
-      <PageHeader tour="settings"
-        title="Settings"
-        sub={data.business.name}
-        back={localizedPath(lang, `/dashboard/${slug}`)}
-      />
-      <div className="page-body">
-        <p className="lede">
-          Your business details, the review sites guests are sent to, what reviews talk about, and
-          your colours.
-        </p>
-
-        {/* Deleting is passed in rather than rendered after: it lives on the
-            General tab, which only the form knows which one is showing. */}
+      {/* The form draws the header: its Save is enabled only while something
+          has changed. Deleting is passed in rather than rendered after: it
+          lives on the General tab, which only the form knows is showing. */}
         <SettingsForm
+          header={{
+            title: "Settings",
+            sub: data.business.name,
+            back: localizedPath(lang, `/dashboard/${slug}`),
+            tour: "settings",
+          }}
+          intro={
+            <p className="lede">
+              Your business details, the review sites guests are sent to, what reviews talk about, and your
+              colours. Moving to another tab saves what you changed.
+            </p>
+          }
           action={save}
           suggest={suggest}
           describeTopic={describeTopic}
@@ -391,7 +392,6 @@ export default async function BusinessSettingsPage({
           {/* Only the owner deletes a business; it is shared with the rest. */}
           {data.access.role === "owner" ? <DeleteBusiness slug={slug} destroy={destroy} /> : null}
         </SettingsForm>
-      </div>
     </>
   );
 }

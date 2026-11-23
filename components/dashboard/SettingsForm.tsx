@@ -1,7 +1,9 @@
 "use client";
 
 import { ArrowDown, ArrowUp } from "lucide-react";
-import { useActionState, useRef, useState, useTransition } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
+
+import PageHeader from "@/components/app-shell/PageHeader";
 
 import ThemeEditor from "@/components/dashboard/ThemeEditor";
 import { PLATFORMS } from "@/lib/platforms.data";
@@ -37,7 +39,8 @@ const LINK_FIELD: Record<string, string> = {
  *
  * Every panel stays inside one form and the panels are hidden rather than
  * unmounted, so a hidden field is still submitted and switching tabs cannot lose
- * an edit. One Save covers the lot.
+ * an edit. One Save, in the page header, covers the lot; moving to another tab
+ * saves too, when anything changed.
  */
 const TABS = [
   { id: "general", label: "General" },
@@ -353,6 +356,8 @@ export default function SettingsForm({
   fetchThemeImage,
   name,
   settings,
+  header,
+  intro,
   children,
 }: {
   action: Action;
@@ -375,12 +380,65 @@ export default function SettingsForm({
   ) => Promise<{ derived?: Derived; adjusted?: string[] }>;
   name: string;
   settings: BusinessSettings;
+  /** The page header, drawn here so its Save knows whether there is anything to save. */
+  header: { title: string; sub: string; back?: string; tour?: string };
+  /** The line under the header. */
+  intro?: React.ReactNode;
   /** Deleting the business. Rendered in General, outside the form. */
   children?: React.ReactNode;
 }) {
   const [state, formAction, pending] = useActionState(action, EMPTY);
   const [tab, setTab] = useState<TabId>("general");
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  /*
+   * Whether anything differs from what was last saved: every field of the
+   * form, read as it would be sent. The controlled lists reach the form
+   * through hidden fields, so this sees them too. Save is quiet: enabled
+   * only while there is something to save, and nothing says "Saved".
+   */
+  const saved = useRef<string | null>(null);
+  const [dirty, setDirty] = useState(false);
+
+  function snapshot(): string {
+    const form = formRef.current;
+    if (!form) return "";
+    return JSON.stringify(
+      [...new FormData(form).entries()]
+        // Next's own hidden fields for the action: they change with every
+        // render of the page, not with anything typed.
+        .filter(([k]) => !k.startsWith("$ACTION"))
+        .map(([k, v]) => [k, typeof v === "string" ? v : `${v.name}:${v.size}`])
+    );
+  }
+
+  function changed(): boolean {
+    return saved.current !== null && snapshot() !== saved.current;
+  }
+
+  // What the page opened with is the first "saved".
+  useEffect(() => {
+    saved.current = snapshot();
+  }, []);
+
+  // A save that went through is the new "saved".
+  useEffect(() => {
+    if (state.ok) saved.current = snapshot();
+  }, [state]);
+
+  // After every render, once the hidden fields hold the new values: the
+  // lists, the colours and what Generate filled in.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setDirty(changed()));
+    return () => cancelAnimationFrame(frame);
+  });
+
+  /** Another tab: what was changed on this one is saved on the way. */
+  function goTo(id: TabId) {
+    if (id !== tab && changed() && !pending && !busy) formRef.current?.requestSubmit();
+    setTab(id);
+  }
 
   /**
    * The review sites this venue has said it is not on.
@@ -592,7 +650,7 @@ export default function SettingsForm({
 
     event.preventDefault();
     const next = (index + step + TABS.length) % TABS.length;
-    setTab(TABS[next].id);
+    goTo(TABS[next].id);
     tabRefs.current[next]?.focus();
   }
 
@@ -867,8 +925,22 @@ export default function SettingsForm({
   };
 
   return (
-    // No card round the whole form: the sections are the cards, as on every
-    // other screen, and the tabs are the same words-on-a-rule as Calendar's.
+    <>
+      <PageHeader title={header.title} sub={header.sub} back={header.back} tour={header.tour}>
+        <button
+          type="submit"
+          form="settings-form"
+          className="btn btn-go"
+          disabled={!dirty || pending || busy}
+          data-tour="st-save"
+        >
+          {pending ? "Saving…" : "Save"}
+        </button>
+      </PageHeader>
+      <div className="page-body">
+        {intro}
+    {/* No card round the whole form: the sections are the cards, as on every
+        other screen, and the tabs are the same words-on-a-rule as Calendar's. */}
     <div className="settings">
       <div role="tablist" aria-label="Settings sections" className="view-toggle" data-tour="st-tabs">
         {TABS.map((t, index) => {
@@ -885,7 +957,7 @@ export default function SettingsForm({
               aria-selected={on}
               aria-controls={`panel-${t.id}`}
               tabIndex={on ? 0 : -1}
-              onClick={() => setTab(t.id)}
+              onClick={() => goTo(t.id)}
               onKeyDown={(e) => onTabKey(e, index)}
               className="view-tab"
             >
@@ -899,9 +971,14 @@ export default function SettingsForm({
       </div>
 
       <form
+        id="settings-form"
+        ref={formRef}
         action={formAction}
+        // Typing in a field redraws nothing, so it checks here as well.
+        onInput={() => setDirty(changed())}
+        onChange={() => setDirty(changed())}
         // Whatever the last website read had to say is stale the moment a save
-        // starts, and leaving it up would hide "Saved." behind it.
+        // starts.
         onSubmit={() => setNotice("")}
         style={{ display: "grid", gap: "1.5rem" }}
       >
@@ -1478,8 +1555,8 @@ export default function SettingsForm({
           </div>
         </Panel>
 
-        {/* Outside every panel: one Save covers all four, and an error raised
-            by a field on another tab still has somewhere to appear. */}
+        {/* Outside every panel: an error raised by a field on another tab
+            still has somewhere to appear. */}
         <p
           aria-live="polite"
           style={{
@@ -1488,23 +1565,16 @@ export default function SettingsForm({
             color: state.error ? "var(--destructive)" : "var(--success)",
           }}
         >
-          {/* `notice ?? …` never fell through: an empty string is not nullish,
-              so a clean save showed a blank line instead of saying it saved. */}
-          {state.error ?? state.warning ?? (notice || (state.ok ? "Saved." : ""))}
+          {state.error ?? state.warning ?? notice}
         </p>
-
-        <div className="settings-save">
-          <button className="btn btn-go" type="submit" disabled={pending || busy} data-tour="st-save">
-            {pending ? "Saving…" : "Save Settings"}
-          </button>
-          <span className="hint">Saves all three tabs.</span>
-        </div>
       </form>
 
       {/* Deleting stays on General, and stays outside the form — it is its own
           irreversible act, not something Save should be able to reach. */}
       {tab === "general" && children}
     </div>
+      </div>
+    </>
   );
 }
 

@@ -226,7 +226,7 @@ export const TOURS: TourDef[] = [
       { id: "st-tabs", title: "Three Tabs", body: "General holds your details and review links, Topics what reviews talk about, and Theme your colours and logo." },
       { id: "st-website", title: "Business Website", body: "Read to suggest your topics and colours. Guests never see it." },
       { id: "st-links", title: "Review Links", body: "Each link becomes a button on the guest page. “We are not on” marks a site you don't use." },
-      { id: "st-save", title: "Save Settings", body: "Saves all three tabs at once." },
+      { id: "st-save", title: "Save", body: "Saves all three tabs at once. Moving to another tab saves what you changed, too." },
     ],
   },
 ];
