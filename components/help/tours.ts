@@ -64,7 +64,7 @@ export const TOURS: TourDef[] = [
       { id: "today-summary", title: "At the Desk", body: "The day in figures: who is arriving and leaving, who is staying tonight, and the rooms to clean." },
       { id: "today-take", title: "Find or Take a Booking", body: "Type a guest's name to find their booking, or Take a Booking for a walk-in or a phone booking. The booking form has a guide of its own." },
       { id: "today-arrivals", title: "Arriving", body: "Everyone due today, each fixed on their own row: Give a Room if they have none, Mark Clean if their room isn't ready, then Check In." },
-      { id: "today-housekeeping", title: "Housekeeping", body: "Only the rooms that need cleaning, each with Mark Clean. The clean ones sit underneath; press one if it needs cleaning again." },
+      { id: "today-housekeeping", title: "Housekeeping", body: "Only the rooms that need cleaning, each with Mark Clean. A room comes onto the list by itself: when its guest checks out, on the day a guest arrives, and every day a guest stays. The clean ones sit underneath; press one if it needs cleaning again." },
     ],
   },
   {
