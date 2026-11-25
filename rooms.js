@@ -214,13 +214,53 @@ async function setHousekeeping({ subscriberId, id, state }) {
   }
 
   const row = await one(
-    `UPDATE rooms SET housekeeping = $3, updated_at = now()
+    `UPDATE rooms SET housekeeping = $3, updated_at = now(),
+            cleaned_at = CASE WHEN $3 = 'clean' THEN now() ELSE cleaned_at END
       WHERE id = $1 AND subscriber_id = $2
       RETURNING *`,
     [id, subscriberId, state]
   );
   if (!row) throw fail(404, 'No such room.');
   return { ...toRoom({ ...row, group_name: null }), housekeeping: row.housekeeping };
+}
+
+/**
+ * Rooms that need cleaning today because somebody sleeps in them tonight.
+ *
+ * The rule the venue works to: a room is cleaned before a guest arrives, every
+ * day they stay, and after they leave. Leaving is checking out, which dirties
+ * the room by itself (bookings.setStatus). This is the other two: a clean room
+ * with a stay holding it tonight — arriving today or still staying — and not
+ * cleaned since midnight at the venue goes back to dirty. A turnaround is one
+ * clean: cleaning after the checkout is cleaning before the arrival.
+ *
+ * Run before every read of the day (the desk, the housekeeping board, the
+ * dashboard) rather than by a timer at midnight: those are the only places the
+ * state is looked at, the update finds nothing to do once it has run, and a
+ * missed timer would leave a whole morning's rooms showing clean.
+ *
+ * `today` is the venue's own date, from its timezone, not the server's.
+ */
+async function markDue({ subscriberId }) {
+  await one(
+    `WITH venue AS (
+       SELECT id, coalesce(timezone, 'Asia/Bangkok') AS tz FROM subscribers WHERE id = $1
+     )
+     UPDATE rooms r
+        SET housekeeping = 'dirty', updated_at = now()
+       FROM venue v
+      WHERE r.subscriber_id = v.id
+        AND r.housekeeping = 'clean'
+        AND (r.cleaned_at IS NULL
+             OR (r.cleaned_at AT TIME ZONE v.tz)::date < (now() AT TIME ZONE v.tz)::date)
+        AND EXISTS (
+              SELECT 1 FROM room_nights n
+                JOIN bookings b ON b.id = n.booking_id
+               WHERE n.room_id = r.id
+                 AND n.night = (now() AT TIME ZONE v.tz)::date
+                 AND b.status IN ('confirmed', 'in_house'))`,
+    [subscriberId]
+  );
 }
 
 /** One room, with the type it belongs to. Null rather than a throw. */
@@ -261,6 +301,7 @@ module.exports = {
   byId,
   setStatus,
   setHousekeeping,
+  markDue,
   listGroups,
   createGroup,
   deleteGroup,

@@ -39,7 +39,7 @@ const JOBS = {
   turnaround: { rank: 0, label: 'Turnaround', note: 'Out today, in today' },
   arrival: { rank: 1, label: 'Arriving', note: 'Guest arriving today' },
   departure: { rank: 2, label: 'Departed', note: 'Guest left today' },
-  stayover: { rank: 3, label: 'Staying', note: 'Guest still in' },
+  stayover: { rank: 3, label: 'Staying', note: 'Daily clean, guest still in' },
   free: { rank: 4, label: 'Free', note: 'Nobody in it' },
 };
 

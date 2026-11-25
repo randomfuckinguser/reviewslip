@@ -1,6 +1,7 @@
 'use strict';
 
 const roomstatus = require('./roomstatus');
+const { markDue } = require('./rooms');
 
 const { one, all, tx } = require('./db');
 const nights = require('./nights');
@@ -794,6 +795,7 @@ async function calendar({ subscriberId, start, days }) {
 async function summary({ subscriberId, today }) {
   const day = nights.parse(today);
   if (!day) throw fail(400, 'That is not a date.');
+  await markDue({ subscriberId });
 
   const row = await one(
     `SELECT
@@ -1003,6 +1005,8 @@ async function get({ subscriberId, id }) {
 async function onDate({ subscriberId, date }) {
   const day = nights.parse(date);
   if (!day) throw fail(400, 'That is not a date.');
+  // Today's cleans before anybody reads the rooms (see rooms.markDue).
+  await markDue({ subscriberId });
 
   const rows = await all(
     `SELECT b.*, g.name AS group_name, r.name AS room_name

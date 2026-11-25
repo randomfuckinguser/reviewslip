@@ -1580,6 +1580,13 @@ const MIGRATIONS = [
     await c.query('CREATE INDEX venue_members_account ON venue_members (account_id)');
     await c.query('CREATE INDEX venue_members_pending ON venue_members (lower(email)) WHERE account_id IS NULL');
   },
+
+  // When a room was last marked clean. A room with a guest in it is cleaned
+  // every day, and before every arrival: clean since this morning is what
+  // "clean" means then, not clean once. See rooms.markDue.
+  async (c) => {
+    await c.query('ALTER TABLE rooms ADD COLUMN cleaned_at timestamptz');
+  },
 ];
 
 // Any constant will do; it only has to be the same in every process.
