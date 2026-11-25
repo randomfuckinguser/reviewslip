@@ -23,6 +23,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.window.OnBackInvokedDispatcher;
 import android.widget.FrameLayout;
 
 import androidx.core.content.ContextCompat;
@@ -112,14 +113,21 @@ public class MainActivity extends Activity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
                 Uri u = req.getUrl();
-                if (ours(u)) return false;
-                // Anywhere else opens in the browser.
-                try {
-                    startActivity(new Intent(Intent.ACTION_VIEW, u));
-                } catch (Exception ignored) {
-                    // nothing can open it
-                }
+                if (inApp(u)) return false;
+                outside(u);
                 return true;
+            }
+
+            @Override
+            public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
+                // The site moves between its own pages without loading them
+                // (Next's links), which shouldOverrideUrlLoading never sees.
+                Uri u = Uri.parse(url);
+                String scheme = u.getScheme() == null ? "" : u.getScheme();
+                if (!scheme.startsWith("http") || inApp(u)) return;
+                outside(u);
+                if (view.canGoBack()) view.goBack();
+                else view.loadUrl(Prefs.phoneUrl(Prefs.home(MainActivity.this)));
             }
 
             @Override
@@ -163,6 +171,11 @@ public class MainActivity extends Activity {
         if (state != null) web.restoreState(state);
         if (!open(getIntent()) && state == null) web.loadUrl(Prefs.phoneUrl(Prefs.home(this)));
 
+        // Android 13 and later send Back here, and from Android 16 only here.
+        if (Build.VERSION.SDK_INT >= 33) {
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::back);
+        }
+
         askOnce();
         firebase();
     }
@@ -198,6 +211,10 @@ public class MainActivity extends Activity {
     @Override
     @SuppressWarnings("deprecation")
     public void onBackPressed() {
+        back();
+    }
+
+    private void back() {
         if (web.canGoBack()) web.goBack();
         // Back to the home screen, still on duty: never closed by Back.
         else moveTaskToBack(true);
@@ -225,6 +242,27 @@ public class MainActivity extends Activity {
         Uri site = Uri.parse(BuildConfig.SITE);
         return u != null && site.getHost() != null && site.getHost().equalsIgnoreCase(u.getHost())
                 && site.getScheme().equalsIgnoreCase(u.getScheme());
+    }
+
+    /**
+     * What the app shows itself: the phone, and signing in to it. The rest of
+     * the site (signing up, prices, the dashboard) opens in the browser, so
+     * the app is only ever a phone for an account made elsewhere.
+     */
+    private static boolean inApp(Uri u) {
+        if (!ours(u)) return false;
+        String p = u.getPath() == null || u.getPath().isEmpty() ? "/" : u.getPath();
+        return p.equals("/phone") || p.startsWith("/phone/") || p.startsWith("/api/")
+                || p.matches("(/[a-z]{2})?/login/?");
+    }
+
+    /** In the browser, or whatever app handles it (mail, say). */
+    private void outside(Uri u) {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, u));
+        } catch (Exception ignored) {
+            // nothing can open it
+        }
     }
 
     private boolean granted(String permission) {

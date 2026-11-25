@@ -17,14 +17,17 @@ if (keysFile.exists()) keysFile.withInputStream { keys.load(it) }
 
 android {
     namespace 'com.reviewslip.phone'
-    compileSdk 35
+    // Google Play takes only builds that target the latest Android but one.
+    compileSdk 36
 
     defaultConfig {
         applicationId 'com.reviewslip.phone'
         minSdk 26
-        targetSdk 35
-        versionCode 1
-        versionName '1.0'
+        targetSdk 36
+        // Raise for every build that is uploaded or published: Play and phones
+        // install only a higher versionCode over the one they have.
+        versionCode 2
+        versionName '1.1'
         // The site the phone page is on: -PsiteUrl=… to point a build elsewhere.
         buildConfigField 'String', 'SITE', "\"${project.findProperty('siteUrl') ?: 'https://reviewslip.com'}\""
     }

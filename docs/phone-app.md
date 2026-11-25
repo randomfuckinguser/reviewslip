@@ -12,6 +12,7 @@ reach the app without an app update. The app adds only what a page cannot do:
 | Piece | Where |
 | --- | --- |
 | The page, signed in with the site's own session | `MainActivity` (a WebView on `https://reviewslip.com/phone/`) |
+| Only the phone and sign-in in the app; signing up, prices, the dashboard open in the browser | `MainActivity.inApp` |
 | Being rung while closed or asleep | Firebase high-priority message → `CallMessagingService` → `Ringer` |
 | The ring over the lock screen | `IncomingCallActivity` |
 | Answer | opens the page at `?answer=<call id>`, which answers as soon as the ring arrives |
@@ -53,12 +54,17 @@ Without it the app works while open and just cannot be rung while closed.
 
 ## Building
 
-Needs JDK 17 or 21 and the Android SDK (platform 35).
+Needs JDK 17 or later (25 works) and the Android SDK (platform 36).
 
 ```
 cd android
 ./gradlew assembleRelease     # app/build/outputs/apk/release/app-release.apk
+./gradlew bundleRelease       # app/build/outputs/bundle/release/app-release.aab, for Google Play
 ```
+
+Google Play takes only builds that target the latest Android but one (API 36
+from 31 Aug 2026). Raise `targetSdk` and `compileSdk` each year when Play
+raises its bar.
 
 The release key is read from `~/.reviewslip/phone-keystore.properties`
 (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`), or the file named
